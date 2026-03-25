@@ -1,4 +1,5 @@
 import { streamText, convertToModelMessages, UIMessage } from "ai";
+import { anthropic } from "@ai-sdk/anthropic";
 
 export const maxDuration = 30;
 
@@ -10,10 +11,10 @@ export async function POST(req: Request) {
     : system;
 
   const result = streamText({
-    model: "anthropic/claude-haiku-4-5-20251001",
+    model: anthropic("claude-3-5-haiku-20241022"),
     system: systemPrompt,
     messages: await convertToModelMessages(messages),
-    maxOutputTokens: 1024,
+    maxTokens: 1024,
     abortSignal: req.signal,
   });
 
