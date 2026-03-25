@@ -7,15 +7,23 @@ import {
   useCallback,
   type ReactNode,
 } from "react";
-import { createClient, type SupabaseClient, type User } from "@supabase/supabase-js";
+import type { User } from "@supabase/supabase-js";
 import { useChat } from "@ai-sdk/react";
+import { DefaultChatTransport, UIMessage } from "ai";
+
+// Helper to extract text from UIMessage parts
+function getMessageText(msg: UIMessage): string {
+  if (!msg.parts || !Array.isArray(msg.parts)) return "";
+  return msg.parts
+    .filter((p): p is { type: "text"; text: string } => p.type === "text")
+    .map((p) => p.text)
+    .join("");
+}
+import { createClient } from "@/lib/supabase/client";
 
 // ─── Supabase ─────────────────────────────────────────────────────────────────
 
-const supabase: SupabaseClient = createClient(
-  process.env.NEXT_PUBLIC_SUPABASE_URL!,
-  process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
-);
+const supabase = createClient();
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -482,15 +490,20 @@ export default function WealthForgePage() {
   const [activeTool, setActiveTool] = useState<string | null>(null);
   const [panelView, setPanelView] = useState<"chat" | "tool">("chat");
   const [country, setCountry] = useState<string | null>(null);
+  const [input, setInput] = useState("");
   const bottomRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLTextAreaElement>(null);
 
   // Vercel AI SDK useChat
-  const { messages, input, setInput, handleSubmit, isLoading, setMessages } = useChat({
-    api: "/api/chat",
-    body: { system: SYSTEM_PROMPT, country },
+  const { messages, sendMessage, status, setMessages } = useChat({
+    transport: new DefaultChatTransport({
+      api: "/api/chat",
+      body: { system: SYSTEM_PROMPT, country },
+    }),
     onError: (err) => console.error("Chat error:", err),
   });
+  
+  const isLoading = status === "streaming" || status === "submitted";
 
   // Auth listener
   useEffect(() => {
@@ -517,7 +530,7 @@ export default function WealthForgePage() {
   const clearChat = useCallback(() => {
     setMessages([]);
     setInput("");
-  }, [setMessages, setInput]);
+  }, [setMessages]);
 
   const openTool = (id: string) => {
     setActiveTool(id);
@@ -739,14 +752,14 @@ export default function WealthForgePage() {
                           color: m.role === "user" ? "#d4c080" : "#c0b8a8" }}>
                           {m.role === "assistant" ? (
                             <>
-                              <MsgText text={m.content} />
+                              <MsgText text={getMessageText(m)} />
                               {/* Blinking cursor on last streaming message */}
                               {isLoading && i === messages.length - 1 && (
                                 <span style={{ display: "inline-block", width: 2, height: 13, background: "#C9A84C",
                                   marginLeft: 2, verticalAlign: "middle", animation: "wf-cursor .7s steps(1) infinite" }} />
                               )}
                             </>
-                          ) : m.content}
+                          ) : getMessageText(m)}
                         </div>
                       </div>
                     ))}
@@ -769,7 +782,12 @@ export default function WealthForgePage() {
 
               {/* Input */}
               <div style={{ padding: "10px 18px 15px", flexShrink: 0 }}>
-                <form onSubmit={handleSubmit} style={{ maxWidth: 640, margin: "0 auto" }}>
+                <form onSubmit={(e) => {
+                  e.preventDefault();
+                  if (!input.trim() || isLoading) return;
+                  sendMessage({ text: input });
+                  setInput("");
+                }} style={{ maxWidth: 640, margin: "0 auto" }}>
                   <div style={{ display: "flex", gap: 8, alignItems: "flex-end",
                     background: "rgba(255,255,255,0.04)", border: "1px solid rgba(255,255,255,0.09)",
                     borderRadius: 11, padding: "9px 11px" }}>
