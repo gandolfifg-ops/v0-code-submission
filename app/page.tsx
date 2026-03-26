@@ -806,7 +806,7 @@ const WHAT_IF_SCENARIOS = [
 
 const BASE_SCORE = 724;
 
-function CreditHealthWidget() {
+function CreditHealthWidget({ onBuildClick }: { onBuildClick: () => void }) {
   const [toggled, setToggled] = useState<Record<string, boolean>>({});
   const [showWhatIf, setShowWhatIf] = useState(false);
 
@@ -892,7 +892,7 @@ function CreditHealthWidget() {
           {/* Animated needle */}
           <motion.line
             x1={CX} y1={CY}
-            initial={{ x2: needleX, y2: needleY }}
+            initial={{ x2: CX + R * 0.5, y2: CY - R * 0.5 }}
             animate={{ x2: needleX, y2: needleY }}
             transition={{ type: "spring", stiffness: 110, damping: 16 }}
             stroke={scoreColor} strokeWidth={2.5} strokeLinecap="round"
@@ -1034,6 +1034,7 @@ function CreditHealthWidget() {
       {/* Build Credit CTA */}
       <motion.button
         whileTap={{ scale: 0.97 }}
+        onClick={onBuildClick}
         style={{
           marginTop: 14, width: "100%", padding: "8px 12px", borderRadius: 8,
           border: `1px solid ${T.border}`, background: T.glass, color: T.mid,
@@ -1095,6 +1096,386 @@ function TopPicksSection({ country }: { country: "Canada" | "USA" }) {
         ))}
       </div>
     </motion.div>
+  );
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// SECTION 5E — CREDIT PATH MODAL
+// ─────────────────────────────────────────────────────────────────────────────
+
+const CREDIT_PATH_STEPS = {
+  Canada: [
+    { step: 1, title: "Report Payments", desc: "Report rent & utilities to Equifax Canada", action: "Learn More", link: "https://www.equifax.ca/" },
+    { step: 2, title: "Utilization Check", desc: "Keep credit card spend below 30% of limit", action: "View Cards", link: "#" },
+    { step: 3, title: "Starter Card", desc: "Secured Canadian credit card ($500 deposit)", action: "Apply Now", link: "https://www.td.com/ca/en/personal-banking/" },
+  ],
+  USA: [
+    { step: 1, title: "Report Payments", desc: "Report rent, utilities, and phone bills", action: "Learn More", link: "https://www.experian.com/" },
+    { step: 2, title: "Utilization Check", desc: "Keep credit card spend below 30% of limit", action: "View Cards", link: "#" },
+    { step: 3, title: "Starter Card", desc: "Secured US credit card ($200–500 deposit)", action: "Apply Now", link: "https://www.capitalone.com/credit-cards/" },
+  ],
+};
+
+function CreditPathModal({ onClose, country }: { onClose: () => void; country: string }) {
+  const countryKey = (country === "Canada" || country === "USA") ? country : "USA";
+  const steps = CREDIT_PATH_STEPS[countryKey as keyof typeof CREDIT_PATH_STEPS];
+  const [completed, setCompleted] = useState<Record<number, boolean>>({});
+
+  const toggleStep = (step: number) =>
+    setCompleted(prev => ({ ...prev, [step]: !prev[step] }));
+
+  return (
+    <motion.div
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      exit={{ opacity: 0 }}
+      onClick={onClose}
+      style={{
+        position: "fixed",
+        inset: 0,
+        zIndex: 9997,
+        background: "rgba(0,0,0,0.75)",
+        backdropFilter: "blur(8px)",
+        display: "flex",
+        alignItems: "center",
+        justifyContent: "center",
+        padding: 16,
+      }}
+    >
+      <motion.div
+        initial={{ scale: 0.92, opacity: 0 }}
+        animate={{ scale: 1, opacity: 1 }}
+        exit={{ scale: 0.92, opacity: 0 }}
+        onClick={e => e.stopPropagation()}
+        style={{
+          background: T.bg,
+          border: `1px solid ${T.border}`,
+          borderRadius: 16,
+          padding: 28,
+          maxWidth: 500,
+          width: "100%",
+          position: "relative",
+          maxHeight: "85vh",
+          overflowY: "auto",
+        }}
+      >
+        {/* Close button */}
+        <button
+          onClick={onClose}
+          style={{
+            position: "absolute",
+            top: 12,
+            right: 12,
+            background: "none",
+            border: "none",
+            color: T.mid,
+            cursor: "pointer",
+            padding: 4,
+          }}
+        >
+          <X size={20} />
+        </button>
+
+        {/* Header */}
+        <div style={{ marginBottom: 24 }}>
+          <h2 style={{ fontSize: 22, fontWeight: 800, color: T.text, margin: "0 0 6px" }}>
+            Your Forge Credit Path
+          </h2>
+          <p style={{ fontSize: 12, color: T.mid, margin: 0, lineHeight: 1.5 }}>
+            Follow these 3 steps to build credit from scratch and unlock premium loan rates.
+          </p>
+        </div>
+
+        {/* Country badge */}
+        <div style={{
+          display: "inline-flex",
+          alignItems: "center",
+          gap: 6,
+          padding: "6px 12px",
+          borderRadius: 8,
+          background: "rgba(201,168,76,0.1)",
+          border: `1px solid rgba(201,168,76,0.25)`,
+          marginBottom: 16,
+        }}>
+          <span style={{ fontSize: 16 }}>
+            {countryKey === "Canada" ? "🇨🇦" : "🇺🇸"}
+          </span>
+          <span style={{ fontSize: 11, fontWeight: 700, color: T.gold }}>
+            {countryKey === "Canada" ? "Canada" : "USA"} Path
+          </span>
+        </div>
+
+        {/* Steps */}
+        <div style={{ display: "flex", flexDirection: "column", gap: 12, marginBottom: 20 }}>
+          {steps.map((s, i) => {
+            const done = !!completed[s.step];
+            return (
+              <motion.div
+                key={s.step}
+                initial={{ opacity: 0, x: -8 }}
+                animate={{ opacity: 1, x: 0 }}
+                transition={{ delay: i * 0.1 }}
+                onClick={() => toggleStep(s.step)}
+                style={{
+                  padding: 14,
+                  borderRadius: T.rsm,
+                  border: `1px solid ${done ? T.gold : T.border}`,
+                  background: done ? "rgba(201,168,76,0.08)" : T.glass,
+                  cursor: "pointer",
+                  transition: "all 0.2s",
+                  position: "relative",
+                  overflow: "hidden",
+                }}
+              >
+                {/* Step number circle */}
+                <div style={{
+                  position: "absolute",
+                  top: 12,
+                  right: 12,
+                  width: 28,
+                  height: 28,
+                  borderRadius: "50%",
+                  background: done ? T.gold : T.glass,
+                  border: `2px solid ${done ? T.gold : T.border}`,
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  fontWeight: 800,
+                  fontSize: 12,
+                  color: done ? "#07090d" : T.mid,
+                }}>
+                  {done ? <Check size={14} /> : s.step}
+                </div>
+
+                {/* Step content */}
+                <h4 style={{ fontSize: 13, fontWeight: 700, color: T.text, margin: "0 0 4px", paddingRight: 40 }}>
+                  {s.title}
+                </h4>
+                <p style={{ fontSize: 11, color: T.mid, margin: "0 0 10px" }}>
+                  {s.desc}
+                </p>
+
+                {/* Action button */}
+                <a
+                  href={s.link}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  style={{
+                    display: "inline-flex",
+                    alignItems: "center",
+                    gap: 4,
+                    fontSize: 10,
+                    fontWeight: 700,
+                    color: T.gold,
+                    textDecoration: "none",
+                    padding: "6px 10px",
+                    borderRadius: 6,
+                    border: `1px solid rgba(201,168,76,0.3)`,
+                    background: "rgba(201,168,76,0.05)",
+                    transition: "all 0.2s",
+                    cursor: "pointer",
+                  }}
+                  onMouseEnter={e => {
+                    const el = e.target as HTMLElement;
+                    el.style.background = "rgba(201,168,76,0.12)";
+                    el.style.borderColor = "rgba(201,168,76,0.5)";
+                  }}
+                  onMouseLeave={e => {
+                    const el = e.target as HTMLElement;
+                    el.style.background = "rgba(201,168,76,0.05)";
+                    el.style.borderColor = "rgba(201,168,76,0.3)";
+                  }}
+                >
+                  {s.action} <ExternalLink size={9} />
+                </a>
+              </motion.div>
+            );
+          })}
+        </div>
+
+        {/* Progress bar */}
+        <div style={{ marginBottom: 20 }}>
+          <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 6 }}>
+            <span style={{ fontSize: 10, fontWeight: 600, color: T.mid }}>Progress</span>
+            <span style={{ fontSize: 10, fontWeight: 700, color: T.gold }}>
+              {Object.values(completed).filter(Boolean).length} of 3
+            </span>
+          </div>
+          <div style={{
+            width: "100%",
+            height: 6,
+            borderRadius: 3,
+            background: T.glass,
+            overflow: "hidden",
+          }}>
+            <motion.div
+              animate={{
+                width: `${(Object.values(completed).filter(Boolean).length / 3) * 100}%`,
+              }}
+              transition={{ duration: 0.4 }}
+              style={{
+                height: "100%",
+                backgroundImage: `linear-gradient(90deg, ${T.gold}, ${T.goldDim})`,
+                borderRadius: 3,
+              }}
+            />
+          </div>
+        </div>
+
+        {/* CTA button */}
+        <motion.button
+          whileTap={{ scale: 0.98 }}
+          onClick={onClose}
+          style={{
+            width: "100%",
+            padding: "12px 0",
+            borderRadius: T.rsm,
+            backgroundImage: `linear-gradient(135deg, ${T.gold}, ${T.goldDim})`,
+            border: "none",
+            color: "#07090d",
+            fontSize: 13,
+            fontWeight: 700,
+            cursor: "pointer",
+            fontFamily: "inherit",
+          }}
+        >
+          Start Building Credit
+        </motion.button>
+      </motion.div>
+    </motion.div>
+  );
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// SECTION 5F — FOOTER
+// ─────────────────────────────────────────────────────────────────────────────
+
+function Footer() {
+  const footerLinks = {
+    Company: [
+      { label: "About", href: "#" },
+      { label: "Careers", href: "#" },
+      { label: "Mission", href: "#" },
+    ],
+    Support: [
+      { label: "Help Center", href: "#" },
+      { label: "Contact Us", href: "#" },
+      { label: "Security", href: "#" },
+    ],
+    Legal: [
+      { label: "Privacy Policy", href: "#" },
+      { label: "Terms of Service", href: "#" },
+      { label: "Cookie Policy", href: "#" },
+    ],
+  };
+
+  // University logos (grayscale, represented by text for now)
+  const universities = [
+    { name: "University of Toronto", abbr: "UofT" },
+    { name: "McGill University", abbr: "McGill" },
+    { name: "Western University", abbr: "Western" },
+    { name: "New York University", abbr: "NYU" },
+    { name: "Harvard University", abbr: "Harvard" },
+  ];
+
+  return (
+    <footer style={{
+      background: "#0a0a0a",
+      borderTop: `1px solid ${T.border}`,
+      padding: "40px 20px",
+      marginTop: 60,
+    }}>
+      <div style={{ maxWidth: 1200, margin: "0 auto" }}>
+        {/* Four column grid */}
+        <div style={{
+          display: "grid",
+          gridTemplateColumns: "repeat(auto-fit, minmax(200px, 1fr))",
+          gap: 32,
+          marginBottom: 40,
+        }}>
+          {Object.entries(footerLinks).map(([section, links]) => (
+            <div key={section}>
+              <h4 style={{
+                fontSize: 12,
+                fontWeight: 800,
+                color: T.text,
+                margin: "0 0 12px",
+                letterSpacing: ".08em",
+                textTransform: "uppercase",
+              }}>
+                {section}
+              </h4>
+              <ul style={{ listStyle: "none", padding: 0, margin: 0 }}>
+                {links.map(link => (
+                  <li key={link.label} style={{ marginBottom: 8 }}>
+                    <a href={link.href} style={{
+                      fontSize: 11,
+                      color: T.mid,
+                      textDecoration: "none",
+                      transition: "color 0.2s",
+                    }}
+                    onMouseEnter={e => (e.currentTarget.style.color = T.gold)}
+                    onMouseLeave={e => (e.currentTarget.style.color = T.mid)}
+                    >
+                      {link.label}
+                    </a>
+                  </li>
+                ))}
+              </ul>
+            </div>
+          ))}
+
+          {/* Trust bar - Universities */}
+          <div>
+            <h4 style={{
+              fontSize: 12,
+              fontWeight: 800,
+              color: T.text,
+              margin: "0 0 12px",
+              letterSpacing: ".08em",
+              textTransform: "uppercase",
+            }}>
+              Used By Students At
+            </h4>
+            <div style={{
+              display: "flex",
+              flexWrap: "wrap",
+              gap: 8,
+            }}>
+              {universities.map(uni => (
+                <div key={uni.abbr} style={{
+                  padding: "6px 10px",
+                  borderRadius: 6,
+                  background: T.glass,
+                  border: `1px solid ${T.border}`,
+                  fontSize: 9,
+                  fontWeight: 700,
+                  color: T.mid,
+                  opacity: 0.7,
+                }}>
+                  {uni.abbr}
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
+
+        {/* Divider */}
+        <div style={{ height: 1, background: T.border, marginBottom: 20 }} />
+
+        {/* Copyright */}
+        <div style={{ textAlign: "center" }}>
+          <p style={{
+            fontSize: 10,
+            color: T.dim,
+            margin: 0,
+            letterSpacing: ".02em",
+          }}>
+            © 2026 Forge Finances. Empowering the next generation of global students.
+          </p>
+        </div>
+      </div>
+    </footer>
   );
 }
 
@@ -1680,7 +2061,7 @@ function InlineChat({ country }: { country: string }) {
                 <TopPicksSection country={countryVal} />
               </div>
               <div style={{ flex: "0 0 280px" }}>
-                <CreditHealthWidget />
+                <CreditHealthWidget onBuildClick={() => setShowCreditPath(true)} />
               </div>
             </div>
           </div>
@@ -1751,6 +2132,7 @@ export default function ForgePage() {
   const [copied,     setCopied]     = useState<boolean>(false);
   const [chatKey,    setChatKey]    = useState<number>(0);
   const [showAuth,   setShowAuth]   = useState(false);
+  const [showCreditPath, setShowCreditPath] = useState(false);
   const [user, setUser] = useState<SupabaseUser | null>(null);
   const [authLoading, setAuthLoading] = useState(true);
   const [savedItems, setSavedItems] = useState<ScoutResult[]>([]);
@@ -1849,6 +2231,11 @@ const hBtn = (active = false): CSSProperties => ({
 {/* Auth Modal */}
         <AnimatePresence>
           {showAuth && <AuthModal onClose={() => setShowAuth(false)} />}
+        </AnimatePresence>
+
+        {/* Credit Path Modal */}
+        <AnimatePresence>
+          {showCreditPath && <CreditPathModal onClose={() => setShowCreditPath(false)} country={country} />}
         </AnimatePresence>
 
         {/* ═══ HEADER ══════════════════════════════════════════════════════════ */}
@@ -2005,6 +2392,9 @@ const hBtn = (active = false): CSSProperties => ({
           </aside>
         </div>
       </div>
+      
+      {/* Footer */}
+      <Footer />
     </>
   );
 }
