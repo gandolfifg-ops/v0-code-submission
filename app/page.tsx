@@ -16,7 +16,7 @@
  *     ANTHROPIC_API_KEY=
  *   Create app/api/chat/route.ts (see bottom comment)
  * ─────────────────────────────────────────────────────────────────────────────
- * Last updated: Mobile responsive layout, Supabase auth, contrast fixes
+ * Last updated: v4 — BASE_SCORE fix, 10 credit widgets, compact header
  */
 
 import { useState, useEffect, useRef, useCallback, useMemo, type ReactNode, type CSSProperties, type FormEvent } from "react";
@@ -782,6 +782,32 @@ function LoanMarketplaceHero({ country }: { country: "Canada" | "USA" }) {
 // SECTION 5D — CREDIT HEALTH WIDGET
 // ─────────────────────────────────────────────────────────────────────────────
 
+const BASE_SCORE = 600;
+
+const WHAT_IF_SCENARIOS = [
+  {
+    id: "payoff_cc",
+    label: "Pay off $500 CC debt",
+    delta: +15,
+    color: "#4ade80",
+    tip: "Payment history makes up 35% of your total score. Paying down balances also lowers your credit utilization ratio — the second biggest factor at 30%.",
+  },
+  {
+    id: "miss_bill",
+    label: "Miss a phone bill payment",
+    delta: -40,
+    color: "#f87171",
+    tip: "A single missed payment can stay on your report for up to 7 years. Payment history is the most heavily weighted factor across all major scoring models.",
+  },
+  {
+    id: "new_card",
+    label: "Open a new credit card",
+    delta: -5,
+    color: "#fbbf24",
+    tip: "Opening new credit triggers a hard inquiry, temporarily dinging your score. Long-term, a higher limit improves your utilization ratio if you keep balances low.",
+  },
+];
+
 // v3 — arrow function form; onBuildClick is a prop, never references ForgePage state directly
 const CreditHealthWidget = ({ onBuildClick }: { onBuildClick: () => void }) => {
   const [toggled, setToggled] = useState<Record<string, boolean>>({});
@@ -1309,7 +1335,7 @@ function CreditPathModal({ onClose, country }: { onClose: () => void; country: s
 
 // ─────────────────────────────────────────────────────────────────────────────
 // SECTION 5F — FOOTER
-// ────────────────────────────────────────���────────────────────────────────────
+// ─��──────────────────────────────────────���────────────────────────────────────
 
 function Footer() {
   const footerLinks = {
@@ -1815,7 +1841,7 @@ function ScholarshipScout({ onToggleSave, savedIds }: { onToggleSave: (item: Sco
   );
 }
 
-// ── Saved Items (My Vault) ────────────────────────────────────────────────────
+// ── Saved Items (My Vault) ─────────────────────────���──────────────────────────
 function SavedItems({ saved, onRemove }: { saved: ScoutResult[]; onRemove: (item: ScoutResult) => void }) {
   
   
@@ -1859,22 +1885,35 @@ function SavedItems({ saved, onRemove }: { saved: ScoutResult[]; onRemove: (item
 
 // ─────────────────────────────────────────────────────────��───────────────────
 // SECTION 7 — MARKETPLACE
-// ──���──────────────��───────────────────────────────────────────────────────────
+// ──���──────────────��───────────────────────────────���───────────────────────────
+
+const CREDIT_CARDS = [
+  { id: "cap1", icon: "💳", provider: "Capital One", reward: "1.5% Cash Back", color: "#e63946" },
+  { id: "amex", icon: "🏆", provider: "Amex Gold", reward: "4x Dining Points", color: "#ffd700" },
+  { id: "chase", icon: "🔷", provider: "Chase Sapphire", reward: "3x Travel Points", color: "#0066b2" },
+  { id: "discover", icon: "🌟", provider: "Discover It", reward: "5% Rotating Cash Back", color: "#ff6600" },
+  { id: "citi", icon: "🏛️", provider: "Citi Double", reward: "2% Cash Back", color: "#003b70" },
+  { id: "bofa", icon: "🏦", provider: "Bank of America", reward: "3% Select Categories", color: "#dc143c" },
+  { id: "wells", icon: "🐎", provider: "Wells Fargo", reward: "2% Flat Cash Back", color: "#d71e28" },
+  { id: "usbank", icon: "🏅", provider: "US Bank", reward: "4% Gas & EV Charging", color: "#002f6c" },
+  { id: "td", icon: "🍁", provider: "TD Cash Back", reward: "3% Groceries (CA)", color: "#34a853" },
+  { id: "more", icon: "➕", provider: "More Options", reward: "Compare All Cards", color: "#c4b594" },
+];
 
 function Marketplace({ country }: { country: string }) {
-  
   const flag = country === "Canada" ? "CA" : country === "USA" ? "US" : null;
   const list = flag ? AFFILIATE_PRODUCTS.filter(p => p.country === flag) : AFFILIATE_PRODUCTS;
   return (
-    <motion.div variants={stagger} initial="hidden" animate="visible" style={{ display:"flex", flexDirection:"column", gap:8 }}>
+    <motion.div variants={stagger} initial="hidden" animate="visible" style={{ display:"flex", flexDirection:"column", gap:10 }}>
+      {/* Recommended Accounts */}
       <div style={{ display:"flex", alignItems:"center", gap:6, margin:"2px 2px 6px" }}>
-    <p style={{ fontSize:9, color:"#c4b594", letterSpacing:".1em", margin:0 }}>RECOMMENDED ACCOUNTS</p>
-    {flag && (
-      <span style={{ fontSize:10, color:T.gold, fontWeight:700 }}>
-        {COUNTRY_CONFIG[flag === "CA" ? "Canada" : "USA"].flag} {COUNTRY_CONFIG[flag === "CA" ? "Canada" : "USA"].currency}
-      </span>
-    )}
-  </div>
+        <p style={{ fontSize:9, color:"#c4b594", letterSpacing:".1em", margin:0 }}>RECOMMENDED ACCOUNTS</p>
+        {flag && (
+          <span style={{ fontSize:10, color:T.gold, fontWeight:700 }}>
+            {COUNTRY_CONFIG[flag === "CA" ? "Canada" : "USA"].flag} {COUNTRY_CONFIG[flag === "CA" ? "Canada" : "USA"].currency}
+          </span>
+        )}
+      </div>
       {list.map(p => (
         <motion.div key={p.id} variants={fadeUp}>
           <Glass glow style={{ padding:12 }}>
@@ -1891,6 +1930,47 @@ function Marketplace({ country }: { country: string }) {
           </Glass>
         </motion.div>
       ))}
+
+      {/* Credit Cards Section */}
+      <div style={{ marginTop:12 }}>
+        <p style={{ fontSize:9, color:"#c4b594", letterSpacing:".1em", margin:"0 0 10px" }}>CREDIT CARDS</p>
+        <div style={{ display:"grid", gridTemplateColumns:"1fr 1fr", gap:8, maxHeight:320, overflowY:"auto", paddingRight:4 }}>
+          {CREDIT_CARDS.map(card => (
+            <motion.div key={card.id} variants={fadeUp} whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }}>
+              <div style={{
+                padding:"10px 10px 8px",
+                borderRadius:10,
+                background:"rgba(255,255,255,0.03)",
+                border:"1px solid rgba(196,181,148,0.15)",
+                cursor:"pointer",
+                transition:"all 0.2s",
+              }}>
+                <div style={{ display:"flex", alignItems:"center", gap:6, marginBottom:5 }}>
+                  <span style={{ fontSize:16 }}>{card.icon}</span>
+                  <span style={{ fontSize:10, fontWeight:700, color:"#c4b594", lineHeight:1.2 }}>{card.provider}</span>
+                </div>
+                <p style={{ fontSize:9, color:T.mid, margin:"0 0 6px", lineHeight:1.3 }}>{card.reward}</p>
+                <button style={{
+                  width:"100%",
+                  padding:"5px 0",
+                  borderRadius:6,
+                  border:"1px solid rgba(196,181,148,0.3)",
+                  background:"rgba(196,181,148,0.08)",
+                  color:"#c4b594",
+                  fontSize:8,
+                  fontWeight:700,
+                  cursor:"pointer",
+                  fontFamily:"inherit",
+                  letterSpacing:".03em",
+                  transition:"all 0.2s",
+                }}>
+                  Check Eligibility
+                </button>
+              </div>
+            </motion.div>
+          ))}
+        </div>
+      </div>
       <AffNote />
     </motion.div>
   );
