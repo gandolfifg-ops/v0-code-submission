@@ -16,6 +16,7 @@
  *     ANTHROPIC_API_KEY=
  *   Create app/api/chat/route.ts (see bottom comment)
  * ─────────────────────────────────────────────────────────────────────────────
+ * Last updated: Mobile responsive layout with Supabase auth
  */
 
 import { useState, useEffect, useRef, useCallback, useMemo, type ReactNode, type CSSProperties, type FormEvent } from "react";
@@ -2022,7 +2023,7 @@ function InlineChat({ country, onBuildCredit }: { country: string; onBuildCredit
       <div style={{ flex:1, overflowY:"auto", display:"flex", flexDirection:"column" }}>
         {/* Hero Section - Loan Marketplace (Always visible at top) */}
         {msgs.length === 0 && (
-          <div style={{ padding: "20px 20px 0", maxWidth: 900, margin: "0 auto", width: "100%" }}>
+          <div style={{ padding: "20px 20px 0", maxWidth: 900, margin: "0 auto", width: "100%" }} className="forge-hero-section">
 
             {/* Country context banner */}
             <AnimatePresence mode="wait">
@@ -2056,7 +2057,7 @@ function InlineChat({ country, onBuildCredit }: { country: string; onBuildCredit
             </AnimatePresence>
 
             <LoanMarketplaceHero country={countryVal} />
-            <div style={{ display: "flex", gap: 16, flexWrap: "wrap" }}>
+            <div style={{ display: "flex", gap: 16, flexWrap: "wrap" }} className="forge-picks-credit-row">
               <div style={{ flex: "1 1 400px", minWidth: 280 }}>
                 <TopPicksSection country={countryVal} />
               </div>
@@ -2229,12 +2230,28 @@ const hBtn = (active = false): CSSProperties => ({
   @keyframes spin{0%{transform:rotate(0deg)}100%{transform:rotate(360deg)}}
 
   /* ── Mobile responsiveness ─────────────────────────────────────────── */
+  @media (max-width: 768px) {
+    .forge-header { padding: 12px 14px !important; gap: 8px !important; flex-wrap: wrap; }
+    .forge-logo-text { font-size: 20px !important; }
+    .forge-tagline { max-width: 200px !important; font-size: 9px !important; }
+    .forge-body { flex-direction: column !important; }
+    .forge-sidebar {
+      width: 100% !important;
+      border-left: none !important;
+      border-top: 1px solid rgba(255,255,255,0.1) !important;
+    }
+    .forge-main { min-width: 0 !important; }
+    .forge-picks-credit-row { flex-direction: column !important; gap: 12px !important; }
+    .forge-picks-credit-row > * { flex: 1 1 100% !important; min-width: 0 !important; }
+    .forge-hero-section { padding: 16px 14px 0 !important; }
+  }
+
   @media (max-width: 640px) {
-    .forge-header { padding: 10px 12px !important; gap: 8px !important; }
-    .forge-tagline { display: none !important; }
+    .forge-header { padding: 10px 12px !important; gap: 6px !important; }
     .forge-logo-text { font-size: 18px !important; }
-    .forge-body { flex-direction: column !important; overflow: visible !important; }
-    .forge-main { overflow: visible !important; }
+    .forge-tagline { display: none !important; }
+    .forge-hamburger { display: flex !important; }
+    .forge-body { flex-direction: column !important; }
     .forge-sidebar {
       position: fixed !important;
       top: 0 !important; left: 0 !important;
@@ -2243,20 +2260,18 @@ const hBtn = (active = false): CSSProperties => ({
       z-index: 200 !important;
       transform: translateX(-100%) !important;
       transition: transform 0.28s cubic-bezier(0.4,0,0.2,1) !important;
+      border: none !important;
+      border-top: none !important;
     }
     .forge-sidebar.open { transform: translateX(0) !important; }
-    .forge-marketplace-grid { grid-template-columns: 1fr !important; }
-    .forge-picks-credit-row { flex-direction: column !important; }
-    .forge-picks-credit-row > * { flex: 1 1 auto !important; min-width: 0 !important; }
-    .forge-footer-grid { grid-template-columns: 1fr 1fr !important; }
-    .forge-budget-grid { grid-template-columns: 1fr 1fr !important; }
-    .forge-summary-grid { grid-template-columns: 1fr 1fr !important; }
+    .forge-main { overflow: visible !important; }
     .forge-hero-section { padding: 12px 12px 0 !important; }
+    .forge-picks-credit-row { flex-direction: column !important; }
+    .forge-footer-grid { grid-template-columns: 1fr 1fr !important; gap: 16px !important; }
   }
+
   @media (max-width: 400px) {
     .forge-footer-grid { grid-template-columns: 1fr !important; }
-    .forge-budget-grid { grid-template-columns: 1fr !important; }
-    .forge-summary-grid { grid-template-columns: 1fr !important; }
   }
         `}</style>
 
@@ -2271,12 +2286,12 @@ const hBtn = (active = false): CSSProperties => ({
         </AnimatePresence>
 
         {/* ═══ HEADER ══════════════════════════════════════════════════════════ */}
-        <header style={{ display:"flex", alignItems:"center", justifyContent:"space-between", padding:"14px 20px", borderBottom:`1px solid ${T.border}`, flexShrink:0, zIndex:10, background:"rgba(5,5,5,0.97)", backdropFilter:"blur(22px)", WebkitBackdropFilter:"blur(22px)" }}>
+        <header style={{ display:"flex", alignItems:"center", justifyContent:"space-between", padding:"14px 20px", borderBottom:`1px solid ${T.border}`, flexShrink:0, zIndex:10, background:"rgba(5,5,5,0.97)", backdropFilter:"blur(22px)", WebkitBackdropFilter:"blur(22px)" }} className="forge-header">
 <div style={{ display:"flex", alignItems:"center", gap:12 }}>
   <LogoMark size={38} />
   <div>
-  <div style={{ fontSize:24, fontWeight:900, letterSpacing:"-.03em", backgroundImage:`linear-gradient(90deg,${T.goldHi},${T.gold},${T.goldDim},${T.goldHi})`, backgroundSize:"200%", WebkitBackgroundClip:"text", WebkitTextFillColor:"transparent", animation:"wf-shimmer 5s linear infinite", textTransform:"uppercase" }}>Forge</div>
-              <div style={{ fontSize:10, color:T.mid, letterSpacing:".02em", maxWidth:380, lineHeight:1.4, fontFamily:"Inter,system-ui,sans-serif" }}>{TAGLINE}</div>
+  <div style={{ fontSize:24, fontWeight:900, letterSpacing:"-.03em", backgroundImage:`linear-gradient(90deg,${T.goldHi},${T.gold},${T.goldDim},${T.goldHi})`, backgroundSize:"200%", WebkitBackgroundClip:"text", WebkitTextFillColor:"transparent", animation:"wf-shimmer 5s linear infinite", textTransform:"uppercase" }} className="forge-logo-text">Forge</div>
+              <div style={{ fontSize:10, color:T.mid, letterSpacing:".02em", maxWidth:380, lineHeight:1.4, fontFamily:"Inter,system-ui,sans-serif" }} className="forge-tagline">{TAGLINE}</div>
             </div>
           </div>
   <div style={{ display:"flex", gap:10, alignItems:"center" }}>
@@ -2289,14 +2304,19 @@ const hBtn = (active = false): CSSProperties => ({
                 <Trash2 size={12} /> Clear
               </motion.button>
             )}
+            {/* Mobile hamburger for sidebar */}
+            <motion.button whileTap={{ scale: 0.93 }} onClick={() => setSidebarOpen(!sidebarOpen)}
+              style={{ display:"none", "@media (max-width: 640px)": { display: "flex" }, background:"none", border:`1px solid ${T.border}`, color:T.mid, cursor:"pointer", padding:"6px 8px", borderRadius:T.rsm, alignItems:"center", justifyContent:"center", fontSize:16 }} className="forge-hamburger">
+              ☰
+            </motion.button>
           </div>
         </header>
 
         {/* ═══ BODY ════════════════════════════════════════════════════════════ */}
-        <div style={{ flex:1, display:"flex", overflow:"hidden" }}>
+        <div style={{ flex:1, display:"flex", overflow:"hidden" }} className="forge-body">
 
-          {/* ── Main panel ─────────────────────────────���────────────────────── */}
-          <div style={{ flex:1, display:"flex", flexDirection:"column", overflow:"hidden" }}>
+          {/* ── Main panel ─────────────────────────────────────────────────────── */}
+          <div style={{ flex:1, display:"flex", flexDirection:"column", overflow:"hidden" }} className="forge-main">
 
             {/* Tool view */}
             {panelView==="tool" && activeTool && (
@@ -2339,7 +2359,13 @@ const hBtn = (active = false): CSSProperties => ({
           </div>
 
           {/* ═══ SIDEBAR ���════════════════════════════════════════════════════ */}
-          <aside style={{ width:224, flexShrink:0, borderLeft:`1px solid ${T.border}`, background:"rgba(255,255,255,0.014)", backdropFilter:"blur(12px)", display:"flex", flexDirection:"column", overflow:"hidden" }}>
+          <aside style={{ width:224, flexShrink:0, borderLeft:`1px solid ${T.border}`, background:"rgba(255,255,255,0.014)", backdropFilter:"blur(12px)", display:"flex", flexDirection:"column", overflow:"hidden" }} className={`forge-sidebar${sidebarOpen ? ' open' : ''}`}>
+            {/* Mobile close button */}
+            <div style={{ display:"none", "@media (max-width: 640px)": { display: "flex" }, padding:"10px 10px", justifyContent:"flex-end", borderBottom:`1px solid ${T.border}` }}>
+              <button onClick={() => setSidebarOpen(false)} style={{ background:"none", border:"none", color:T.mid, cursor:"pointer", fontSize:20, padding:0, width:24, height:24 }}>
+                ×
+              </button>
+            </div>
             {/* Tabs */}
             <div style={{ display:"flex", padding:"10px 10px 0", gap:4, flexShrink:0, borderBottom:`1px solid ${T.border}` }}>
               {([["tools","Tools"],["market","Marketplace"]] as const).map(([id,lbl]) => (
