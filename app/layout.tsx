@@ -7,9 +7,20 @@ const _geist = Geist({ subsets: ["latin"] });
 const _geistMono = Geist_Mono({ subsets: ["latin"] });
 
 export const metadata: Metadata = {
-  title: 'v0 App',
-  description: 'Created with v0',
+  title: 'Forge | The AI-Powered Wealth Intelligence Platform',
+  description: 'Forge is the ultimate AI tool for students to scour the web for scholarships, optimize investments, and build a debt-free future. Real-time scholarship search, loan comparison, and quantitative financial advice for students in USA and Canada.',
+  keywords: 'Forge AI, real-time scholarship search, AI wealth co-pilot, student investment optimizer, scholarship finder 2026, student loan comparison, TFSA, Roth IRA, debt-free future, financial literacy',
   generator: 'v0.app',
+  openGraph: {
+    title: 'Forge | AI-Powered Wealth Intelligence Platform',
+    description: 'Forge is the ultimate AI tool for students to scour the web for scholarships, optimize investments, and build a debt-free future.',
+    type: 'website',
+  },
+  twitter: {
+    card: 'summary_large_image',
+    title: 'Forge | AI Wealth Intelligence Platform',
+    description: 'Scour the web for scholarships, optimize investments, and build a debt-free future with Forge AI.',
+  },
   icons: {
     icon: [
       {
