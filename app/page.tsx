@@ -27,6 +27,7 @@ import {
   BarChart2, PiggyBank, BookOpen, ExternalLink, Bookmark, X, LogIn, LogOut,
 } from "lucide-react";
 import type { User as SupabaseUser } from "@supabase/supabase-js";
+import CreditHealthWidget from "@/components/credit-health-widget";
 
 // ─────────────────────────────────────────────────────────────────────────────
 // SECTION 1 — CONFIG (all data, copy, and affiliate links live here)
@@ -781,33 +782,10 @@ function LoanMarketplaceHero({ country }: { country: "Canada" | "USA" }) {
 // SECTION 5D — CREDIT HEALTH WIDGET
 // ─────────────────────────────────────────────────────────────────────────────
 
-const WHAT_IF_SCENARIOS = [
-  {
-    id: "payoff_cc",
-    label: "Pay off $500 CC debt",
-    delta: +15,
-    color: "#4ade80",
-    tip: "Payment history makes up 35% of your total score. Paying down balances also lowers your credit utilization ratio — the second biggest factor at 30%.",
-  },
-  {
-    id: "miss_bill",
-    label: "Miss a phone bill payment",
-    delta: -40,
-    color: "#f87171",
-    tip: "A single missed payment can stay on your report for up to 7 years. Payment history is the most heavily weighted factor across all major scoring models.",
-  },
-  {
-    id: "new_card",
-    label: "Open a new credit card",
-    delta: -5,
-    color: "#fbbf24",
-    tip: "Opening new credit triggers a hard inquiry, temporarily dinging your score. Long-term, a higher limit improves your utilization ratio if you keep balances low.",
-  },
-];
-
-const BASE_SCORE = 724;
-
-function CreditHealthWidget({ onBuildClick }: { onBuildClick: () => void }) {
+// CreditHealthWidget is now in components/credit-health-widget.tsx
+// (extracted to bust Next.js stale module cache)
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
+function _CreditHealthWidget_REPLACED({ onBuildClick }: { onBuildClick: () => void }) {
   const [toggled, setToggled] = useState<Record<string, boolean>>({});
   const [showWhatIf, setShowWhatIf] = useState(false);
 
@@ -1370,13 +1348,17 @@ function Footer() {
     ],
   };
 
-  // University logos (grayscale, represented by text for now)
   const universities = [
     { name: "University of Toronto", abbr: "UofT" },
     { name: "McGill University", abbr: "McGill" },
     { name: "Western University", abbr: "Western" },
     { name: "New York University", abbr: "NYU" },
     { name: "Harvard University", abbr: "Harvard" },
+    { name: "Stanford University", abbr: "Stanford" },
+    { name: "Massachusetts Institute of Technology", abbr: "MIT" },
+    { name: "Queen's University", abbr: "Queen's" },
+    { name: "California Institute of Technology", abbr: "CalTech" },
+    { name: "and many more", abbr: "and many more" },
   ];
 
   return (
@@ -1445,14 +1427,15 @@ function Footer() {
             }}>
               {universities.map(uni => (
                 <div key={uni.abbr} style={{
-                  padding: "6px 10px",
+                  padding: "5px 10px",
                   borderRadius: 6,
-                  background: T.glass,
-                  border: `1px solid ${T.border}`,
+                  background: "rgba(255,255,255,0.04)",
+                  border: "1px solid rgba(196,181,148,0.18)",
                   fontSize: 9,
                   fontWeight: 700,
-                  color: T.mid,
-                  opacity: 0.7,
+                  color: "#c4b594",
+                  letterSpacing: ".04em",
+                  whiteSpace: "nowrap",
                 }}>
                   {uni.abbr}
                 </div>
