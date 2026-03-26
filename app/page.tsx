@@ -16,7 +16,7 @@
  *     ANTHROPIC_API_KEY=
  *   Create app/api/chat/route.ts (see bottom comment)
  * ─────────────────────────────────────────────────────────────────────────────
- * Last updated: Mobile responsive layout with Supabase auth
+ * Last updated: Mobile responsive layout, Supabase auth, contrast fixes
  */
 
 import { useState, useEffect, useRef, useCallback, useMemo, type ReactNode, type CSSProperties, type FormEvent } from "react";
@@ -242,7 +242,7 @@ function Chip({ label, color }: { label: string; color?: string }) {
 
 function AffNote() {
   
-  return <p style={{ fontSize:9, color:T.dimmer, textAlign:"center", marginTop:10, lineHeight:1.5 }}>{AFFIL_NOTE}</p>;
+  return <p style={{ fontSize:9, color:"#c4b594", textAlign:"center", marginTop:10, lineHeight:1.5 }}>{AFFIL_NOTE}</p>;
 }
 
 function SyncDot() {
@@ -1894,7 +1894,7 @@ function SavedItems({ saved, onRemove }: { saved: ScoutResult[]; onRemove: (item
 
 // ─────────────────────────────────────────────────────────��───────────────────
 // SECTION 7 — MARKETPLACE
-// ─────────────────��───────────────────────────────────────────────────────────
+// ──���──────────────��───────────────────────────────────────────────────────────
 
 function Marketplace({ country }: { country: string }) {
   
@@ -1903,7 +1903,7 @@ function Marketplace({ country }: { country: string }) {
   return (
     <motion.div variants={stagger} initial="hidden" animate="visible" style={{ display:"flex", flexDirection:"column", gap:8 }}>
       <div style={{ display:"flex", alignItems:"center", gap:6, margin:"2px 2px 6px" }}>
-    <p style={{ fontSize:9, color:T.dimmer, letterSpacing:".1em", margin:0 }}>RECOMMENDED ACCOUNTS</p>
+    <p style={{ fontSize:9, color:"#c4b594", letterSpacing:".1em", margin:0 }}>RECOMMENDED ACCOUNTS</p>
     {flag && (
       <span style={{ fontSize:10, color:T.gold, fontWeight:700 }}>
         {COUNTRY_CONFIG[flag === "CA" ? "Canada" : "USA"].flag} {COUNTRY_CONFIG[flag === "CA" ? "Canada" : "USA"].currency}
@@ -2093,7 +2093,7 @@ function InlineChat({ country, onBuildCredit }: { country: string; onBuildCredit
           <div ref={bottomRef} />
         </div>
       </div>
-      <div style={{ padding:"10px 20px 10px", flexShrink:0 }}>
+      <div style={{ padding:"10px 20px 10px", flexShrink:0 }} className="forge-chat-input-bar">
         <form onSubmit={submitForm} style={{ maxWidth:680, margin:"0 auto" }}>
           <Glass style={{ display:"flex", gap:9, alignItems:"flex-end", padding:"10px 12px" }}>
             <textarea ref={inputRef} value={input ?? ""} onChange={e => setInput(e.target.value ?? "")}
@@ -2246,32 +2246,43 @@ const hBtn = (active = false): CSSProperties => ({
     .forge-hero-section { padding: 16px 14px 0 !important; }
   }
 
+  /* Hide hamburger + sidebar close header on desktop */
+  .forge-hamburger { display: none !important; }
+  .forge-sidebar-header { display: none !important; }
+
   @media (max-width: 640px) {
     .forge-header { padding: 10px 12px !important; gap: 6px !important; }
     .forge-logo-text { font-size: 18px !important; }
     .forge-tagline { display: none !important; }
     .forge-hamburger { display: flex !important; }
     .forge-body { flex-direction: column !important; }
+    .forge-main { overflow-x: hidden !important; }
     .forge-sidebar {
       position: fixed !important;
       top: 0 !important; left: 0 !important;
-      width: 100vw !important;
+      width: 88vw !important;
+      max-width: 320px !important;
       height: 100vh !important;
-      z-index: 200 !important;
+      z-index: 9999 !important;
       transform: translateX(-100%) !important;
       transition: transform 0.28s cubic-bezier(0.4,0,0.2,1) !important;
-      border: none !important;
-      border-top: none !important;
+      border-left: none !important;
+      border-right: 1px solid rgba(255,255,255,0.1) !important;
+      box-shadow: 4px 0 24px rgba(0,0,0,0.6) !important;
+      overflow-y: auto !important;
     }
     .forge-sidebar.open { transform: translateX(0) !important; }
-    .forge-main { overflow: visible !important; }
+    .forge-sidebar-header { display: flex !important; }
     .forge-hero-section { padding: 12px 12px 0 !important; }
     .forge-picks-credit-row { flex-direction: column !important; }
     .forge-footer-grid { grid-template-columns: 1fr 1fr !important; gap: 16px !important; }
+    /* Ensure chat input and messages have proper edge padding */
+    .forge-chat-input-bar { padding: 10px 12px !important; }
   }
 
   @media (max-width: 400px) {
     .forge-footer-grid { grid-template-columns: 1fr !important; }
+    .forge-sidebar { width: 100vw !important; max-width: 100vw !important; }
   }
         `}</style>
 
@@ -2306,7 +2317,7 @@ const hBtn = (active = false): CSSProperties => ({
             )}
             {/* Mobile hamburger for sidebar */}
             <motion.button whileTap={{ scale: 0.93 }} onClick={() => setSidebarOpen(!sidebarOpen)}
-              style={{ display:"none", "@media (max-width: 640px)": { display: "flex" }, background:"none", border:`1px solid ${T.border}`, color:T.mid, cursor:"pointer", padding:"6px 8px", borderRadius:T.rsm, alignItems:"center", justifyContent:"center", fontSize:16 }} className="forge-hamburger">
+              style={{ background:"none", border:`1px solid ${T.border}`, color:T.mid, cursor:"pointer", padding:"6px 8px", borderRadius:T.rsm, display:"flex", alignItems:"center", justifyContent:"center", fontSize:16, lineHeight:1 }} className="forge-hamburger">
               ☰
             </motion.button>
           </div>
@@ -2343,7 +2354,7 @@ const hBtn = (active = false): CSSProperties => ({
               <>
                 <InlineChat key={chatKey} country={country} onBuildCredit={() => setShowCreditPath(true)} />
                 <footer style={{ padding:"10px 20px 14px", flexShrink:0, borderTop:`1px solid ${T.border}`, background:"rgba(5,5,5,0.6)" }}>
-                  <p style={{ fontSize:9, color:T.dimmer, lineHeight:1.55, margin:0, maxWidth:680, marginInline:"auto", textAlign:"center" }}>{FOOTER_TEXT}</p>
+                  <p style={{ fontSize:9, color:"#c4b594", lineHeight:1.55, margin:0, maxWidth:680, marginInline:"auto", textAlign:"center" }}>{FOOTER_TEXT}</p>
                   {/* Partnerships section */}
                   <div style={{ display:"flex", justifyContent:"center", gap:20, marginTop:12, flexWrap:"wrap" }}>
                     {PARTNERS.map(p => (
@@ -2361,16 +2372,17 @@ const hBtn = (active = false): CSSProperties => ({
           {/* ═══ SIDEBAR ���════════════════════════════════════════════════════ */}
           <aside style={{ width:224, flexShrink:0, borderLeft:`1px solid ${T.border}`, background:"rgba(255,255,255,0.014)", backdropFilter:"blur(12px)", display:"flex", flexDirection:"column", overflow:"hidden" }} className={`forge-sidebar${sidebarOpen ? ' open' : ''}`}>
             {/* Mobile close button */}
-            <div style={{ display:"none", "@media (max-width: 640px)": { display: "flex" }, padding:"10px 10px", justifyContent:"flex-end", borderBottom:`1px solid ${T.border}` }}>
-              <button onClick={() => setSidebarOpen(false)} style={{ background:"none", border:"none", color:T.mid, cursor:"pointer", fontSize:20, padding:0, width:24, height:24 }}>
-                ×
+            <div style={{ display:"flex", padding:"10px 12px", justifyContent:"space-between", alignItems:"center", borderBottom:`1px solid ${T.border}`, flexShrink:0 }} className="forge-sidebar-header">
+              <span style={{ fontSize:12, fontWeight:700, color:T.gold, letterSpacing:".06em" }}>MENU</span>
+              <button onClick={() => setSidebarOpen(false)} style={{ background:"none", border:`1px solid ${T.border}`, color:T.text, cursor:"pointer", borderRadius:6, width:28, height:28, display:"flex", alignItems:"center", justifyContent:"center", fontSize:16, lineHeight:1 }}>
+                <X size={16} />
               </button>
             </div>
             {/* Tabs */}
             <div style={{ display:"flex", padding:"10px 10px 0", gap:4, flexShrink:0, borderBottom:`1px solid ${T.border}` }}>
               {([["tools","Tools"],["market","Marketplace"]] as const).map(([id,lbl]) => (
                 <motion.button key={id} whileTap={tapAnim.tap} onClick={() => setSideTab(id)}
-                  style={{ flex:1, padding:"7px 4px", borderRadius:7, border:"none", cursor:"pointer", fontFamily:"inherit", fontSize:10, fontWeight:700, letterSpacing:".04em", marginBottom:8, background:sideTab===id?"rgba(201,168,76,0.14)":"transparent", color:sideTab===id?T.gold:T.dimmer, transition:"all .2s" }}>
+                  style={{ flex:1, padding:"7px 4px", borderRadius:7, border:"none", cursor:"pointer", fontFamily:"inherit", fontSize:10, fontWeight:700, letterSpacing:".04em", marginBottom:8, background:sideTab===id?"rgba(201,168,76,0.14)":"transparent", color:sideTab===id?T.gold:"#c4b594", transition:"all .2s" }}>
                   {lbl}
                 </motion.button>
               ))}
@@ -2381,7 +2393,7 @@ const hBtn = (active = false): CSSProperties => ({
               {/* Tools nav */}
               {sideTab==="tools" && (
                 <motion.div variants={stagger} initial="hidden" animate="visible" style={{ display:"flex", flexDirection:"column", gap:3 }}>
-                  <p style={{ fontSize:9, color:T.dimmer, letterSpacing:".1em", margin:"2px 2px 9px" }}>ALL TOOLS — FREE</p>
+                  <p style={{ fontSize:9, color:"#c4b594", letterSpacing:".1em", margin:"2px 2px 9px" }}>ALL TOOLS — FREE</p>
                   {NAV_TOOLS.map(t => {
                     const on = activeTool===t.id && panelView==="tool";
                     return (
@@ -2438,9 +2450,9 @@ const hBtn = (active = false): CSSProperties => ({
                     style={{ display:"flex", alignItems:"center", justifyContent:"center", gap:7, padding:"10px 0", borderRadius:T.rsm, cursor:"pointer", fontFamily:"inherit", fontSize:11, fontWeight:600, border:`1px solid ${copied?"rgba(74,222,128,0.4)":T.border}`, background:copied?"rgba(74,222,128,0.08)":T.glass, color:copied?T.green:T.mid, transition:"all .3s" }}>
                     {copied ? <><Check size={14} /> Copied!</> : <><Share2 size={14} /> Share Forge</>}
                   </motion.button>
-                  <p style={{ fontSize:9, color:T.dimmer, textAlign:"center", margin:"4px 0 0", lineHeight:1.5 }}>
-                    Share with friends — help them find free money
-                  </p>
+<p style={{ fontSize:9, color:"#c4b594", textAlign:"center", margin:"4px 0 0", lineHeight:1.5 }}>
+  Share with friends — help them find free money
+  </p>
                 </motion.div>
               )}
 
