@@ -577,6 +577,117 @@ function AuthModal({ onClose }: { onClose: () => void }) {
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
+// SECTION 5B — COUNTRY SWITCHER
+// ─────────────────────────────────────────────────────────────────────────────
+
+const COUNTRY_CONFIG = {
+  Canada: {
+    code: "CA",
+    flag: "🇨🇦",
+    currency: "CAD",
+    symbol: "$",
+    tip: "Showing Canadian rates, TFSA/RRSP accounts, and OSAP loan information.",
+  },
+  USA: {
+    code: "US",
+    flag: "🇺🇸",
+    currency: "USD",
+    symbol: "$",
+    tip: "Showing US rates, Roth IRA/401k accounts, and federal student loan information.",
+  },
+} as const;
+
+type CountryKey = keyof typeof COUNTRY_CONFIG;
+
+function CountrySwitcher({
+  country,
+  onChange,
+}: {
+  country: string;
+  onChange: (c: string) => void;
+}) {
+  const [open, setOpen] = useState(false);
+  const active = (country === "Canada" || country === "USA") ? country as CountryKey : null;
+
+  return (
+    <div style={{ position: "relative" }}>
+      <div style={{ display: "flex", gap: 4, alignItems: "center" }}>
+        {(Object.entries(COUNTRY_CONFIG) as [CountryKey, typeof COUNTRY_CONFIG[CountryKey]][]).map(([key, cfg]) => {
+          const isActive = country === key;
+          return (
+            <motion.button
+              key={key}
+              whileTap={{ scale: 0.88 }}
+              whileHover={{ scale: 1.08 }}
+              onClick={() => onChange(country === key ? "" : key)}
+              title={`Switch to ${key} · ${cfg.currency}`}
+              style={{
+                width: 34,
+                height: 34,
+                borderRadius: "50%",
+                border: `2px solid ${isActive ? T.gold : T.border}`,
+                background: isActive ? "rgba(201,168,76,0.14)" : T.glass,
+                cursor: "pointer",
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+                fontSize: 18,
+                lineHeight: 1,
+                boxShadow: isActive ? `0 0 10px ${T.glow}` : "none",
+                transition: "all 0.2s",
+                padding: 0,
+                position: "relative",
+                overflow: "hidden",
+              }}
+            >
+              {cfg.flag}
+              {/* Active gold ring pulse */}
+              {isActive && (
+                <motion.span
+                  initial={{ opacity: 0.6, scale: 0.85 }}
+                  animate={{ opacity: 0, scale: 1.4 }}
+                  transition={{ duration: 1.2, repeat: Infinity }}
+                  style={{
+                    position: "absolute",
+                    inset: -2,
+                    borderRadius: "50%",
+                    border: `2px solid ${T.gold}`,
+                    pointerEvents: "none",
+                  }}
+                />
+              )}
+            </motion.button>
+          );
+        })}
+      </div>
+
+      {/* Active country label */}
+      {active && (
+        <motion.p
+          key={active}
+          initial={{ opacity: 0, y: -4 }}
+          animate={{ opacity: 1, y: 0 }}
+          style={{
+            position: "absolute",
+            top: "calc(100% + 6px)",
+            left: "50%",
+            transform: "translateX(-50%)",
+            whiteSpace: "nowrap",
+            fontSize: 9,
+            fontWeight: 700,
+            color: T.gold,
+            letterSpacing: ".06em",
+            pointerEvents: "none",
+          }}
+        >
+          {COUNTRY_CONFIG[active].currency} · {active}
+        </motion.p>
+      )}
+    </div>
+  );
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
 // SECTION 5C — LOAN MARKETPLACE HERO (High Conversion)
 // ─────────────────────────────────────────────────────────────────────────────
 
@@ -781,6 +892,7 @@ function CreditHealthWidget() {
           {/* Animated needle */}
           <motion.line
             x1={CX} y1={CY}
+            initial={{ x2: needleX, y2: needleY }}
             animate={{ x2: needleX, y2: needleY }}
             transition={{ type: "spring", stiffness: 110, damping: 16 }}
             stroke={scoreColor} strokeWidth={2.5} strokeLinecap="round"
@@ -1408,7 +1520,14 @@ function Marketplace({ country }: { country: string }) {
   const list = flag ? AFFILIATE_PRODUCTS.filter(p => p.country === flag) : AFFILIATE_PRODUCTS;
   return (
     <motion.div variants={stagger} initial="hidden" animate="visible" style={{ display:"flex", flexDirection:"column", gap:8 }}>
-      <p style={{ fontSize:9, color:T.dimmer, letterSpacing:".1em", margin:"2px 2px 6px" }}>RECOMMENDED ACCOUNTS</p>
+      <div style={{ display:"flex", alignItems:"center", gap:6, margin:"2px 2px 6px" }}>
+    <p style={{ fontSize:9, color:T.dimmer, letterSpacing:".1em", margin:0 }}>RECOMMENDED ACCOUNTS</p>
+    {flag && (
+      <span style={{ fontSize:10, color:T.gold, fontWeight:700 }}>
+        {COUNTRY_CONFIG[flag === "CA" ? "Canada" : "USA"].flag} {COUNTRY_CONFIG[flag === "CA" ? "Canada" : "USA"].currency}
+      </span>
+    )}
+  </div>
       {list.map(p => (
         <motion.div key={p.id} variants={fadeUp}>
           <Glass glow style={{ padding:12 }}>
@@ -1523,6 +1642,38 @@ function InlineChat({ country }: { country: string }) {
         {/* Hero Section - Loan Marketplace (Always visible at top) */}
         {msgs.length === 0 && (
           <div style={{ padding: "20px 20px 0", maxWidth: 900, margin: "0 auto", width: "100%" }}>
+
+            {/* Country context banner */}
+            <AnimatePresence mode="wait">
+              {(country === "Canada" || country === "USA") && (
+                <motion.div
+                  key={country}
+                  initial={{ opacity: 0, y: -8, height: 0 }}
+                  animate={{ opacity: 1, y: 0, height: "auto" }}
+                  exit={{ opacity: 0, y: -8, height: 0 }}
+                  style={{
+                    marginBottom: 14,
+                    padding: "9px 14px",
+                    borderRadius: T.rsm,
+                    background: "rgba(201,168,76,0.07)",
+                    border: "1px solid rgba(201,168,76,0.22)",
+                    display: "flex",
+                    alignItems: "center",
+                    gap: 10,
+                    overflow: "hidden",
+                  }}
+                >
+                  <span style={{ fontSize: 20 }}>{COUNTRY_CONFIG[country as CountryKey].flag}</span>
+                  <p style={{ fontSize: 11, color: T.mid, margin: 0, lineHeight: 1.5 }}>
+                    <span style={{ color: T.gold, fontWeight: 700 }}>
+                      {COUNTRY_CONFIG[country as CountryKey].currency} Mode —
+                    </span>{" "}
+                    {COUNTRY_CONFIG[country as CountryKey].tip}
+                  </p>
+                </motion.div>
+              )}
+            </AnimatePresence>
+
             <LoanMarketplaceHero country={countryVal} />
             <div style={{ display: "flex", gap: 16, flexWrap: "wrap" }}>
               <div style={{ flex: "1 1 400px", minWidth: 280 }}>
@@ -1709,12 +1860,8 @@ const hBtn = (active = false): CSSProperties => ({
               <div style={{ fontSize:10, color:T.mid, letterSpacing:".02em", maxWidth:380, lineHeight:1.4, fontFamily:"Inter,system-ui,sans-serif" }}>{TAGLINE}</div>
             </div>
           </div>
-  <div style={{ display:"flex", gap:6, alignItems:"center" }}>
-  {[["CA","Canada"],["US","USA"]].map(([f,k]) => (
-              <motion.button key={k} whileTap={tapAnim.tap} onClick={() => setCountry(country===k?"":k)} style={hBtn(country===k)}>
-                <span style={{ marginRight: 4 }}>{f === "CA" ? "🇨🇦" : "🇺🇸"}</span> {k}
-              </motion.button>
-            ))}
+  <div style={{ display:"flex", gap:10, alignItems:"center" }}>
+              <CountrySwitcher country={country} onChange={setCountry} />
             {panelView==="chat" && (
               <motion.button whileTap={tapAnim.tap} onClick={clearChat}
                 style={{ ...hBtn(), display:"flex", alignItems:"center", gap:4 }}
