@@ -1943,7 +1943,7 @@ function Dots() {
   );
 }
 
-function InlineChat({ country }: { country: string }) {
+function InlineChat({ country, onBuildCredit }: { country: string; onBuildCredit: () => void }) {
   
   const [msgs, setMsgs] = useState<{role:"user"|"assistant";content:string}[]>([]);
   const [input, setInput] = useState("");
@@ -2061,7 +2061,7 @@ function InlineChat({ country }: { country: string }) {
                 <TopPicksSection country={countryVal} />
               </div>
               <div style={{ flex: "0 0 280px" }}>
-                <CreditHealthWidget onBuildClick={() => setShowCreditPath(true)} />
+                <CreditHealthWidget onBuildClick={onBuildCredit} />
               </div>
             </div>
           </div>
@@ -2133,6 +2133,7 @@ export default function ForgePage() {
   const [chatKey,    setChatKey]    = useState<number>(0);
   const [showAuth,   setShowAuth]   = useState(false);
   const [showCreditPath, setShowCreditPath] = useState(false);
+  const [sidebarOpen, setSidebarOpen] = useState(false);
   const [user, setUser] = useState<SupabaseUser | null>(null);
   const [authLoading, setAuthLoading] = useState(true);
   const [savedItems, setSavedItems] = useState<ScoutResult[]>([]);
@@ -2226,6 +2227,37 @@ const hBtn = (active = false): CSSProperties => ({
           @keyframes wf-shimmer{0%{background-position:200% center}100%{background-position:-200% center}}
           @keyframes wf-starwars-scroll{0%{bottom:-100%}100%{bottom:200%}}
   @keyframes spin{0%{transform:rotate(0deg)}100%{transform:rotate(360deg)}}
+
+  /* ── Mobile responsiveness ─────────────────────────────────────────── */
+  @media (max-width: 640px) {
+    .forge-header { padding: 10px 12px !important; gap: 8px !important; }
+    .forge-tagline { display: none !important; }
+    .forge-logo-text { font-size: 18px !important; }
+    .forge-body { flex-direction: column !important; overflow: visible !important; }
+    .forge-main { overflow: visible !important; }
+    .forge-sidebar {
+      position: fixed !important;
+      top: 0 !important; left: 0 !important;
+      width: 100vw !important;
+      height: 100vh !important;
+      z-index: 200 !important;
+      transform: translateX(-100%) !important;
+      transition: transform 0.28s cubic-bezier(0.4,0,0.2,1) !important;
+    }
+    .forge-sidebar.open { transform: translateX(0) !important; }
+    .forge-marketplace-grid { grid-template-columns: 1fr !important; }
+    .forge-picks-credit-row { flex-direction: column !important; }
+    .forge-picks-credit-row > * { flex: 1 1 auto !important; min-width: 0 !important; }
+    .forge-footer-grid { grid-template-columns: 1fr 1fr !important; }
+    .forge-budget-grid { grid-template-columns: 1fr 1fr !important; }
+    .forge-summary-grid { grid-template-columns: 1fr 1fr !important; }
+    .forge-hero-section { padding: 12px 12px 0 !important; }
+  }
+  @media (max-width: 400px) {
+    .forge-footer-grid { grid-template-columns: 1fr !important; }
+    .forge-budget-grid { grid-template-columns: 1fr !important; }
+    .forge-summary-grid { grid-template-columns: 1fr !important; }
+  }
         `}</style>
 
 {/* Auth Modal */}
@@ -2289,7 +2321,7 @@ const hBtn = (active = false): CSSProperties => ({
             {/* Chat view */}
             {panelView==="chat" && (
               <>
-                <InlineChat key={chatKey} country={country} />
+                <InlineChat key={chatKey} country={country} onBuildCredit={() => setShowCreditPath(true)} />
                 <footer style={{ padding:"10px 20px 14px", flexShrink:0, borderTop:`1px solid ${T.border}`, background:"rgba(5,5,5,0.6)" }}>
                   <p style={{ fontSize:9, color:T.dimmer, lineHeight:1.55, margin:0, maxWidth:680, marginInline:"auto", textAlign:"center" }}>{FOOTER_TEXT}</p>
                   {/* Partnerships section */}
