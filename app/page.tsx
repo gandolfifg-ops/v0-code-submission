@@ -27,7 +27,7 @@ import {
   BarChart2, PiggyBank, BookOpen, ExternalLink, Bookmark, X, LogIn, LogOut,
 } from "lucide-react";
 import type { User as SupabaseUser } from "@supabase/supabase-js";
-import CreditHealthWidget from "@/components/credit-health-widget";
+// CreditHealthWidget defined inline below (no external import needed)
 
 // ─────────────────────────────────────────────────────────────────────────────
 // SECTION 1 — CONFIG (all data, copy, and affiliate links live here)
@@ -782,45 +782,27 @@ function LoanMarketplaceHero({ country }: { country: "Canada" | "USA" }) {
 // SECTION 5D — CREDIT HEALTH WIDGET
 // ─────────────────────────────────────────────────────────────────────────────
 
-// CreditHealthWidget is now in components/credit-health-widget.tsx
-// (extracted to bust Next.js stale module cache)
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
-function _CreditHealthWidget_REPLACED({ onBuildClick }: { onBuildClick: () => void }) {
+// v3 — arrow function form; onBuildClick is a prop, never references ForgePage state directly
+const CreditHealthWidget = ({ onBuildClick }: { onBuildClick: () => void }) => {
   const [toggled, setToggled] = useState<Record<string, boolean>>({});
   const [showWhatIf, setShowWhatIf] = useState(false);
-
   const score = useMemo(() => {
     let s = BASE_SCORE;
     WHAT_IF_SCENARIOS.forEach(sc => { if (toggled[sc.id]) s += sc.delta; });
     return Math.max(300, Math.min(850, s));
   }, [toggled]);
-
   const delta = score - BASE_SCORE;
   const scoreColor = score >= 750 ? T.green : score >= 670 ? T.gold : T.red;
   const scoreLabel = score >= 750 ? "Excellent" : score >= 670 ? "Good" : score >= 580 ? "Fair" : "Poor";
-
-  // Half-circle SVG gauge geometry
   const CX = 72, CY = 66, R = 52;
   const pct = (score - 300) / (850 - 300);
-  const angleRad = Math.PI - pct * Math.PI; // left (π) → right (0)
+  const angleRad = Math.PI - pct * Math.PI;
   const needleX = CX + R * Math.cos(angleRad);
   const needleY = CY - R * Math.sin(angleRad);
-
-  // Which scenario tip to show — last toggled-on wins
   const activeTip = [...WHAT_IF_SCENARIOS].reverse().find(sc => toggled[sc.id]);
-
-  const toggle = (id: string) =>
-    setToggled(prev => ({ ...prev, [id]: !prev[id] }));
-
+  const toggle = (id: string) => setToggled(prev => ({ ...prev, [id]: !prev[id] }));
   return (
-    <motion.div variants={fadeUp} style={{
-      padding: 18,
-      borderRadius: T.r,
-      background: T.cardBg,
-      border: `1px solid ${T.cardBorder}`,
-      marginBottom: 20,
-    }}>
-      {/* Header row */}
+    <motion.div variants={fadeUp} style={{ padding: 18, borderRadius: T.r, background: T.cardBg, border: `1px solid ${T.cardBorder}`, marginBottom: 20 }}>
       <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 14 }}>
         <div>
           <p style={{ fontSize: 13, fontWeight: 700, color: T.text, margin: 0 }}>Credit Score Simulator</p>
@@ -1025,7 +1007,7 @@ function _CreditHealthWidget_REPLACED({ onBuildClick }: { onBuildClick: () => vo
       </motion.button>
     </motion.div>
   );
-}
+};
 
 // ─────────────────────────────────────────────────────────────────────────────
 // SECTION 5E — TOP PICKS FOR YOU
@@ -1327,7 +1309,7 @@ function CreditPathModal({ onClose, country }: { onClose: () => void; country: s
 
 // ─────────────────────────────────────────────────────────────────────────────
 // SECTION 5F — FOOTER
-// ─────────────────────────────────────────────────────────────────────────────
+// ────────────────────────────────────────���────────────────────────────────────
 
 function Footer() {
   const footerLinks = {
@@ -1927,14 +1909,14 @@ function Dots() {
   );
 }
 
-function InlineChat({ country, onBuildCredit }: { country: string; onBuildCredit: () => void }) {
-  
+// v3 — arrow function form forces .next cache invalidation
+const InlineChat = ({ country, onBuildCredit }: { country: string; onBuildCredit: () => void }) => {
   const [msgs, setMsgs] = useState<{role:"user"|"assistant";content:string}[]>([]);
   const [input, setInput] = useState("");
   const [loading, setLoading] = useState(false);
   const bottomRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLTextAreaElement>(null);
-  
+
   useEffect(() => { bottomRef.current?.scrollIntoView({ behavior:"smooth" }); }, [msgs, loading]);
 
   const submitForm = async (e: FormEvent) => {
@@ -2093,7 +2075,7 @@ function InlineChat({ country, onBuildCredit }: { country: string; onBuildCredit
       </div>
     </>
   );
-}
+};
 
 // ─────────────────────────────────────────────────────────────────────────────
 // SECTION 9 — MAIN PAGE
@@ -2118,6 +2100,11 @@ export default function ForgePage() {
   const [showAuth,   setShowAuth]   = useState(false);
   const [showCreditPath, setShowCreditPath] = useState(false);
   const [sidebarOpen, setSidebarOpen] = useState(false);
+  const [sidebarClosing, setSidebarClosing] = useState(false);
+  const closeSidebar = useCallback(() => {
+    setSidebarClosing(true);
+    setTimeout(() => { setSidebarOpen(false); setSidebarClosing(false); }, 240);
+  }, []);
   const [user, setUser] = useState<SupabaseUser | null>(null);
   const [authLoading, setAuthLoading] = useState(true);
   const [savedItems, setSavedItems] = useState<ScoutResult[]>([]);
@@ -2214,30 +2201,24 @@ const hBtn = (active = false): CSSProperties => ({
 
   /* ── Mobile responsiveness ─────────────────────────────────────────── */
   @media (max-width: 768px) {
-    .forge-header { padding: 12px 14px !important; gap: 8px !important; flex-wrap: wrap; }
-    .forge-logo-text { font-size: 20px !important; }
-    .forge-tagline { max-width: 200px !important; font-size: 9px !important; }
-    .forge-body { flex-direction: column !important; }
-    .forge-sidebar {
-      width: 100% !important;
-      border-left: none !important;
-      border-top: 1px solid rgba(255,255,255,0.1) !important;
-    }
+  .forge-header { padding: 6px 10px !important; gap: 6px !important; }
+  .forge-logo-text { font-size: 15px !important; }
+  .forge-body { flex-direction: column !important; }
+  }
     .forge-main { min-width: 0 !important; }
     .forge-picks-credit-row { flex-direction: column !important; gap: 12px !important; }
     .forge-picks-credit-row > * { flex: 1 1 100% !important; min-width: 0 !important; }
     .forge-hero-section { padding: 16px 14px 0 !important; }
   }
 
-  /* Hide hamburger + sidebar close header on desktop */
-  .forge-hamburger { display: none !important; }
+  /* MENU button visible on all screens; sidebar close header only on mobile */
+  .forge-hamburger { display: flex !important; }
   .forge-sidebar-header { display: none !important; }
 
   @media (max-width: 640px) {
-    .forge-header { padding: 10px 12px !important; gap: 6px !important; }
-    .forge-logo-text { font-size: 18px !important; }
-    .forge-tagline { display: none !important; }
-    .forge-hamburger { display: flex !important; }
+  .forge-header { padding: 5px 10px !important; gap: 5px !important; }
+  .forge-logo-text { font-size: 14px !important; }
+  .forge-hamburger { display: flex !important; }
     .forge-body { flex-direction: column !important; }
     .forge-main { overflow-x: hidden !important; }
     .forge-sidebar {
@@ -2248,13 +2229,21 @@ const hBtn = (active = false): CSSProperties => ({
       height: 100vh !important;
       z-index: 9999 !important;
       transform: translateX(-100%) !important;
-      transition: transform 0.28s cubic-bezier(0.4,0,0.2,1) !important;
+      opacity: 0 !important;
+      transition: transform 0.26s cubic-bezier(0.4,0,0.2,1), opacity 0.22s ease !important;
       border-left: none !important;
       border-right: 1px solid rgba(255,255,255,0.1) !important;
       box-shadow: 4px 0 24px rgba(0,0,0,0.6) !important;
       overflow-y: auto !important;
     }
-    .forge-sidebar.open { transform: translateX(0) !important; }
+    .forge-sidebar.open {
+      transform: translateX(0) !important;
+      opacity: 1 !important;
+    }
+    .forge-sidebar.closing {
+      transform: translateX(40px) !important;
+      opacity: 0 !important;
+    }
     .forge-sidebar-header { display: flex !important; }
     .forge-hero-section { padding: 12px 12px 0 !important; }
     .forge-picks-credit-row { flex-direction: column !important; }
@@ -2280,30 +2269,34 @@ const hBtn = (active = false): CSSProperties => ({
         </AnimatePresence>
 
         {/* ═══ HEADER ══════════════════════════════════════════════════════════ */}
-        <header style={{ display:"flex", alignItems:"center", justifyContent:"space-between", padding:"14px 20px", borderBottom:`1px solid ${T.border}`, flexShrink:0, zIndex:10, background:"rgba(5,5,5,0.97)", backdropFilter:"blur(22px)", WebkitBackdropFilter:"blur(22px)" }} className="forge-header">
-<div style={{ display:"flex", alignItems:"center", gap:12 }}>
-  <LogoMark size={38} />
-  <div>
-  <div style={{ fontSize:24, fontWeight:900, letterSpacing:"-.03em", backgroundImage:`linear-gradient(90deg,${T.goldHi},${T.gold},${T.goldDim},${T.goldHi})`, backgroundSize:"200%", WebkitBackgroundClip:"text", WebkitTextFillColor:"transparent", animation:"wf-shimmer 5s linear infinite", textTransform:"uppercase" }} className="forge-logo-text">Forge</div>
-              <div style={{ fontSize:10, color:T.mid, letterSpacing:".02em", maxWidth:380, lineHeight:1.4, fontFamily:"Inter,system-ui,sans-serif" }} className="forge-tagline">{TAGLINE}</div>
+        <header style={{ display:"flex", alignItems:"center", justifyContent:"space-between", padding:"7px 14px", borderBottom:`1px solid ${T.border}`, flexShrink:0, zIndex:10, background:"rgba(5,5,5,0.97)", backdropFilter:"blur(22px)", WebkitBackdropFilter:"blur(22px)", gap:10, minHeight:44 }} className="forge-header">
+          {/* Left: logo + name + controls inline */}
+          <div style={{ display:"flex", alignItems:"center", gap:10, flex:1, minWidth:0 }}>
+            <LogoMark size={26} />
+            <span style={{ fontSize:17, fontWeight:900, letterSpacing:"-.03em", backgroundImage:`linear-gradient(90deg,${T.goldHi},${T.gold},${T.goldDim},${T.goldHi})`, backgroundSize:"200%", WebkitBackgroundClip:"text", WebkitTextFillColor:"transparent", animation:"wf-shimmer 5s linear infinite", textTransform:"uppercase", whiteSpace:"nowrap", lineHeight:1 }} className="forge-logo-text">Forge</span>
+            {/* CA / US / Clear buttons — tight, right next to logo */}
+            <div style={{ display:"flex", gap:5, alignItems:"center", flexWrap:"nowrap" }}>
+              {(["Canada","USA"] as const).map(c => (
+                <motion.button key={c} whileTap={tapAnim.tap} onClick={() => setCountry(country === c ? "" : c)}
+                  style={{ ...hBtn(country === c), padding:"3px 9px", fontSize:10, borderRadius:14, whiteSpace:"nowrap" }}>
+                  {c === "Canada" ? "CA" : "US"}
+                </motion.button>
+              ))}
+              {panelView==="chat" && (
+                <motion.button whileTap={tapAnim.tap} onClick={clearChat}
+                  style={{ ...hBtn(), padding:"3px 9px", fontSize:10, borderRadius:14, display:"flex", alignItems:"center", gap:3 }}
+                  onMouseEnter={e => {(e.currentTarget as HTMLElement).style.color=T.red;(e.currentTarget as HTMLElement).style.borderColor="rgba(248,113,113,.35)";}}
+                  onMouseLeave={e => {(e.currentTarget as HTMLElement).style.color=T.mid;(e.currentTarget as HTMLElement).style.borderColor=T.border;}}>
+                  <Trash2 size={11} /> Clear
+                </motion.button>
+              )}
             </div>
           </div>
-  <div style={{ display:"flex", gap:10, alignItems:"center" }}>
-              <CountrySwitcher country={country} onChange={setCountry} />
-            {panelView==="chat" && (
-              <motion.button whileTap={tapAnim.tap} onClick={clearChat}
-                style={{ ...hBtn(), display:"flex", alignItems:"center", gap:4 }}
-                onMouseEnter={e => {(e.currentTarget as HTMLElement).style.color=T.red;(e.currentTarget as HTMLElement).style.borderColor="rgba(248,113,113,.35)";}}
-                onMouseLeave={e => {(e.currentTarget as HTMLElement).style.color=T.mid;(e.currentTarget as HTMLElement).style.borderColor=T.border;}}>
-                <Trash2 size={12} /> Clear
-              </motion.button>
-            )}
-            {/* Mobile hamburger for sidebar */}
-            <motion.button whileTap={{ scale: 0.93 }} onClick={() => setSidebarOpen(!sidebarOpen)}
-              style={{ background:"none", border:`1px solid ${T.border}`, color:T.mid, cursor:"pointer", padding:"6px 8px", borderRadius:T.rsm, display:"flex", alignItems:"center", justifyContent:"center", fontSize:16, lineHeight:1 }} className="forge-hamburger">
-              ☰
-            </motion.button>
-          </div>
+          {/* Right: MENU button (mobile) */}
+          <motion.button whileTap={{ scale: 0.93 }} onClick={() => sidebarOpen ? closeSidebar() : setSidebarOpen(true)}
+            style={{ background:"none", border:`1px solid ${T.border}`, color:"#c4b594", cursor:"pointer", padding:"4px 10px", borderRadius:T.rsm, display:"flex", alignItems:"center", gap:5, fontSize:11, fontWeight:700, letterSpacing:".05em", lineHeight:1, whiteSpace:"nowrap" }} className="forge-hamburger">
+            <span style={{ fontSize:14, lineHeight:1 }}>☰</span> MENU
+          </motion.button>
         </header>
 
         {/* ═══ BODY ════════════════════════════════════════════════════════════ */}
@@ -2353,18 +2346,18 @@ const hBtn = (active = false): CSSProperties => ({
           </div>
 
           {/* ═══ SIDEBAR ���════════════════════════════════════════════════════ */}
-          <aside style={{ width:224, flexShrink:0, borderLeft:`1px solid ${T.border}`, background:"rgba(255,255,255,0.014)", backdropFilter:"blur(12px)", display:"flex", flexDirection:"column", overflow:"hidden" }} className={`forge-sidebar${sidebarOpen ? ' open' : ''}`}>
+          <aside style={{ width:224, flexShrink:0, borderLeft:`1px solid ${T.border}`, background:"rgba(255,255,255,0.014)", backdropFilter:"blur(12px)", display:"flex", flexDirection:"column", overflow:"hidden" }} className={`forge-sidebar${sidebarOpen ? ' open' : ''}${sidebarClosing ? ' closing' : ''}`}>
             {/* Mobile close button */}
             <div style={{ display:"flex", padding:"10px 12px", justifyContent:"space-between", alignItems:"center", borderBottom:`1px solid ${T.border}`, flexShrink:0 }} className="forge-sidebar-header">
               <span style={{ fontSize:12, fontWeight:700, color:T.gold, letterSpacing:".06em" }}>MENU</span>
-              <button onClick={() => setSidebarOpen(false)} style={{ background:"none", border:`1px solid ${T.border}`, color:T.text, cursor:"pointer", borderRadius:6, width:28, height:28, display:"flex", alignItems:"center", justifyContent:"center", fontSize:16, lineHeight:1 }}>
+              <button onClick={() => closeSidebar()} style={{ background:"none", border:`1px solid ${T.border}`, color:T.text, cursor:"pointer", borderRadius:6, width:28, height:28, display:"flex", alignItems:"center", justifyContent:"center", fontSize:16, lineHeight:1 }}>
                 <X size={16} />
               </button>
             </div>
             {/* Tabs */}
             <div style={{ display:"flex", padding:"10px 10px 0", gap:4, flexShrink:0, borderBottom:`1px solid ${T.border}` }}>
               {([["tools","Tools"],["market","Marketplace"]] as const).map(([id,lbl]) => (
-                <motion.button key={id} whileTap={tapAnim.tap} onClick={() => setSideTab(id)}
+                <motion.button key={id} whileTap={tapAnim.tap} onClick={() => { setSideTab(id); if (id === "market") closeSidebar(); }}
                   style={{ flex:1, padding:"7px 4px", borderRadius:7, border:"none", cursor:"pointer", fontFamily:"inherit", fontSize:10, fontWeight:700, letterSpacing:".04em", marginBottom:8, background:sideTab===id?"rgba(201,168,76,0.14)":"transparent", color:sideTab===id?T.gold:"#c4b594", transition:"all .2s" }}>
                   {lbl}
                 </motion.button>
@@ -2380,7 +2373,7 @@ const hBtn = (active = false): CSSProperties => ({
                   {NAV_TOOLS.map(t => {
                     const on = activeTool===t.id && panelView==="tool";
                     return (
-                      <motion.button key={t.id} variants={fadeUp} whileTap={tapAnim.tap} onClick={() => openTool(t.id)}
+                      <motion.button key={t.id} variants={fadeUp} whileTap={tapAnim.tap} onClick={() => { openTool(t.id); closeSidebar(); }}
                         style={{ display:"flex", alignItems:"center", gap:9, padding:"9px 10px", borderRadius:T.rsm, border:`1px solid ${on?"rgba(201,168,76,0.4)":"transparent"}`, background:on?"rgba(201,168,76,0.14)":"transparent", color:on?T.gold:T.mid, cursor:"pointer", fontSize:12, fontWeight:on?600:400, width:"100%", textAlign:"left", fontFamily:"inherit", transition:"all .2s" }}
                         onMouseEnter={e => { if(!on){(e.currentTarget as HTMLElement).style.background=T.glassHi;(e.currentTarget as HTMLElement).style.color=T.text;} }}
                         onMouseLeave={e => { if(!on){(e.currentTarget as HTMLElement).style.background="transparent";(e.currentTarget as HTMLElement).style.color=T.mid;} }}>
@@ -2420,7 +2413,7 @@ const hBtn = (active = false): CSSProperties => ({
       </motion.button>
     </>
   ) : (
-    <motion.button variants={fadeUp} whileTap={tapAnim.tap} onClick={() => setShowAuth(true)}
+    <motion.button variants={fadeUp} whileTap={tapAnim.tap} onClick={() => { setShowAuth(true); closeSidebar(); }}
       style={{ display:"flex", alignItems:"center", justifyContent:"center", gap:7, padding:"10px 0", borderRadius:T.rsm, cursor:"pointer", fontFamily:"inherit", fontSize:11, fontWeight:600, border:`1px solid ${T.gold}`, background:"rgba(201,168,76,0.08)", color:T.gold, transition:"all .3s" }}>
       <LogIn size={14} /> Member Sign In
     </motion.button>
