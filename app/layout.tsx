@@ -1,3 +1,4 @@
+// Layout v15 — Force full recompile of all child routes
 import type { Metadata } from 'next'
 import { Geist, Geist_Mono } from 'next/font/google'
 import { Analytics } from '@vercel/analytics/next'

@@ -319,6 +319,7 @@ const MAX_CURRENCY = 1_000_000_000;
 const MAX_PERCENT = 100;
 
 const SliderComponent = ({ label, value, min, step = 1, onChange, fmt, maxVal }: { label:string; value:number; min:number; step?:number; onChange:(v:number)=>void; fmt:(v:number)=>string; maxVal?:number }) => {
+  const [inputVal, setInputVal] = useState(fmt(value));
   const [editing, setEditing] = useState(false);
   const [isDragging, setIsDragging] = useState(false);
   
@@ -1836,7 +1837,7 @@ function Marketplace({ country }: { country: string }) {
 
 // ─────────────────────────────────────────────────────────────────────────────
 // SECTION 9 — MAIN PAGE
-// ─────────────────────────────────────────────────────────────────────────────
+// ──────────────────────────────────────────────��──────────────────────────────
 
 type ToolId = "budget"|"savings"|"loan"|"scholar"|"saved";
 const NAV_TOOLS: { id: ToolId; label: string; Icon: React.FC<{size?:number}> }[] = [
@@ -1847,8 +1848,8 @@ const NAV_TOOLS: { id: ToolId; label: string; Icon: React.FC<{size?:number}> }[]
   { id:"saved",   label:"My Saved",     Icon: ({size=15}) => <Bookmark   size={size} /> },
 ];
 
-// v9 — Renamed to ForgePageV9 to force Turbopack cache invalidation
-export default function ForgePageV9() {
+// v15 — Renamed to ForgePageV15 to force Turbopack full recompile
+export default function ForgePageV15() {
   const [activeTool, setActiveTool] = useState<ToolId|"">("");
   const [panelView,  setPanelView]  = useState<"chat"|"tool">("chat");
   const [country,    setCountry]    = useState<string>("");
@@ -2210,5 +2211,5 @@ const hBtn = (active = false): CSSProperties => ({
   );
 }
 
-// Cache invalidation marker — v13 Deleted old duplicate InlineChat body (161 lines), now clean
-export const __CACHE_BUST_V13__ = "deleted-duplicate-inline-chat-" + Date.now();
+// Cache invalidation marker — v15 Full recompile, inputVal fixed, no CreditHealthWidget
+export const __CACHE_BUST_V15__ = "full-recompile-v15-" + Date.now();
