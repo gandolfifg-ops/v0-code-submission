@@ -1504,7 +1504,7 @@ const LoanCalculator = React_memo_compat(LoanCalculatorComponent);
 type Phase = "idle"|"scanning"|"results";
 const SCAN_MSGS = ["Connecting to loan databases...","Scanning live lender rates...","Cross-referencing eligibility...","Compiling best rates for you..."];
 
-function LoanFinder({ onToggleSave, savedIds }: { onToggleSave: (item: ScoutResult) => void; savedIds: Set<string> }) {
+function LoanFinder({ onToggleSave, savedIds, userCountry }: { onToggleSave: (item: ScoutResult) => void; savedIds: Set<string>; userCountry: string }) {
   
   const [loanType, setLoanType] = useState<LoanType>("Student");
   const [amount,   setAmount]   = useState("");
@@ -1604,16 +1604,16 @@ function LoanFinder({ onToggleSave, savedIds }: { onToggleSave: (item: ScoutResu
         </div>
       )}
       
-      {/* Live Scour Marketplace — filtered by selected loan type */}
+      {/* Live Scour Marketplace — filtered by selected loan type and user country */}
       <div style={{ marginTop: 20 }}>
-        <LoanMarketplaceHero country="USA" filterType={loanType} />
+        <LoanMarketplaceHero country={userCountry === "Canada" ? "Canada" : "USA"} filterType={loanType} />
       </div>
     </div>
   );
 }
 
 // ── Loan Tool (tabs) ──────────────────────────────────────────────────────────
-function LoanTool({ onToggleSave, savedIds }: { onToggleSave: (item: ScoutResult) => void; savedIds: Set<string> }) {
+function LoanTool({ onToggleSave, savedIds, userCountry }: { onToggleSave: (item: ScoutResult) => void; savedIds: Set<string>; userCountry: string }) {
   
   const [tab, setTab] = useState<"calc"|"finder">("finder");
   return (
@@ -1626,7 +1626,7 @@ function LoanTool({ onToggleSave, savedIds }: { onToggleSave: (item: ScoutResult
           </motion.button>
         ))}
       </div>
-      {tab==="finder" ? <LoanFinder onToggleSave={onToggleSave} savedIds={savedIds} /> : <LoanCalculator />}
+      {tab==="finder" ? <LoanFinder onToggleSave={onToggleSave} savedIds={savedIds} userCountry={userCountry} /> : <LoanCalculator />}
     </motion.div>
   );
 }
@@ -1911,6 +1911,7 @@ export default function ForgePageV55() {
   const [authLoading, setAuthLoading] = useState(true);
   const [savedItems, setSavedItems] = useState<ScoutResult[]>([]);
   const savedIds = useMemo(() => new Set(savedItems.map(x => x.id)), [savedItems]);
+  const [locationBarDismissed, setLocationBarDismissed] = useState(false);
 
 useEffect(() => {
   setSavedItems(readSaved());
@@ -2144,6 +2145,85 @@ const hBtn = (active = false): CSSProperties => ({
           </motion.button>
         </header>
 
+        {/* ═══ LOCATION BAR ════════════════════════════════════════════════════ */}
+        <AnimatePresence>
+          {!locationBarDismissed && !country && (
+            <motion.div
+              initial={{ height: 0, opacity: 0 }}
+              animate={{ height: "auto", opacity: 1 }}
+              exit={{ height: 0, opacity: 0 }}
+              transition={{ duration: 0.2 }}
+              style={{ background: "#1a1a1a", borderBottom: `1px solid ${T.border}`, overflow: "hidden" }}
+            >
+              <div style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: 12, padding: "10px 14px", flexWrap: "wrap" }}>
+                <span style={{ fontSize: 12, color: T.mid, textAlign: "center" }}>
+                  To find the most accurate rates in your area, please select your location:
+                </span>
+                <div style={{ display: "flex", gap: 8 }}>
+                  <motion.button
+                    whileTap={{ scale: 0.95 }}
+                    onClick={() => { setCountry("Canada"); setLocationBarDismissed(true); }}
+                    style={{ 
+                      padding: "6px 14px", 
+                      borderRadius: 8, 
+                      border: "none", 
+                      background: T.gold, 
+                      color: "#07090d", 
+                      fontSize: 12, 
+                      fontWeight: 700, 
+                      cursor: "pointer", 
+                      fontFamily: "inherit",
+                      display: "flex",
+                      alignItems: "center",
+                      gap: 6
+                    }}
+                  >
+                    <span>🇨🇦</span> CA
+                  </motion.button>
+                  <motion.button
+                    whileTap={{ scale: 0.95 }}
+                    onClick={() => { setCountry("USA"); setLocationBarDismissed(true); }}
+                    style={{ 
+                      padding: "6px 14px", 
+                      borderRadius: 8, 
+                      border: "none", 
+                      background: T.gold, 
+                      color: "#07090d", 
+                      fontSize: 12, 
+                      fontWeight: 700, 
+                      cursor: "pointer", 
+                      fontFamily: "inherit",
+                      display: "flex",
+                      alignItems: "center",
+                      gap: 6
+                    }}
+                  >
+                    <span>🇺🇸</span> US
+                  </motion.button>
+                </div>
+                <motion.button
+                  whileTap={{ scale: 0.9 }}
+                  onClick={() => setLocationBarDismissed(true)}
+                  style={{ 
+                    position: "absolute", 
+                    right: 14, 
+                    background: "none", 
+                    border: "none", 
+                    color: T.dim, 
+                    cursor: "pointer", 
+                    padding: 4,
+                    display: "flex",
+                    alignItems: "center"
+                  }}
+                  aria-label="Dismiss"
+                >
+                  <X size={16} />
+                </motion.button>
+              </div>
+            </motion.div>
+          )}
+        </AnimatePresence>
+
         {/* ═══ BODY ════════════════════════════════════════════════════════════ */}
         <div style={{ flex:1, display:"flex", overflow:"auto" }} className="forge-body">
 
@@ -2163,7 +2243,7 @@ const hBtn = (active = false): CSSProperties => ({
                 <div style={{ flex:1, overflowY:"auto", padding:20 }}>
                   {activeTool==="budget"  && <BudgetTool />}
                   {activeTool==="savings" && <SavingsTool />}
-                  {activeTool==="loan"    && <LoanTool onToggleSave={handleToggleSave} savedIds={savedIds} />}
+                  {activeTool==="loan"    && <LoanTool onToggleSave={handleToggleSave} savedIds={savedIds} userCountry={country} />}
                   {activeTool==="scholar" && <ScholarshipScout onToggleSave={handleToggleSave} savedIds={savedIds} />}
                   {activeTool==="saved"   && <SavedItems saved={savedItems} onRemove={handleToggleSave} />}
                 </div>
