@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useRef, type FormEvent, useCallback } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Send } from "lucide-react";
+import { Send, RotateCcw, Minus, Plus } from "lucide-react";
 import ReactMarkdown from "react-markdown";
 
 // ── Dark theme tokens ────────────────────────────────────────────────────────
@@ -227,34 +227,6 @@ function LoanMarketplaceHero({ country }: { country: "Canada"|"USA" }) {
   );
 }
 
-// ── TopPicksSection ───────────────────────────────────────────────────────────
-function TopPicksSection({ country }: { country: "Canada"|"USA" }) {
-  const countryCode = country === "Canada" ? "CA" : "US";
-  const picks = AFFILIATE_PRODUCTS.filter(p => p.country === countryCode).slice(0, 3);
-  return (
-    <motion.div variants={stagger} initial="hidden" animate="visible" style={{ marginBottom:20 }}>
-      <motion.div variants={fadeUp} style={{ display:"flex", alignItems:"center", gap:8, marginBottom:12 }}>
-        <span style={{ fontSize:16 }}>⭐</span>
-        <h3 style={{ fontSize:13, fontWeight:700, color:T.text, margin:0 }}>Top Picks for You</h3>
-      </motion.div>
-      <div style={{ display:"flex", flexDirection:"column", gap:8 }}>
-        {picks.map(p => (
-          <motion.a key={p.id} variants={fadeUp} href={p.href} target="_blank" rel="noopener noreferrer"
-            style={{ display:"flex", alignItems:"center", gap:12, padding:"10px 12px", borderRadius:T.rsm, background:T.glass, border:`1px solid ${T.border}`, textDecoration:"none", transition:"all 0.2s" }}
-            whileHover={{ borderColor:T.gold, background:T.glassHi }}>
-            <span style={{ fontSize:20 }}>{p.logo}</span>
-            <div style={{ flex:1 }}>
-              <p style={{ fontSize:12, fontWeight:600, color:T.text, margin:0 }}>{p.name}</p>
-              <p style={{ fontSize:10, color:T.mid, margin:0 }}>{p.highlight}</p>
-            </div>
-            {p.badge && <span style={{ fontSize:9, background:T.gold, color:"#07090d", padding:"2px 6px", borderRadius:4, fontWeight:700 }}>{p.badge}</span>}
-          </motion.a>
-        ))}
-      </div>
-    </motion.div>
-  );
-}
-
 // ── Main InlineChat export ────────────────────────────────────────────────────
 export default function InlineChat({ country, isDarkMode = true }: { country: string; isDarkMode?: boolean }) {
   // Update theme based on prop
@@ -263,6 +235,7 @@ export default function InlineChat({ country, isDarkMode = true }: { country: st
   const [msgs, setMsgs] = useState<{ role: "user" | "assistant"; content: string }[]>([]);
   const [input, setInput] = useState("");
   const [loading, setLoading] = useState(false);
+  const [minimized, setMinimized] = useState(false);
   const bottomRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLTextAreaElement>(null);
   
@@ -271,6 +244,16 @@ export default function InlineChat({ country, isDarkMode = true }: { country: st
     if (el) {
       el.style.height = "auto";
       el.style.height = Math.min(el.scrollHeight, 140) + "px"; // Max ~5-6 lines
+    }
+  }, []);
+  
+  // Clear chat handler - resets messages, input, and textarea height
+  const clearChat = useCallback(() => {
+    setMsgs([]);
+    setInput("");
+    if (inputRef.current) {
+      inputRef.current.style.height = "auto";
+      inputRef.current.value = "";
     }
   }, []);
   
@@ -324,8 +307,97 @@ export default function InlineChat({ country, isDarkMode = true }: { country: st
 
   const countryVal = (country === "Canada" || country === "USA") ? country : "USA";
 
+  // Minimized state - show floating bubble
+  if (minimized) {
+    return (
+      <motion.div 
+        initial={{ opacity: 0, scale: 0.8 }}
+        animate={{ opacity: 1, scale: 1 }}
+        style={{ 
+          position: "fixed", 
+          bottom: 20, 
+          right: 20, 
+          zIndex: 100,
+        }}
+      >
+        <motion.button
+          whileHover={{ scale: 1.05 }}
+          whileTap={{ scale: 0.95 }}
+          onClick={() => setMinimized(false)}
+          style={{
+            width: 56,
+            height: 56,
+            borderRadius: "50%",
+            background: `linear-gradient(135deg, ${T.gold}, ${T.goldDim})`,
+            border: "none",
+            cursor: "pointer",
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            boxShadow: "0 4px 20px rgba(201,168,76,0.4)",
+          }}
+        >
+          <Plus size={24} color="#07090d" />
+        </motion.button>
+      </motion.div>
+    );
+  }
+
   return (
     <>
+      {/* Chat Controls Bar */}
+      <div style={{ 
+        display: "flex", 
+        justifyContent: "flex-end", 
+        gap: 8, 
+        padding: "8px 16px", 
+        borderBottom: `1px solid ${T.border}`,
+        background: isDarkMode ? "rgba(0,0,0,0.2)" : "rgba(255,255,255,0.5)",
+      }}>
+        {msgs.length > 0 && (
+          <motion.button
+            whileHover={{ scale: 1.05 }}
+            whileTap={{ scale: 0.95 }}
+            onClick={clearChat}
+            style={{
+              display: "flex",
+              alignItems: "center",
+              gap: 5,
+              padding: "5px 10px",
+              borderRadius: 6,
+              border: `1px solid ${T.border}`,
+              background: T.glass,
+              color: T.mid,
+              fontSize: 11,
+              fontWeight: 600,
+              cursor: "pointer",
+            }}
+          >
+            <RotateCcw size={12} /> Clear
+          </motion.button>
+        )}
+        <motion.button
+          whileHover={{ scale: 1.05 }}
+          whileTap={{ scale: 0.95 }}
+          onClick={() => setMinimized(true)}
+          style={{
+            display: "flex",
+            alignItems: "center",
+            gap: 5,
+            padding: "5px 10px",
+            borderRadius: 6,
+            border: `1px solid ${T.border}`,
+            background: T.glass,
+            color: T.mid,
+            fontSize: 11,
+            fontWeight: 600,
+            cursor: "pointer",
+          }}
+        >
+          <Minus size={12} /> Minimize
+        </motion.button>
+      </div>
+
       <div style={{ flex: 1, overflowY: "auto", display: "flex", flexDirection: "column" }}>
         {msgs.length === 0 && (
           <div style={{ padding: "20px 20px 0", maxWidth: 900, margin: "0 auto", width: "100%" }}>
@@ -345,38 +417,37 @@ export default function InlineChat({ country, isDarkMode = true }: { country: st
               )}
             </AnimatePresence>
             <LoanMarketplaceHero country={countryVal} />
-            <TopPicksSection country={countryVal} />
           </div>
         )}
         {msgs.length === 0 && <TypewriterGreeting />}
-        <div style={{ flex: 1, padding: "10px 20px", display: "flex", flexDirection: "column", gap: 14, maxWidth: 720, margin: "0 auto", width: "100%" }}>
+        <div style={{ flex: 1, padding: "8px 16px", display: "flex", flexDirection: "column", gap: 8, maxWidth: 720, margin: "0 auto", width: "100%" }}>
           {msgs.map((m, i) => (
-            <motion.div key={i} initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }}
+            <motion.div key={i} initial={{ opacity: 0, y: 6 }} animate={{ opacity: 1, y: 0 }}
               style={{ display: "flex", justifyContent: m.role === "user" ? "flex-end" : "flex-start", alignItems: "flex-start" }}>
               {m.role === "assistant" && (
-                <div style={{ width: 24, height: 24, borderRadius: 6, backgroundImage: `linear-gradient(135deg,${T.gold},${T.goldDim})`, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0, marginRight: 8, marginTop: 2 }}>
-                  <LogoMark size={14} />
+                <div style={{ width: 22, height: 22, borderRadius: 5, background: `linear-gradient(135deg,${T.gold},${T.goldDim})`, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0, marginRight: 6, marginTop: 2 }}>
+                  <LogoMark size={12} />
                 </div>
               )}
-              <div style={{ maxWidth: "78%", padding: "10px 14px", borderRadius: m.role === "user" ? "14px 14px 4px 14px" : "4px 14px 14px 14px", background: m.role === "user" ? "rgba(201,168,76,0.1)" : T.cardBg, border: `1px solid ${m.role === "user" ? "rgba(201,168,76,0.18)" : T.cardBorder}`, backdropFilter: T.blur, fontSize: 14, lineHeight: 1.7, color: m.role === "user" ? (isDarkMode ? "#d4c080" : "#78350F") : T.aiText }}>
+              <div style={{ maxWidth: "85%", padding: "8px 12px", borderRadius: m.role === "user" ? "12px 12px 4px 12px" : "4px 12px 12px 12px", background: m.role === "user" ? "rgba(201,168,76,0.1)" : T.cardBg, border: `1px solid ${m.role === "user" ? "rgba(201,168,76,0.18)" : T.cardBorder}`, backdropFilter: T.blur, fontSize: 13, lineHeight: 1.55, color: m.role === "user" ? (isDarkMode ? "#d4c080" : "#78350F") : T.aiText }}>
                 {m.role === "assistant" ? (
                   <>
                     <div className="prose prose-sm max-w-none" style={{ color: T.aiText }}>
                       <ReactMarkdown
                         components={{
-                          p: ({ children }) => <p style={{ margin: "0 0 8px", color: T.aiText }}>{children}</p>,
+                          p: ({ children }) => <p style={{ margin: "0 0 6px", color: T.aiText }}>{children}</p>,
                           strong: ({ children }) => <strong style={{ fontWeight: 700, color: T.text }}>{children}</strong>,
                           em: ({ children }) => <em style={{ fontStyle: "italic" }}>{children}</em>,
-                          ul: ({ children }) => <ul style={{ margin: "8px 0", paddingLeft: 18 }}>{children}</ul>,
-                          ol: ({ children }) => <ol style={{ margin: "8px 0", paddingLeft: 18 }}>{children}</ol>,
-                          li: ({ children }) => <li style={{ margin: "4px 0", color: T.aiText }}>{children}</li>,
+                          ul: ({ children }) => <ul style={{ margin: "4px 0", paddingLeft: 16 }}>{children}</ul>,
+                          ol: ({ children }) => <ol style={{ margin: "4px 0", paddingLeft: 16 }}>{children}</ol>,
+                          li: ({ children }) => <li style={{ margin: "2px 0", color: T.aiText }}>{children}</li>,
                           a: ({ href, children }) => <a href={href} target="_blank" rel="noopener noreferrer" style={{ color: T.goldHi, textDecoration: "underline" }}>{children}</a>,
                         }}
                       >
                         {m.content ?? ""}
                       </ReactMarkdown>
                     </div>
-                    {loading && i === msgs.length - 1 && <span style={{ display: "inline-block", width: 2, height: 13, background: T.gold, marginLeft: 2, verticalAlign: "middle", animation: "wf-cur .65s steps(1) infinite" }} />}
+                    {loading && i === msgs.length - 1 && <span style={{ display: "inline-block", width: 2, height: 12, background: T.gold, marginLeft: 2, verticalAlign: "middle", animation: "wf-cur .65s steps(1) infinite" }} />}
                   </>
                 ) : (m.content ?? "")}
               </div>
@@ -384,8 +455,8 @@ export default function InlineChat({ country, isDarkMode = true }: { country: st
           ))}
           {loading && msgs[msgs.length - 1]?.role !== "assistant" && (
             <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} style={{ display: "flex", alignItems: "flex-start" }}>
-              <div style={{ width: 24, height: 24, borderRadius: 6, backgroundImage: `linear-gradient(135deg,${T.gold},${T.goldDim})`, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0, marginRight: 8 }}><LogoMark size={14} /></div>
-              <div style={{ padding: "10px 14px", background: T.cardBg, border: `1px solid ${T.cardBorder}`, borderRadius: "4px 14px 14px 14px", backdropFilter: T.blur }}><Dots /></div>
+              <div style={{ width: 22, height: 22, borderRadius: 5, background: `linear-gradient(135deg,${T.gold},${T.goldDim})`, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0, marginRight: 6 }}><LogoMark size={12} /></div>
+              <div style={{ padding: "8px 12px", background: T.cardBg, border: `1px solid ${T.cardBorder}`, borderRadius: "4px 12px 12px 12px", backdropFilter: T.blur }}><Dots /></div>
             </motion.div>
           )}
           <div ref={bottomRef} />
@@ -435,7 +506,7 @@ export default function InlineChat({ country, isDarkMode = true }: { country: st
               }} 
             />
             <motion.button type="submit" whileTap={tapAnim.tap} disabled={!(input?.trim()) || loading}
-              style={{ width: 33, height: 33, borderRadius: 8, border: "none", cursor: (input?.trim() && !loading) ? "pointer" : "not-allowed", flexShrink: 0, display: "flex", alignItems: "center", justifyContent: "center", transition: "all .2s", background: (input?.trim() && !loading) ? undefined : T.glassHi, backgroundImage: (input?.trim() && !loading) ? `linear-gradient(135deg,${T.gold},${T.goldDim})` : undefined, color: (input?.trim() && !loading) ? "#07090d" : T.dim }}>
+              style={{ width: 33, height: 33, borderRadius: 8, border: "none", cursor: (input?.trim() && !loading) ? "pointer" : "not-allowed", flexShrink: 0, display: "flex", alignItems: "center", justifyContent: "center", transition: "all .2s", background: (input?.trim() && !loading) ? `linear-gradient(135deg,${T.gold},${T.goldDim})` : T.glassHi, color: (input?.trim() && !loading) ? "#07090d" : T.dim }}>
               <Send size={15} />
             </motion.button>
           </div>
