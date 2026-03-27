@@ -16,7 +16,7 @@
  *     ANTHROPIC_API_KEY=
  *   Create app/api/chat/route.ts (see bottom comment)
  * ─────────────────────────────────────────────────────────────────────────────
- * Last updated: v6 — CreditHealthWidget fully removed, cache bust
+ * Last updated: v9 — CreditHealthWidget removed, slider grips, ForgePageV9 rename
  */
 
 import { useState, useEffect, useRef, useCallback, useMemo, type ReactNode, type CSSProperties, type FormEvent } from "react";
@@ -287,15 +287,22 @@ function GoldCTA({ href, label }: { href: string; label: string }) {
   );
 }
 
-// Infinite-range Slider — accepts any value via input field
-function Slider({ label, value, min, step = 1, onChange, fmt }: { label:string; value:number; min:number; step?:number; onChange:(v:number)=>void; fmt:(v:number)=>string }) {
-  
+// Slider with visible grip handle, capped at 1 billion for currency, 100 for percentages
+const MAX_CURRENCY = 1_000_000_000;
+const MAX_PERCENT = 100;
+
+function Slider({ label, value, min, step = 1, onChange, fmt, maxVal }: { label:string; value:number; min:number; step?:number; onChange:(v:number)=>void; fmt:(v:number)=>string; maxVal?:number }) {
   const [inputVal, setInputVal] = useState(fmt(value));
   const [editing, setEditing] = useState(false);
+  const [isDragging, setIsDragging] = useState(false);
   
-  // Dynamic max based on value for slider visualization - supports up to $10M+
-  const dynamicMax = Math.max(value * 2, min * 100, 100000);
-  const pct = Math.max(0, Math.min(100, ((value - min) / (dynamicMax - min)) * 100));
+  // Determine if this is a percentage slider (ends with %)
+  const isPercent = fmt(1).includes("%");
+  const hardMax = maxVal ?? (isPercent ? MAX_PERCENT : MAX_CURRENCY);
+  
+  // Dynamic visual max for slider bar (but capped)
+  const visualMax = Math.min(hardMax, Math.max(value * 2, min * 10, isPercent ? 100 : 10000));
+  const pct = Math.max(0, Math.min(100, ((value - min) / (visualMax - min)) * 100));
   
   useEffect(() => {
     if (!editing) setInputVal(fmt(value));
@@ -309,7 +316,7 @@ function Slider({ label, value, min, step = 1, onChange, fmt }: { label:string; 
     setEditing(false);
     const parsed = parseFloat(inputVal.replace(/[^0-9.-]/g, ""));
     if (!isNaN(parsed) && parsed >= min) {
-      onChange(parsed);
+      onChange(Math.min(parsed, hardMax));
     } else {
       setInputVal(fmt(value));
     }
@@ -320,23 +327,66 @@ function Slider({ label, value, min, step = 1, onChange, fmt }: { label:string; 
     setInputVal(value.toString());
   };
   
+  const handleSliderChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const newVal = Math.min(Number(e.target.value), hardMax);
+    onChange(newVal);
+  };
+  
+  // Clean currency format (handles billions properly)
+  const formatCurrency = (v: number) => {
+    if (v >= 1_000_000_000) return "$" + (v / 1_000_000_000).toFixed(2) + "B";
+    if (v >= 1_000_000) return "$" + (v / 1_000_000).toFixed(2) + "M";
+    return "$" + v.toLocaleString(undefined, { maximumFractionDigits: 2 });
+  };
+  
+  const displayVal = isPercent ? inputVal : (editing ? inputVal : formatCurrency(value));
+  
   return (
     <div>
       <div style={{ display:"flex", justifyContent:"space-between", marginBottom:7, alignItems:"center" }}>
         <span style={{ fontSize:11, color:T.mid }}>{label}</span>
         <input
           type="text"
-          value={inputVal}
+          value={displayVal}
           onChange={handleInputChange}
           onFocus={handleInputFocus}
           onBlur={handleInputBlur}
           onKeyDown={e => e.key === "Enter" && e.currentTarget.blur()}
-          style={{ fontSize:12, color:T.gold, fontWeight:600, background:"transparent", border:"none", textAlign:"right", width:100, outline:"none", fontFamily:"inherit" }}
+          style={{ fontSize:12, color:T.gold, fontWeight:600, background:"transparent", border:"none", textAlign:"right", width:110, outline:"none", fontFamily:"inherit" }}
         />
       </div>
-      <div style={{ position:"relative", height:4, background:"rgba(255,255,255,0.08)", borderRadius:4 }}>
-        <div style={{ position:"absolute", left:0, top:0, height:"100%", width:`${pct}%`, backgroundImage:`linear-gradient(90deg,${T.goldDim},${T.gold})`, borderRadius:4, transition:"width .15s" }} />
-        <input type="range" min={min} max={dynamicMax} step={step} value={Math.min(value, dynamicMax)} onChange={e => onChange(Number(e.target.value))} style={{ position:"absolute", inset:0, width:"100%", opacity:0, cursor:"pointer", height:"100%", margin:0 }} />
+      <div style={{ position:"relative", height:8, background:"rgba(255,255,255,0.08)", borderRadius:8, cursor:"pointer" }}>
+        {/* Active fill bar */}
+        <div style={{ position:"absolute", left:0, top:0, height:"100%", width:`${pct}%`, backgroundImage:`linear-gradient(90deg,${T.goldDim},${T.gold})`, borderRadius:8, transition: isDragging ? "none" : "width .15s" }} />
+        {/* Grip handle */}
+        <div style={{
+          position:"absolute",
+          top:"50%",
+          left:`${pct}%`,
+          transform:"translate(-50%, -50%)",
+          width:18,
+          height:18,
+          borderRadius:"50%",
+          background:"linear-gradient(135deg, #fff 0%, #c4b594 100%)",
+          border:"2px solid #c4b594",
+          boxShadow:"0 2px 6px rgba(0,0,0,0.35), 0 0 10px rgba(196,181,148,0.3)",
+          transition: isDragging ? "none" : "left .15s",
+          pointerEvents:"none",
+          zIndex:2,
+        }} />
+        <input
+          type="range"
+          min={min}
+          max={visualMax}
+          step={step}
+          value={Math.min(value, visualMax)}
+          onChange={handleSliderChange}
+          onMouseDown={() => setIsDragging(true)}
+          onMouseUp={() => setIsDragging(false)}
+          onTouchStart={() => setIsDragging(true)}
+          onTouchEnd={() => setIsDragging(false)}
+          style={{ position:"absolute", inset:0, width:"100%", opacity:0, cursor:"pointer", height:"100%", margin:0, zIndex:3 }}
+        />
       </div>
     </div>
   );
@@ -1221,46 +1271,61 @@ function Footer() {
 
 // ── Budget Tool ───────────────────────────────────────────────────────────────
 function BudgetTool() {
-  
   const [income, setIncome] = useState(2000);
   const [needs,  setNeeds]  = useState(50);
   const [wants,  setWants]  = useState(30);
-  const savings = 100 - needs - wants;
+  
+  // Cap needs so needs+wants never exceeds 100
+  const handleNeedsChange = (v: number) => setNeeds(Math.min(v, 100 - wants));
+  const handleWantsChange = (v: number) => setWants(Math.min(v, 100 - needs));
+  
+  const savings = Math.max(0, 100 - needs - wants);
   const cats = [
-    { label:"Needs",   pct:needs,               color:"#22c55e", amt:income*needs/100 },
-    { label:"Wants",   pct:wants,               color:"#f59e0b", amt:income*wants/100 },
-    { label:"Savings", pct:Math.max(0,savings),  color:T.gold,    amt:income*Math.max(0,savings)/100 },
+    { label:"Needs",   pct:needs,   color:"#22c55e", amt:income*needs/100 },
+    { label:"Wants",   pct:wants,   color:"#f59e0b", amt:income*wants/100 },
+    { label:"Savings", pct:savings, color:T.gold,    amt:income*savings/100 },
   ];
+  
+  // Responsive currency formatter (shorter on mobile)
+  const formatAmt = (v: number) => {
+    if (v >= 1_000_000) return "$" + (v / 1_000_000).toFixed(1) + "M";
+    if (v >= 100_000) return "$" + Math.round(v / 1000) + "K";
+    return "$" + Math.round(v).toLocaleString();
+  };
+  
   return (
     <motion.div variants={fadeUp} initial="hidden" animate="visible" style={{ display:"flex", flexDirection:"column", gap:16 }}>
-      <Slider label="Monthly Income" value={income} min={100} step={50} onChange={setIncome} fmt={v=>"$"+v.toLocaleString()} />
-      <Slider label="Needs %"        value={needs}  min={0}  step={1}  onChange={setNeeds}  fmt={v=>v+"%"} />
-      <Slider label="Wants %"        value={wants}  min={0}  step={1}  onChange={setWants}  fmt={v=>v+"%"} />
+      <Slider label="Monthly Income" value={income} min={100} step={50} onChange={setIncome} fmt={v=>"$"+v.toLocaleString()} maxVal={1_000_000_000} />
+      <Slider label="Needs %"        value={needs}  min={0}  step={1}  onChange={handleNeedsChange}  fmt={v=>v+"%"} maxVal={100} />
+      <Slider label="Wants %"        value={wants}  min={0}  step={1}  onChange={handleWantsChange}  fmt={v=>v+"%"} maxVal={100} />
       <div style={{ display:"flex", height:10, borderRadius:5, overflow:"hidden", gap:2 }}>
-        {cats.map(c => <div key={c.label} style={{ flex:c.pct, background:c.color, transition:"flex .3s", minWidth:0 }} />)}
+        {cats.map(c => <div key={c.label} style={{ flex:c.pct, background:c.color, transition:"flex .3s", minWidth:c.pct > 0 ? 4 : 0 }} />)}
       </div>
-      <div style={{ display:"grid", gridTemplateColumns:"1fr 1fr 1fr", gap:9 }}>
+      <div style={{ display:"grid", gridTemplateColumns:"1fr 1fr 1fr", gap:6 }}>
         {cats.map(c => (
-          <Glass key={c.label} style={{ padding:"11px 7px", textAlign:"center" }}>
-            <p style={{ fontSize:9, color:c.color, margin:"0 0 4px", fontWeight:700, letterSpacing:".07em" }}>{c.label.toUpperCase()}</p>
-            <p style={{ fontSize:15, fontWeight:700, color:T.text, margin:"0 0 2px" }}>${Math.round(c.amt).toLocaleString()}</p>
-            <p style={{ fontSize:10, color:T.dim, margin:0 }}>{c.pct}%</p>
+          <Glass key={c.label} style={{ padding:"10px 5px", textAlign:"center", overflow:"hidden" }}>
+            <p style={{ fontSize:8, color:c.color, margin:"0 0 3px", fontWeight:700, letterSpacing:".05em" }}>{c.label.toUpperCase()}</p>
+            <p style={{ fontSize:"clamp(12px, 3.5vw, 16px)", fontWeight:700, color:T.text, margin:"0 0 2px", whiteSpace:"nowrap", overflow:"hidden", textOverflow:"ellipsis" }}>{formatAmt(c.amt)}</p>
+            <p style={{ fontSize:9, color:T.dim, margin:0 }}>{c.pct}%</p>
           </Glass>
         ))}
       </div>
-      {savings < 0  && <div style={{ fontSize:12, color:T.red, background:"rgba(248,113,113,0.1)", border:"1px solid rgba(248,113,113,0.25)", borderRadius:8, padding:"8px 12px" }}>Needs + Wants exceed 100%</div>}
-      {savings >= 20 && <div style={{ fontSize:12, color:"#b8952a", background:"rgba(201,168,76,0.08)", border:"1px solid rgba(201,168,76,0.2)", borderRadius:8, padding:"8px 12px" }}>Saving {savings}% — excellent! 20%+ recommended.</div>}
+      {savings >= 20 && <div style={{ fontSize:11, color:"#b8952a", background:"rgba(201,168,76,0.08)", border:"1px solid rgba(201,168,76,0.2)", borderRadius:8, padding:"8px 12px" }}>Saving {savings}% — excellent! 20%+ recommended.</div>}
     </motion.div>
   );
 }
 
 // ── Savings Tool ──────────────────────────────────────────────────────────────
 function SavingsTool() {
-  
   const [goal,    setGoal]    = useState(5000);
   const [saved,   setSaved]   = useState(800);
   const [monthly, setMonthly] = useState(200);
   const [rate,    setRate]    = useState(4);
+  
+  // Cap saved at goal amount
+  const handleSavedChange = (v: number) => setSaved(Math.min(v, goal));
+  const handleGoalChange = (v: number) => { setGoal(v); if (saved > v) setSaved(v); };
+  
   const remaining = Math.max(0, goal - saved);
   const pct       = goal > 0 ? Math.min(100, (saved / goal) * 100) : 0;
   const r = rate / 100 / 12;
@@ -1268,19 +1333,19 @@ function SavingsTool() {
   if (remaining > 0 && monthly > 0) {
     if (r > 0 && monthly > remaining * r) months = Math.ceil(Math.log(1 + remaining*r/monthly) / Math.log(1+r));
     else if (r <= 0) months = Math.ceil(remaining / monthly);
-    else months = 999;
+    else months = Math.min(999, Math.ceil(remaining / monthly));
   }
   let interest = 0;
-  if (r > 0) { let b = remaining; for (let i = 0; i < months && b > 0.01; i++) { interest += b*r; b = b+b*r-monthly; } }
+  if (r > 0) { let b = remaining; for (let i = 0; i < Math.min(months, 600) && b > 0.01; i++) { interest += b*r; b = Math.max(0, b+b*r-monthly); } }
   const yrs = Math.floor(months/12), mos = months%12;
   const timeStr = months <= 0 ? "Goal reached!" : months >= 999 ? "Increase contribution" : yrs > 0 ? `${yrs}y ${mos}m` : `${mos} months`;
   const C = 2 * Math.PI * 32;
   return (
     <motion.div variants={fadeUp} initial="hidden" animate="visible" style={{ display:"flex", flexDirection:"column", gap:16 }}>
-      <Slider label="Goal Amount"          value={goal}    min={100}  step={100} onChange={setGoal}    fmt={v=>"$"+v.toLocaleString()} />
-      <Slider label="Already Saved"        value={saved}   min={0}    step={50}  onChange={v=>setSaved(Math.min(v,goal))} fmt={v=>"$"+v.toLocaleString()} />
-      <Slider label="Monthly Contribution" value={monthly} min={10}   step={10}  onChange={setMonthly} fmt={v=>"$"+v.toLocaleString()} />
-      <Slider label="Interest Rate (APY)"  value={rate}    min={0}    step={0.25} onChange={setRate}   fmt={v=>v+"%"} />
+      <Slider label="Goal Amount"          value={goal}    min={100}  step={100} onChange={handleGoalChange}  fmt={v=>"$"+v.toLocaleString()} maxVal={1_000_000_000} />
+      <Slider label="Already Saved"        value={saved}   min={0}    step={50}  onChange={handleSavedChange} fmt={v=>"$"+v.toLocaleString()} maxVal={goal} />
+      <Slider label="Monthly Contribution" value={monthly} min={10}   step={10}  onChange={setMonthly}        fmt={v=>"$"+v.toLocaleString()} maxVal={1_000_000} />
+      <Slider label="Interest Rate (APY)"  value={rate}    min={0}    step={0.25} onChange={setRate}          fmt={v=>v+"%"} maxVal={50} />
       <Glass style={{ padding:16, display:"flex", alignItems:"center", gap:16 }}>
         <svg width="80" height="80" viewBox="0 0 80 80">
           <circle cx="40" cy="40" r="32" fill="none" stroke={T.border} strokeWidth="7"/>
@@ -1306,29 +1371,36 @@ function SavingsTool() {
 
 // ── Loan Calculator ───────────────────────────────────────────────────────────
 function LoanCalculator() {
-  
   const [principal, setPrincipal] = useState(25000);
   const [rate,  setRate]  = useState(5.5);
   const [years, setYears] = useState(10);
   const [extra, setExtra] = useState(0);
+  
   const r = rate/100/12, n = years*12;
   const base = r > 0 ? principal*r*Math.pow(1+r,n)/(Math.pow(1+r,n)-1) : principal/Math.max(n,1);
-  const totalBase = base*n, totalInt = totalBase-principal;
+  const totalBase = base*n, totalInt = Math.max(0, totalBase-principal);
   let bal=principal, mo=0, intEx=0;
   while(bal>0.01 && mo<1200){const i=bal*r;intEx+=i;bal=Math.max(0,bal+i-base-extra);mo++;}
-  const savedInt=totalInt-intEx, savedMo=n-mo;
+  const savedInt=Math.max(0, totalInt-intEx), savedMo=Math.max(0, n-mo);
+  
+  // Responsive formatting for large numbers
+  const formatLoan = (v: number) => {
+    if (v >= 1_000_000) return "$" + (v / 1_000_000).toFixed(2) + "M";
+    return "$" + Math.round(v).toLocaleString();
+  };
+  
   return (
     <div style={{ display:"flex", flexDirection:"column", gap:16 }}>
-      <Slider label="Loan Amount"   value={principal} min={500}   step={500}  onChange={setPrincipal} fmt={v=>"$"+v.toLocaleString()} />
-      <Slider label="Interest Rate" value={rate}      min={0.5}   step={0.25} onChange={setRate}      fmt={v=>v+"%"} />
-      <Slider label="Term (Years)"  value={years}     min={1}     step={1}    onChange={setYears}     fmt={v=>v+" yrs"} />
-      <Slider label="Extra Monthly" value={extra}     min={0}     step={10}   onChange={setExtra}     fmt={v=>"$"+v} />
+      <Slider label="Loan Amount"   value={principal} min={500}   step={500}  onChange={setPrincipal} fmt={v=>"$"+v.toLocaleString()} maxVal={1_000_000_000} />
+      <Slider label="Interest Rate" value={rate}      min={0.5}   step={0.25} onChange={setRate}      fmt={v=>v+"%"} maxVal={50} />
+      <Slider label="Term (Years)"  value={years}     min={1}     step={1}    onChange={setYears}     fmt={v=>v+" yrs"} maxVal={50} />
+      <Slider label="Extra Monthly" value={extra}     min={0}     step={10}   onChange={setExtra}     fmt={v=>"$"+v} maxVal={Math.round(base * 10)} />
       <Glass style={{ padding:16 }}>
-        <div style={{ display:"flex", justifyContent:"space-between", alignItems:"baseline", marginBottom:10 }}>
+        <div style={{ display:"flex", justifyContent:"space-between", alignItems:"baseline", marginBottom:10, gap:8, flexWrap:"wrap" }}>
           <span style={{ fontSize:10, color:T.dim, letterSpacing:".07em" }}>MONTHLY PAYMENT</span>
-          <span style={{ fontSize:26, fontWeight:800, color:T.goldHi }}>${Math.round(base).toLocaleString()}</span>
+          <span style={{ fontSize:"clamp(18px, 5vw, 26px)", fontWeight:800, color:T.goldHi }}>{formatLoan(Math.round(base))}</span>
         </div>
-        {[["Total paid","$"+Math.round(totalBase).toLocaleString()],["Total interest","$"+Math.round(totalInt).toLocaleString()]].map(([l,v]) => (
+        {[["Total paid", formatLoan(Math.round(totalBase))],["Total interest", formatLoan(Math.round(totalInt))]].map(([l,v]) => (
           <div key={l} style={{ display:"flex", justifyContent:"space-between", padding:"5px 0", borderTop:`1px solid ${T.border}` }}>
             <span style={{ fontSize:12, color:T.mid }}>{l}</span>
             <span style={{ fontSize:13, color:T.mid }}>{v}</span>
@@ -1898,7 +1970,8 @@ const NAV_TOOLS: { id: ToolId; label: string; Icon: React.FC<{size?:number}> }[]
   { id:"saved",   label:"My Saved",     Icon: ({size=15}) => <Bookmark   size={size} /> },
 ];
 
-export default function ForgePage() {
+// v9 — Renamed to ForgePageV9 to force Turbopack cache invalidation
+export default function ForgePageV9() {
   const [activeTool, setActiveTool] = useState<ToolId|"">("");
   const [panelView,  setPanelView]  = useState<"chat"|"tool">("chat");
   const [country,    setCountry]    = useState<string>("");
@@ -2254,5 +2327,5 @@ const hBtn = (active = false): CSSProperties => ({
   );
 }
 
-// Cache invalidation marker — v7 footer spacing, no CreditHealthWidget
-export const __CACHE_BUST_V7__ = "footer-spacing-clean";
+// Cache invalidation marker — v9 ForgePageV9 rename forces full recompile
+export const __CACHE_BUST_V9__ = "forgepage-renamed-v9";
