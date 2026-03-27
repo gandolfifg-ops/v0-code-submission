@@ -311,9 +311,8 @@ function Glass({ children, style, glow, onClick }: { children: ReactNode; style?
   backdropFilter: T.blur,
   WebkitBackdropFilter: T.blur,
   border: `1px solid ${hov && glow ? "rgba(201,168,76,0.38)" : T.cardBorder}`,
-  boxShadow: T.cardShadow || "none",
   borderRadius: T.r,
-  boxShadow: hov && glow ? "0 0 0 1px rgba(201,168,76,0.18),0 8px 36px rgba(0,0,0,0.5)" : "0 4px 28px rgba(0,0,0,0.15)",
+  boxShadow: hov && glow ? `0 0 0 1px rgba(201,168,76,0.18),0 8px 36px rgba(0,0,0,0.5)` : (T.cardShadow || "0 4px 28px rgba(0,0,0,0.15)"),
   transition: "border-color .22s,box-shadow .22s",
   cursor: onClick ? "pointer" : undefined, ...style,
   }}>
@@ -323,7 +322,7 @@ function Glass({ children, style, glow, onClick }: { children: ReactNode; style?
 }
 
 function Skel({ w = "100%", h = 14 }: { w?: string|number; h?: number }) {
-  return <div style={{ width:w, height:h, borderRadius:7, backgroundImage: "linear-gradient(90deg,rgba(255,255,255,0.04) 25%,rgba(255,255,255,0.09) 50%,rgba(255,255,255,0.04) 75%)", backgroundSize:"200% 100%", animation:"wf-skel 1.6s ease infinite" }} />;
+  return <div style={{ width:w, height:h, borderRadius:7, background: "linear-gradient(90deg,rgba(255,255,255,0.04) 25%,rgba(255,255,255,0.09) 50%,rgba(255,255,255,0.04) 75%)", backgroundSize:"200% 100%", animation:"wf-skel 1.6s ease infinite" }} />;
 }
 
 function Chip({ label, color }: { label: string; color?: string }) {
@@ -369,7 +368,7 @@ function GoldCTA({ href, label }: { href: string; label: string }) {
   const safe = (href?.trim?.() ?? "").length > 0 ? href : "#";
   return (
   <motion.a href={safe} target="_blank" rel="noopener noreferrer" whileTap={tapAnim.tap}
-  style={{ display:"block", textAlign:"center", padding:"10px 0", borderRadius:T.rsm, textDecoration:"none", fontFamily:"inherit", backgroundImage:`linear-gradient(135deg,${T.gold},${T.goldDim})`, color:T.goldText, fontSize:12, fontWeight:800, letterSpacing:".03em", boxShadow:`0 0 18px ${T.glow}`, transition:"box-shadow .2s" }}
+  style={{ display:"block", textAlign:"center", padding:"10px 0", borderRadius:T.rsm, textDecoration:"none", fontFamily:"inherit", background:`linear-gradient(135deg,${T.gold},${T.goldDim})`, color:T.goldText, fontSize:12, fontWeight:800, letterSpacing:".03em", boxShadow:`0 0 18px ${T.glow}`, transition:"box-shadow .2s" }}
       onMouseEnter={e => (e.currentTarget.style.boxShadow = "0 0 32px rgba(201,168,76,0.5)")}
       onMouseLeave={e => (e.currentTarget.style.boxShadow = `0 0 18px ${T.glow}`)}>
       {label} →
@@ -468,7 +467,7 @@ const SliderComponent = ({ label, value, min, step = 1, onChange, fmt, maxVal }:
       </div>
       <div style={{ position:"relative", height:8, background:"rgba(255,255,255,0.08)", borderRadius:8, cursor:"pointer" }}>
         {/* Active fill bar */}
-        <div style={{ position:"absolute", left:0, top:0, height:"100%", width:`${pct}%`, backgroundImage:`linear-gradient(90deg,${T.goldDim},${T.gold})`, borderRadius:8, transition: isDragging ? "none" : "width .15s" }} />
+        <div style={{ position:"absolute", left:0, top:0, height:"100%", width:`${pct}%`, background:`linear-gradient(90deg,${T.goldDim},${T.gold})`, borderRadius:8, transition: isDragging ? "none" : "width .15s" }} />
         {/* Grip handle */}
         <div style={{
           position:"absolute",
@@ -530,7 +529,7 @@ function TypewriterGreeting() {
   const { out, done } = useTypewriter(WELCOME_MSG, 26);
   return (
     <motion.div variants={fadeUp} initial="hidden" animate="visible" style={{ padding:"26px 4px 14px", maxWidth:640, margin:"0 auto", textAlign:"center" }}>
-      <p style={{ fontFamily:"Inter,system-ui,sans-serif", fontSize:"clamp(14px,2vw,19px)", fontWeight:400, lineHeight:1.7, margin:0, backgroundImage:`linear-gradient(120deg,${T.text} 0%,${T.goldHi} 40%,${T.gold} 65%,${T.mid} 100%)`, WebkitBackgroundClip:"text", WebkitTextFillColor:"transparent", letterSpacing:"-.005em" }}>
+      <p style={{ fontFamily:"Inter,system-ui,sans-serif", fontSize:"clamp(14px,2vw,19px)", fontWeight:400, lineHeight:1.7, margin:0, background:`linear-gradient(120deg,${T.text} 0%,${T.goldHi} 40%,${T.gold} 65%,${T.mid} 100%)`, WebkitBackgroundClip:"text", WebkitTextFillColor:"transparent", letterSpacing:"-.005em" }}>
         {out}
         {!done && <span style={{ display:"inline-block", width:2, height:"1em", backgroundColor:T.gold, marginLeft:2, verticalAlign:"middle", animation:"wf-cur .65s steps(1) infinite" }} />}
       </p>
@@ -1748,7 +1747,7 @@ function LoanFinder({ onToggleSave, savedIds, userCountry }: { onToggleSave: (it
         placeholder="Amount needed (e.g. $20,000)"
         style={{ padding:"10px 13px", background:T.glassHi, border:`1px solid ${T.border}`, borderRadius:T.rsm, color:T.text, fontSize:13, outline:"none", fontFamily:"inherit" }} />
       <motion.button whileTap={tapAnim.tap} onClick={handleSearch} disabled={phase==="scanning"}
-        style={{ padding:"11px 0", borderRadius:T.rsm, border:"none", cursor:"pointer", backgroundImage:`linear-gradient(135deg,${T.gold},${T.goldDim})`, color:"#07090d", fontSize:13, fontWeight:800, fontFamily:"inherit", opacity:phase==="scanning"?.65:1, boxShadow:`0 0 18px ${T.glow}` }}>
+        style={{ padding:"11px 0", borderRadius:T.rsm, border:"none", cursor:"pointer", background:`linear-gradient(135deg,${T.gold},${T.goldDim})`, color:"#07090d", fontSize:13, fontWeight:800, fontFamily:"inherit", opacity:phase==="scanning"?.65:1, boxShadow:`0 0 18px ${T.glow}` }}>
         {phase==="scanning" ? "Scanning lenders..." : "Find Best Rates"}
       </motion.button>
       <AnimatePresence>
@@ -1880,7 +1879,7 @@ function ScholarshipScout({ onToggleSave, savedIds }: { onToggleSave: (item: Sco
           ))}
         </div>
         <motion.button whileTap={tapAnim.tap} onClick={handleSearch} disabled={phase==="scanning"}
-          style={{ width:"100%", padding:"11px 0", borderRadius:T.rsm, border:"none", cursor:"pointer", backgroundImage:`linear-gradient(135deg,${T.gold},${T.goldDim})`, color:"#07090d", fontSize:13, fontWeight:800, fontFamily:"inherit", opacity:phase==="scanning"?.65:1, boxShadow:`0 0 18px ${T.glow}`, boxSizing:"border-box" }}>
+          style={{ width:"100%", padding:"11px 0", borderRadius:T.rsm, border:"none", cursor:"pointer", background:`linear-gradient(135deg,${T.gold},${T.goldDim})`, color:"#07090d", fontSize:13, fontWeight:800, fontFamily:"inherit", opacity:phase==="scanning"?.65:1, boxShadow:`0 0 18px ${T.glow}`, boxSizing:"border-box" }}>
           {phase==="scanning" ? "Scanning databases..." : "Find Scholarships"}
         </motion.button>
       </Glass>
@@ -2386,14 +2385,23 @@ const hBtn = (active = false): CSSProperties => ({
             whileTap={{ scale: 0.94 }}
             onClick={() => { closeSidebar(); setPanelView("chat"); setActiveTool(""); window.scrollTo({ top: 0, behavior: "smooth" }); }}
             aria-label="Go to home"
-            style={{ display:"flex", alignItems:"center", justifyContent:"center", flex:1, background:"none", border:"none", cursor:"pointer", padding:0, outline:"none" }}
+            style={{ display:"flex", alignItems:"center", justifyContent:"center", gap: 8, flex:1, background:"none", border:"none", cursor:"pointer", padding:0, outline:"none" }}
           >
             <img 
-              src="/images/wealthnutz-logo-full.png" 
-              alt="WealthNutz" 
-              style={{ height:"clamp(34px, 8vw, 46px)", width:"auto", objectFit:"contain" }} 
+              src="/images/wealthnutz-squirrel-logo.jpg" 
+              alt="WealthNutz Squirrel" 
+              style={{ height:"clamp(36px, 9vw, 48px)", width:"auto", objectFit:"contain", borderRadius: 8 }} 
               className="wealthnutz-logo"
             />
+            <span style={{ 
+              fontSize: "clamp(16px, 4vw, 22px)", 
+              fontWeight: 800, 
+              color: T.gold, 
+              letterSpacing: "-0.02em",
+              textShadow: isDarkMode ? "0 1px 2px rgba(0,0,0,0.3)" : "none",
+            }}>
+              WealthNutz
+            </span>
           </motion.button>
           
           {/* Right: Theme toggle + MENU button */}
@@ -2687,13 +2695,13 @@ const hBtn = (active = false): CSSProperties => ({
         boxShadow: isDarkMode ? "none" : "0 1px 3px rgba(0,0,0,0.06)",
       }}>
       <img 
-        src="/images/wealthnutz-logo-full.png" 
+        src="/images/wealthnutz-squirrel-logo.jpg" 
         alt="" 
         style={{ 
-          height: 18, 
-          width: "auto", 
-          objectFit: "contain",
-          filter: isDarkMode ? "none" : "brightness(0.25)",
+          height: 20, 
+          width: 20, 
+          objectFit: "cover",
+          borderRadius: 4,
         }} 
       />
       Member Sign In
