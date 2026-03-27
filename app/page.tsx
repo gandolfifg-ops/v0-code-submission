@@ -156,7 +156,7 @@ const T = {
 
 // ─────────────────────────────────────────────────────────────────────────────
 // SECTION 3 — MOTION VARIANTS
-// ─────────────────────────────────────────────────────────────────────────����───
+// ─────────────────────────────────────────────────────────────────────────�����───
 
 const fadeUp  = { hidden:{opacity:0,y:16}, visible:{opacity:1,y:0,transition:{duration:0.36,ease:[0.22,1,0.36,1] as number[]}} };
 const stagger = { visible:{transition:{staggerChildren:0.065}} };
@@ -832,6 +832,81 @@ function CountrySwitcher({
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
+// SECTION 5B — EXPANDABLE TEXT COMPONENT
+// ─────────────────────────────────────────────────────────────────────────────
+
+function ExpandableText({ text, maxLines = 2 }: { text: string; maxLines?: number }) {
+  const [expanded, setExpanded] = useState(false);
+  
+  return (
+    <motion.div layout style={{ position: "relative" }}>
+      <motion.p
+        layout
+        style={{
+          fontSize: 11,
+          color: T.mid,
+          margin: "0 0 14px",
+          lineHeight: 1.5,
+          display: "-webkit-box",
+          WebkitLineClamp: expanded ? "unset" : maxLines,
+          WebkitBoxOrient: "vertical",
+          overflow: expanded ? "visible" : "hidden",
+        }}
+      >
+        {text}
+        {!expanded && (
+          <motion.button
+            onClick={(e) => {
+              e.preventDefault();
+              e.stopPropagation();
+              setExpanded(true);
+            }}
+            style={{
+              background: "none",
+              border: "none",
+              color: T.gold,
+              fontSize: 11,
+              fontWeight: 600,
+              cursor: "pointer",
+              padding: 0,
+              marginLeft: 4,
+              fontFamily: "inherit",
+            }}
+          >
+            ...read more
+          </motion.button>
+        )}
+      </motion.p>
+      {expanded && (
+        <motion.button
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          onClick={(e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            setExpanded(false);
+          }}
+          style={{
+            background: "none",
+            border: "none",
+            color: T.gold,
+            fontSize: 10,
+            fontWeight: 600,
+            cursor: "pointer",
+            padding: 0,
+            marginTop: -10,
+            marginBottom: 10,
+            fontFamily: "inherit",
+          }}
+        >
+          show less
+        </motion.button>
+      )}
+    </motion.div>
+  );
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
 // SECTION 5C — LOAN MARKETPLACE HERO (High Conversion)
 // ─────────────────────────────────────────────────────────────────────────────
 
@@ -885,26 +960,27 @@ function LoanMarketplaceHero({ country, filterType, onToggleSave, savedIds }: { 
       {/* Loan Cards Grid */}
       <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(280px, 1fr))", gap: 12 }}>
         {offers.map((offer, i) => (
-          <motion.a
-            key={offer.id}
-            variants={fadeUp}
-            href={offer.href}
-            target="_blank"
-            rel="noopener noreferrer"
-            style={{
-              display: "block",
-              padding: 16,
-              borderRadius: T.r,
-              background: i === 0 ? `linear-gradient(135deg, rgba(201,168,76,0.15), rgba(139,105,20,0.08))` : T.cardBg,
-              border: `1px solid ${i === 0 ? "rgba(201,168,76,0.4)" : T.cardBorder}`,
-              textDecoration: "none",
-              transition: "all 0.25s ease",
-              position: "relative",
-              overflow: "hidden",
-            }}
-            whileHover={{ scale: 1.02, borderColor: T.gold }}
-            whileTap={{ scale: 0.98 }}
-          >
+<motion.a
+          key={offer.id}
+          href={offer.href}
+          target="_blank"
+          rel="noopener noreferrer"
+          variants={fadeUp}
+          layout
+          style={{
+            display: "block",
+            padding: 16,
+            borderRadius: T.rmd,
+            background: i === 0 ? T.glassHi : T.glass,
+            border: `1px solid ${i === 0 ? T.goldDim : T.border}`,
+            textDecoration: "none",
+            transition: "all 0.25s ease",
+            position: "relative",
+            overflow: "hidden",
+          }}
+          whileHover={{ scale: 1.02, borderColor: T.gold }}
+          whileTap={{ scale: 0.98 }}
+        >
             {/* Badge */}
             {offer.badge && (
               <span style={{
@@ -975,7 +1051,7 @@ function LoanMarketplaceHero({ country, filterType, onToggleSave, savedIds }: { 
               </span>
             </div>
             {offer.bonus && <p style={{ fontSize: 11, color: T.green, margin: "0 0 8px", fontWeight: 600 }}>{offer.bonus}</p>}
-            <p style={{ fontSize: 11, color: T.mid, margin: "0 0 14px", lineHeight: 1.4 }}>{offer.highlight}</p>
+            <ExpandableText text={offer.highlight} maxLines={2} />
             
             {/* CTA Button */}
             <div style={{
@@ -1601,7 +1677,7 @@ const LoanCalculatorComponent = () => {
 // Memoize LoanCalculator to prevent unnecessary re-renders
 const LoanCalculator = React_memo_compat(LoanCalculatorComponent);
 
-// ── Loan Finder ────────────────�����──────────────────────────────────────────────
+// ── Loan Finder ────��───────────�����──────────────────────────────────────────────
 type Phase = "idle"|"scanning"|"results";
 const SCAN_MSGS = ["Connecting to loan databases...","Scanning live lender rates...","Cross-referencing eligibility...","Compiling best rates for you..."];
 
@@ -1858,18 +1934,18 @@ function SavedItems({ saved, onRemove }: { saved: ScoutResult[]; onRemove: (item
   return (
     <motion.div variants={stagger} initial="hidden" animate="visible" style={{ display: "flex", flexDirection: "column", gap: 10 }}>
       {saved.map(r => (
-        <motion.div key={r.id} variants={fadeUp}>
+        <motion.div key={r.id} variants={fadeUp} layout>
           <Glass glow style={{ padding: 14 }}>
             <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: 7, gap: 10 }}>
-              <div>
+              <div style={{ flex: 1 }}>
                 <Chip label={r.type === "scholarship" ? "Scholarship" : "Loan"} color={r.type === "scholarship" ? T.gold : T.green} />
                 <p style={{ fontSize: 13, fontWeight: 700, color: T.text, margin: "6px 0 2px" }}>{r.title || r.name}</p>
-                <p style={{ fontSize: 11, color: T.mid, margin: 0 }}>{r.provider || r.highlight}</p>
+                {(r.provider || r.highlight) && <ExpandableText text={r.provider || r.highlight || ""} maxLines={2} />}
               </div>
               <motion.button
                 whileTap={{ scale: 0.9 }}
                 onClick={() => onRemove(r)}
-                style={{ background: "none", border: "none", cursor: "pointer", padding: 2, color: T.gold }}
+                style={{ background: "none", border: "none", cursor: "pointer", padding: 2, color: T.gold, flexShrink: 0 }}
               >
                 <Bookmark size={16} fill={T.gold} />
               </motion.button>
