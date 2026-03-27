@@ -6,8 +6,8 @@ import './globals.css'
 const inter = Inter({ subsets: ['latin'] })
 
 export const metadata: Metadata = {
-  title: 'Forge Finances — AI-Powered Financial Intelligence',
-  description: 'Smart financial tools for students in Canada and USA. Budget planning, savings goals, loan calculations, and AI-powered insights.',
+  title: 'WealthNutz — Finding the Best Loans, Scholarships & Credit Cards for everyone across North America',
+  description: 'Stop searching and start finding. We simplify the complex world of North American finance by matching young people with the best loans, scholarships, and cards, in combination with high level simulations and our own financial AI, all in one smart platform ',
 }
 
 export default function RootLayout({
