@@ -150,15 +150,6 @@
   animation: wf-skel 1.6s ease infinite;
 }
 
-@keyframes wf-skel {
-  0% {
-    background-position: 200% 0;
-  }
-  100% {
-    background-position: -200% 0;
-  }
-}
-
 /* Mobile filter button - hidden on desktop */
 @media (min-width: 768px) {
   .mobile-filter-btn {

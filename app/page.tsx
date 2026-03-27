@@ -1,7 +1,7 @@
 "use client";
 
 /**
- * WealthNutz — Single File, v0-Ready
+ * Forge — Single File, v0-Ready
  * ─────────────────────────────────────────────────────────────────────────────
  * Paste this entire file into app/page.tsx in any Next.js project.
  *
@@ -263,7 +263,11 @@ function useTypewriter(text: string, speed = 26) {
   return { out, done };
 }
 
-
+const HIST_KEY = "wf_hist_v3";
+const SAVED_KEY = "wf_saved_v1";
+type HistRec = { id: string; label: string; type: "scholarship"|"loan"; results: ScoutResult[]; ts: number };
+function readHist(): HistRec[] { try { return JSON.parse(typeof window !== "undefined" ? localStorage.getItem(HIST_KEY) ?? "[]" : "[]"); } catch { return []; } }
+function pushHist(r: HistRec) { try { const n = [r, ...readHist().filter(x => x.id !== r.id)].slice(0,10); localStorage.setItem(HIST_KEY, JSON.stringify(n)); } catch {} }
 
 function readSaved(): ScoutResult[] { try { return JSON.parse(typeof window !== "undefined" ? localStorage.getItem(SAVED_KEY) ?? "[]" : "[]"); } catch { return []; } }
 function writeSaved(items: ScoutResult[]) { try { localStorage.setItem(SAVED_KEY, JSON.stringify(items)); } catch {} }
@@ -383,7 +387,7 @@ function LogoMark({ size = 32 }: { size?: number }) {
   // Gold "F" shield logo - rendered without background
   return (
     <img 
-    src="/images/wealthnutz-logo.png"
+src="/images/forge-logo.png"
             alt="WealthNutz"
       width={size} 
       height={size} 
@@ -495,7 +499,7 @@ const SliderComponent = ({ label, value, min, step = 1, onChange, fmt, maxVal }:
           onFocus={handleInputFocus}
           onBlur={handleInputBlur}
           onKeyDown={e => e.key === "Enter" && e.currentTarget.blur()}
-          style={{ fontSize:12, color:T.gold, fontWeight:600, background:"rgba(0,0,0,0)", border:"none", textAlign:"right", width:110, outline:"none", fontFamily:"inherit" }}
+          style={{ fontSize:12, color:T.gold, fontWeight:600, background:"transparent", border:"none", textAlign:"right", width:110, outline:"none", fontFamily:"inherit" }}
         />
       </div>
       <div style={{ position:"relative", height:8, background:"rgba(255,255,255,0.08)", borderRadius:8, cursor:"pointer" }}>
@@ -963,7 +967,7 @@ function ExpandableText({ text, maxLines = 2 }: { text: string; maxLines?: numbe
 
 // ─────────────────────────────────────────────────────────────────────────────
 // SECTION 5C-1 — FILTER SIDEBAR (Desktop) & SORT DROPDOWN
-// ───────────────────────���─────────────────────────────────────────────────────
+// ─────────────────────────────────────────────────────────────────────────────
 
 function FilterCheckbox({ label, checked, onChange, count }: { label: string; checked: boolean; onChange: (v: boolean) => void; count?: number }) {
   return (
@@ -1267,7 +1271,7 @@ function ScholarshipFilterSidebar({
   );
 }
 
-// ───────────────────────────────────────────────────────────────���─────────────
+// ─────────────────────────────────────────────────────────────────────────────
 // SECTION 5C-2 — FILTER BOTTOM SHEET (Mobile)
 // ─────────────────────────────────────────────────────────────────────────────
 
@@ -2317,8 +2321,10 @@ function LoanFinder({ onToggleSave, savedIds, userCountry }: { onToggleSave: (it
   const [phase,    setPhase]    = useState<Phase>("idle");
   const [results,  setResults]  = useState<ScoutResult[]>([]);
   const [scanIdx,  setScanIdx]  = useState(0);
+  const [hist,     setHist]     = useState<HistRec[]>([]);
   const [loanFilters, setLoanFilters] = useState<LoanFilters>(DEFAULT_LOAN_FILTERS);
   const [loanSort, setLoanSort] = useState<SortOption>("best-match");
+  useEffect(() => { setHist(readHist().filter(h => h.type==="loan")); }, []);
   useEffect(() => {
     if (phase !== "scanning") return;
     setScanIdx(0);
@@ -2331,7 +2337,9 @@ function LoanFinder({ onToggleSave, savedIds, userCountry }: { onToggleSave: (it
       const data = await fetchResults("loan", { loanType, amount: amount?.trim() ?? "" });
       const final = (data?.length ?? 0) > 0 ? data : MOCK_LOANS;
       setResults(final);
-
+      const rec: HistRec = { id:String(Date.now()), label:`${loanType}${amount?.trim() ? " — "+amount.trim() : ""}`, type:"loan", results:final, ts:Date.now() };
+      pushHist(rec);
+      setHist(readHist().filter(h => h.type==="loan"));
     } catch { setResults(MOCK_LOANS); }
     setPhase("results");
   };
@@ -2394,6 +2402,20 @@ function LoanFinder({ onToggleSave, savedIds, userCountry }: { onToggleSave: (it
           </motion.div>
         )}
       </AnimatePresence>
+      {hist.length > 0 && (
+        <div>
+          <p style={{ fontSize:10, color:T.dim, letterSpacing:".08em", margin:"4px 2px 8px" }}>RECENT SEARCHES</p>
+          {hist.slice(0,3).map(h => (
+            <Glass key={h.id} style={{ padding:"9px 12px", marginBottom:6, cursor:"pointer" }} onClick={() => { setResults(h.results ?? []); setPhase("results"); }}>
+              <div style={{ display:"flex", justifyContent:"space-between" }}>
+                <span style={{ fontSize:12, color:T.text }}>{h.label}</span>
+                <span style={{ fontSize:10, color:T.dim }}>{new Date(h.ts).toLocaleDateString()}</span>
+              </div>
+            </Glass>
+          ))}
+        </div>
+      )}
+      
       {/* Live Scour Marketplace — filtered by selected loan type and user country */}
       <div style={{ marginTop: 20 }}>
         <LoanMarketplaceHero 
@@ -2555,9 +2577,11 @@ function ScholarshipScout({ onToggleSave, savedIds }: { onToggleSave: (item: Sco
   const [phase,   setPhase]   = useState<Phase>("idle");
   const [results, setResults] = useState<ScoutResult[]>([]);
   const [scanIdx, setScanIdx] = useState(0);
+  const [hist,    setHist]    = useState<HistRec[]>([]);
   const [schFilters, setSchFilters] = useState<ScholarshipFilters>(DEFAULT_SCHOLARSHIP_FILTERS);
   const [schSort, setSchSort] = useState<SortOption>("best-match");
   const [mobileFilterOpen, setMobileFilterOpen] = useState(false);
+  useEffect(() => { setHist(readHist().filter(h => h.type==="scholarship")); }, []);
   useEffect(() => {
     if (phase !== "scanning") return;
     setScanIdx(0);
@@ -2570,7 +2594,9 @@ function ScholarshipScout({ onToggleSave, savedIds }: { onToggleSave: (item: Sco
       const data = await fetchResults("scholarship", { major, country, year, query: query?.trim() ?? "" });
       const final = (data?.length ?? 0) > 0 ? data : MOCK_SCHOLARSHIPS;
       setResults(final);
-
+      const rec: HistRec = { id:String(Date.now()), label:query?.trim() || major, type:"scholarship", results:final, ts:Date.now() };
+      pushHist(rec);
+      setHist(readHist().filter(h => h.type==="scholarship"));
     } catch { setResults(MOCK_SCHOLARSHIPS); }
     setPhase("results");
   };
@@ -2744,6 +2770,19 @@ function ScholarshipScout({ onToggleSave, savedIds }: { onToggleSave: (item: Sco
           </AnimatePresence>
         );
       })()}
+      {hist.length > 0 && (
+        <div>
+          <p style={{ fontSize:10, color:T.dim, letterSpacing:".08em", margin:"4px 2px 8px" }}>RECENT SEARCHES</p>
+          {hist.slice(0,3).map(h => (
+            <Glass key={h.id} style={{ padding:"9px 12px", marginBottom:6, cursor:"pointer" }} onClick={() => { setResults(h.results ?? []); setPhase("results"); }}>
+              <div style={{ display:"flex", justifyContent:"space-between" }}>
+                <span style={{ fontSize:12, color:T.text }}>{h.label}</span>
+                <span style={{ fontSize:10, color:T.dim }}>{new Date(h.ts).toLocaleDateString()}</span>
+              </div>
+            </Glass>
+          ))}
+        </div>
+      )}
     </motion.div>
   );
 }
@@ -2900,8 +2939,8 @@ const NAV_TOOLS: { id: ToolId; label: string; Icon: React.FC<{size?:number}> }[]
   { id:"saved",   label:"My Saved",     Icon: ({size=15}) => <Bookmark   size={size} /> },
 ];
 
-// v55 — inputVal verified at line 319, browser running stale WealthNutzPageV9 cache
-export default function WealthNutzPageV55() {
+// v55 — inputVal verified at line 319, browser running stale ForgePageV9 cache
+export default function ForgePageV55() {
   const [activeTool, setActiveTool] = useState<ToolId|"">("");
   const [panelView,  setPanelView]  = useState<"chat"|"tool">("chat");
   const [country,    setCountry]    = useState<string>("");
@@ -3083,21 +3122,22 @@ const hBtn = (active = false): CSSProperties => ({
 
   /* ── Mobile responsiveness ─────────────────────────────────────────── */
   @media (max-width: 768px) {
-.wealthnutz-header { padding: 6px 10px !important; gap: 6px !important; }
-.wealthnutz-logo-text { font-size: 15px !important; }
-.wealthnutz-body { flex-direction: column !important; }
-.wealthnutz-main { min-width: 0 !important; }
-.wealthnutz-picks-credit-row { flex-direction: column !important; gap: 12px !important; }
-.wealthnutz-picks-credit-row > * { flex: 1 1 100% !important; min-width: 0 !important; }
-.wealthnutz-hero-section { padding: 16px 14px 0 !important; }
+  .forge-header { padding: 6px 10px !important; gap: 6px !important; }
+  .forge-logo-text { font-size: 15px !important; }
+  .forge-body { flex-direction: column !important; }
+  }
+    .forge-main { min-width: 0 !important; }
+    .forge-picks-credit-row { flex-direction: column !important; gap: 12px !important; }
+    .forge-picks-credit-row > * { flex: 1 1 100% !important; min-width: 0 !important; }
+    .forge-hero-section { padding: 16px 14px 0 !important; }
   }
 
   /* Desktop: Full-width sidebar below main content */
   @media (min-width: 769px) {
-.wealthnutz-hamburger { display: none !important; }
-.wealthnutz-body { flex-direction: column !important; }
-.wealthnutz-main { width: 100% !important; flex: none !important; }
-.wealthnutz-sidebar {
+    .forge-hamburger { display: none !important; }
+    .forge-body { flex-direction: column !important; }
+    .forge-main { width: 100% !important; flex: none !important; }
+    .forge-sidebar {
       width: 100% !important;
       max-width: none !important;
       flex: none !important;
@@ -3107,20 +3147,24 @@ const hBtn = (active = false): CSSProperties => ({
       height: auto !important;
       overflow: visible !important;
     }
-.wealthnutz-sidebar-header { display: none !important; }
-}
+    .forge-sidebar-header { display: none !important; }
+  }
 
-@media (max-width: 639px) {
-  .wealthnutz-sidebar-header { display: none !important; }
-}
+  /* MENU button hidden on desktop, visible only on mobile */
+  .forge-hamburger { display: none !important; }
+  .forge-sidebar-header { display: none !important; }
+  
+  @media (max-width: 768px) {
+    .forge-hamburger { display: flex !important; }
+  }
 
   @media (max-width: 640px) {
-.wealthnutz-header { padding: 5px 10px !important; gap: 5px !important; }
-.wealthnutz-logo-text { font-size: 14px !important; }
-.wealthnutz-hamburger { display: flex !important; }
-.wealthnutz-body { flex-direction: column !important; }
-.wealthnutz-main { overflow-x: hidden !important; }
-.wealthnutz-sidebar {
+  .forge-header { padding: 5px 10px !important; gap: 5px !important; }
+  .forge-logo-text { font-size: 14px !important; }
+  .forge-hamburger { display: flex !important; }
+    .forge-body { flex-direction: column !important; }
+    .forge-main { overflow-x: hidden !important; }
+    .forge-sidebar {
       position: fixed !important;
       top: 0 !important; left: 0 !important;
       width: 88vw !important;
@@ -3135,23 +3179,20 @@ const hBtn = (active = false): CSSProperties => ({
       box-shadow: 4px 0 24px rgba(0,0,0,0.6) !important;
       overflow-y: auto !important;
     }
-.wealthnutz-sidebar.open {
-    transform: translateX(0);
-    z-index: 99;
-  }
-
-  .wealthnutz-sidebar.closing {
-    animation: slideOut 0.2s ease-out forwards;
-  }
-
-  .wealthnutz-sidebar-header { display: flex !important; }
-  .wealthnutz-hero-section { padding: 12px 12px 0 !important; }
-  .wealthnutz-picks-credit-row { flex-direction: column !important; }
-  .wealthnutz-footer-grid { grid-template-columns: 1fr 1fr !important; gap: 16px !important; }
-}
-
-@media (max-width: 359px) {
-  .wealthnutz-chat-input-bar { padding: 10px 12px !important; }
+    .forge-sidebar.open {
+      transform: translateX(0) !important;
+      opacity: 1 !important;
+    }
+    .forge-sidebar.closing {
+      transform: translateX(40px) !important;
+      opacity: 0 !important;
+    }
+    .forge-sidebar-header { display: flex !important; }
+    .forge-hero-section { padding: 12px 12px 0 !important; }
+    .forge-picks-credit-row { flex-direction: column !important; }
+    .forge-footer-grid { grid-template-columns: 1fr 1fr !important; gap: 16px !important; }
+    /* Ensure chat input and messages have proper edge padding */
+    .forge-chat-input-bar { padding: 10px 12px !important; }
   }
 
   @media (max-width: 400px) {
@@ -3168,7 +3209,7 @@ const hBtn = (active = false): CSSProperties => ({
 
 
         {/* ═══ HEADER ══════════════════════════════════════════════════════════ */}
-        <header style={{ display:"flex", alignItems:"center", justifyContent:"space-between", padding:"10px 14px", borderBottom:`1px solid ${T.border}`, flexShrink:0, zIndex:10, background: isDarkMode ? "rgba(5,5,5,0.97)" : "rgba(250,250,250,0.97)", backdropFilter:"blur(22px)", WebkitBackdropFilter:"blur(22px)", gap:8, minHeight:52 }} className="wealthnutz-header">
+        <header style={{ display:"flex", alignItems:"center", justifyContent:"space-between", padding:"10px 14px", borderBottom:`1px solid ${T.border}`, flexShrink:0, zIndex:10, background: isDarkMode ? "rgba(5,5,5,0.97)" : "rgba(250,250,250,0.97)", backdropFilter:"blur(22px)", WebkitBackdropFilter:"blur(22px)", gap:8, minHeight:52 }} className="forge-header">
           
           {/* Left: Country flags */}
           <div style={{ display:"flex", gap:6, alignItems:"center", flexWrap:"nowrap", minWidth: 80 }}>
@@ -3224,7 +3265,7 @@ const hBtn = (active = false): CSSProperties => ({
             
             {/* MENU button (mobile only) */}
             <motion.button whileTap={{ scale: 0.93 }} onClick={() => sidebarOpen ? closeSidebar() : setSidebarOpen(true)}
-              style={{ background: isDarkMode ? "rgba(255,255,255,0.1)" : "rgba(0,0,0,0.05)", border: `1px solid ${isDarkMode ? "rgba(255,255,255,0.3)" : "rgba(0,0,0,0.15)"}`, color: isDarkMode ? "#FFFFFF" : "#0F172A", cursor:"pointer", padding:"6px 12px", borderRadius:T.rsm, display:"flex", alignItems:"center", gap:6, fontSize:12, fontWeight:700, letterSpacing:".05em", lineHeight:1, whiteSpace:"nowrap", flexShrink:0 }} className="wealthnutz-hamburger">
+              style={{ background: isDarkMode ? "rgba(255,255,255,0.1)" : "rgba(0,0,0,0.05)", border: `1px solid ${isDarkMode ? "rgba(255,255,255,0.3)" : "rgba(0,0,0,0.15)"}`, color: isDarkMode ? "#FFFFFF" : "#0F172A", cursor:"pointer", padding:"6px 12px", borderRadius:T.rsm, display:"flex", alignItems:"center", gap:6, fontSize:12, fontWeight:700, letterSpacing:".05em", lineHeight:1, whiteSpace:"nowrap", flexShrink:0 }} className="forge-hamburger">
               <span style={{ fontSize:16, lineHeight:1, color: isDarkMode ? "#FFFFFF" : "#0F172A" }}>☰</span> MENU
             </motion.button>
           </div>
@@ -3310,10 +3351,10 @@ const hBtn = (active = false): CSSProperties => ({
         </AnimatePresence>
 
         {/* ═══ BODY ════════════════════════════════════════════════════════════ */}
-        <div style={{ flex:1, display:"flex", overflow:"auto" }} className="wealthnutz-body">
+        <div style={{ flex:1, display:"flex", overflow:"auto" }} className="forge-body">
 
           {/* ── Main panel ─────────────────────────────────────────────────────── */}
-          <div style={{ flex:1, display:"flex", flexDirection:"column", overflow:"hidden", minHeight:0 }} className="wealthnutz-main">
+          <div style={{ flex:1, display:"flex", flexDirection:"column", overflow:"hidden", minHeight:0 }} className="forge-main">
 
             {/* Tool view */}
             {panelView==="tool" && activeTool && (
@@ -3400,9 +3441,9 @@ const hBtn = (active = false): CSSProperties => ({
           </div>
 
           {/* ═══ SIDEBAR ���═════════════��════��══════════════��═════���════════════ */}
-          <aside style={{ width:"100%", maxWidth:224, flexShrink:0, borderLeft:`1px solid ${T.border}`, background: isDarkMode ? "rgba(10,10,10,0.95)" : "rgba(255,255,255,0.98)", backdropFilter:"blur(12px)", display:"flex", flexDirection:"column", overflow:"hidden" }} className={`wealthnutz-sidebar${sidebarOpen ? ' open' : ''}${sidebarClosing ? ' closing' : ''}`}>
+          <aside style={{ width:"100%", maxWidth:224, flexShrink:0, borderLeft:`1px solid ${T.border}`, background: isDarkMode ? "rgba(10,10,10,0.95)" : "rgba(255,255,255,0.98)", backdropFilter:"blur(12px)", display:"flex", flexDirection:"column", overflow:"hidden" }} className={`forge-sidebar${sidebarOpen ? ' open' : ''}${sidebarClosing ? ' closing' : ''}`}>
             {/* Mobile close button */}
-            <div style={{ display:"flex", padding:"10px 12px", justifyContent:"space-between", alignItems:"center", borderBottom:`1px solid ${T.border}`, flexShrink:0 }} className="wealthnutz-sidebar-header">
+            <div style={{ display:"flex", padding:"10px 12px", justifyContent:"space-between", alignItems:"center", borderBottom:`1px solid ${T.border}`, flexShrink:0 }} className="forge-sidebar-header">
               <span style={{ fontSize:12, fontWeight:700, color:T.gold, letterSpacing:".06em" }}>MENU</span>
               <button onClick={() => closeSidebar()} style={{ background:"none", border:`1px solid ${T.border}`, color:T.text, cursor:"pointer", borderRadius:6, width:28, height:28, display:"flex", alignItems:"center", justifyContent:"center", fontSize:16, lineHeight:1 }}>
                 <X size={16} />
