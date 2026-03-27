@@ -359,7 +359,7 @@ function Glass({ children, style, glow, onClick }: { children: ReactNode; style?
 }
 
 function Skel({ w = "100%", h = 14 }: { w?: string|number; h?: number }) {
-  return <div style={{ width:w, height:h, borderRadius:7, backgroundImage:"linear-gradient(90deg,rgba(255,255,255,0.04) 25%,rgba(255,255,255,0.09) 50%,rgba(255,255,255,0.04) 75%)", backgroundSize:"200% 100%", backgroundColor:"rgba(255,255,255,0.03)", animation:"wf-skel 1.6s ease infinite" }} />;
+  return <div className="wf-skel-bar" style={{ width:w, height:h, borderRadius:7 }} />;
 }
 
 function Chip({ label, color }: { label: string; color?: string }) {
@@ -1118,9 +1118,8 @@ function SortDropdown({ value, onChange, resultCount }: { value: SortOption; onC
               }}
             >
               {SORT_OPTIONS.map(opt => (
-                <motion.button
+                <button
                   key={opt.value}
-                  whileHover={{ background: T.glassHi }}
                   onClick={() => { onChange(opt.value); setOpen(false); }}
                   style={{
                     display: "block",
@@ -1132,10 +1131,13 @@ function SortDropdown({ value, onChange, resultCount }: { value: SortOption; onC
                     fontSize: 12,
                     textAlign: "left",
                     cursor: "pointer",
+                    transition: "background .15s",
                   }}
+                  onMouseEnter={e => { (e.currentTarget as HTMLElement).style.background = T.glassHi; }}
+                  onMouseLeave={e => { (e.currentTarget as HTMLElement).style.background = value === opt.value ? T.glassHi : "rgba(0,0,0,0)"; }}
                 >
                   {opt.label}
-                </motion.button>
+                </button>
               ))}
             </motion.div>
           </>
@@ -1738,7 +1740,9 @@ function TopPicksSection({ country }: { country: "Canada" | "USA" }) {
               textDecoration: "none",
               transition: "all 0.2s",
             }}
-            whileHover={{ borderColor: T.gold, background: T.glassHi }}
+            whileHover={{ borderColor: T.gold }}
+            onMouseEnter={e => { (e.currentTarget as HTMLElement).style.background = T.glassHi; }}
+            onMouseLeave={e => { (e.currentTarget as HTMLElement).style.background = T.glass; }}
           >
             <span style={{ fontSize: 20 }}>{p.logo}</span>
             <div style={{ flex: 1 }}>
@@ -2467,20 +2471,19 @@ function ScholarshipSelect({ value, options, onChange }: { value: string; option
   }, [open]);
 
   return (
-    <div ref={ref} style={{ position: "relative", minWidth: 0 }}>
+    <div ref={ref} style={{ position: "relative", minWidth: 0, width: "100%" }}>
       {/* Trigger button */}
       <button
         type="button"
         onClick={() => setOpen(o => !o)}
         style={{
           width: "100%",
-          padding: "8px 9px",
-          paddingRight: 28,
+          padding: "9px 30px 9px 10px",
           background: T.glass,
           border: `1px solid ${open ? T.gold : T.border}`,
           borderRadius: T.rsm,
           color: T.text,
-          fontSize: 11,
+          fontSize: 12,
           fontFamily: "inherit",
           outline: "none",
           cursor: "pointer",
@@ -2604,14 +2607,19 @@ function ScholarshipScout({ onToggleSave, savedIds }: { onToggleSave: (item: Sco
         <input value={query} onChange={e => setQuery(e.target.value ?? "")} onKeyDown={e => e.key==="Enter" && handleSearch()}
           placeholder="Tell us about yourself"
           style={{ width:"100%", padding:"10px 13px", background:T.glassHi, border:`1px solid ${T.border}`, borderRadius:T.rsm, color:T.text, fontSize:13, outline:"none", fontFamily:"inherit", boxSizing:"border-box" }} />
-        <div style={{ display:"grid", gridTemplateColumns:"2fr 1fr 1fr", gap:8, width:"100%", boxSizing:"border-box" }}>
-          {([
-            {val:major, set:setMajor, opts:SCHOLARSHIP_MAJORS as readonly string[]},
-            {val:year,  set:setYear,  opts:SCHOLARSHIP_YEARS  as readonly string[]},
-            {val:country,set:setCountry,opts:SCHOLARSHIP_COUNTRIES as readonly string[]},
-          ] as const).map(({val,set,opts},i) => (
-            <ScholarshipSelect key={i} value={val} options={opts} onChange={set} />
-          ))}
+        <div style={{ display:"flex", flexWrap:"wrap", gap:8, width:"100%", boxSizing:"border-box" }}>
+          {/* Major — takes full row width until there is enough space to share */}
+          <div style={{ flex:"1 1 180px", minWidth:140 }}>
+            <ScholarshipSelect value={major} options={SCHOLARSHIP_MAJORS as readonly string[]} onChange={setMajor} />
+          </div>
+          {/* Year — always visible, fixed minimum */}
+          <div style={{ flex:"1 1 110px", minWidth:100 }}>
+            <ScholarshipSelect value={year} options={SCHOLARSHIP_YEARS as readonly string[]} onChange={setYear} />
+          </div>
+          {/* Country — always visible, fixed minimum */}
+          <div style={{ flex:"1 1 90px", minWidth:84 }}>
+            <ScholarshipSelect value={country} options={SCHOLARSHIP_COUNTRIES as readonly string[]} onChange={setCountry} />
+          </div>
         </div>
         <motion.button whileTap={tapAnim.tap} onClick={handleSearch} disabled={phase==="scanning"}
           style={{ width:"100%", padding:"11px 0", borderRadius:T.rsm, border:"none", cursor:"pointer", background:`linear-gradient(135deg,${T.gold},${T.goldDim})`, color:"#07090d", fontSize:13, fontWeight:800, fontFamily:"inherit", opacity:phase==="scanning"?.65:1, boxShadow:`0 0 18px ${T.glow}`, boxSizing:"border-box" }}>
@@ -3380,7 +3388,7 @@ const hBtn = (active = false): CSSProperties => ({
     style={{ 
       padding: "40px 20px 30px", 
       textAlign: "center",
-      background: `linear-gradient(180deg, ${isDarkMode ? "rgba(201,168,76,0.08)" : "rgba(184,146,47,0.06)"} 0%, transparent 100%)`,
+      background: `linear-gradient(180deg, ${isDarkMode ? "rgba(201,168,76,0.08)" : "rgba(184,146,47,0.06)"} 0%, rgba(0,0,0,0) 100%)`,
     }}
   >
     <h1 style={{ 
