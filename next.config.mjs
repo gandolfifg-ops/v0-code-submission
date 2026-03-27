@@ -1,5 +1,5 @@
 /** @type {import('next').NextConfig} */
-// v52 — HARD DEV SERVER RESTART — Recreated config, new module graphs only
+// v55 — Force restart, inputVal IS declared at line 319 in current source
 const nextConfig = {
   typescript: {
     ignoreBuildErrors: true,

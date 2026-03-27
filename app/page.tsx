@@ -1584,7 +1584,7 @@ function LoanTool({ onToggleSave, savedIds }: { onToggleSave: (item: ScoutResult
   );
 }
 
-// ── Scholarship Scout ────────────────────────────────────────────��──────────��─
+// ── Scholarship Scout ───────────────────────────────────────────����──────────��─
 const SCH_SCAN_MSGS = ["Connecting to scholarship databases...","Scanning national award portals...","Cross-referencing eligibility...","Aggregating live results for you..."];
 
 function ScholarshipScout({ onToggleSave, savedIds }: { onToggleSave: (item: ScoutResult) => void; savedIds: Set<string> }) {
@@ -1845,8 +1845,8 @@ const NAV_TOOLS: { id: ToolId; label: string; Icon: React.FC<{size?:number}> }[]
   { id:"saved",   label:"My Saved",     Icon: ({size=15}) => <Bookmark   size={size} /> },
 ];
 
-// v54 — Layout deleted and recreated, forces complete Turbopack restart
-export default function ForgePageV54() {
+// v55 — inputVal verified at line 319, browser running stale ForgePageV9 cache
+export default function ForgePageV55() {
   const [activeTool, setActiveTool] = useState<ToolId|"">("");
   const [panelView,  setPanelView]  = useState<"chat"|"tool">("chat");
   const [country,    setCountry]    = useState<string>("");
@@ -2104,7 +2104,7 @@ const hBtn = (active = false): CSSProperties => ({
               <motion.div key={activeTool} initial={{opacity:0,x:12}} animate={{opacity:1,x:0}} transition={{duration:.26}}
                 style={{ flex:1, display:"flex", flexDirection:"column", overflow:"hidden" }}>
                 <div style={{ padding:"12px 20px", borderBottom:`1px solid ${T.border}`, display:"flex", alignItems:"center", gap:10, flexShrink:0 }}>
-                  <motion.button whileTap={tapAnim.tap} onClick={() => setPanelView("chat")} style={{ background:"none", border:"none", color:T.mid, cursor:"pointer", padding:4, display:"flex", alignItems:"center", borderRadius:6 }}>
+                  <motion.button whileTap={tapAnim.tap} onClick={() => { setPanelView("chat"); setActiveTool(""); window.scrollTo({ top: 0, behavior: "instant" }); }} style={{ background:"none", border:"none", color:T.mid, cursor:"pointer", padding:4, display:"flex", alignItems:"center", borderRadius:6 }}>
                     <ChevronLeft size={18} />
                   </motion.button>
                   <span style={{ fontSize:13, fontWeight:700, color:T.gold }}>{currentTool?.label ?? ""}</span>
@@ -2143,7 +2143,7 @@ const hBtn = (active = false): CSSProperties => ({
             )}
           </div>
 
-          {/* ═══ SIDEBAR ���═════════════════════════════════��═════���════════════ */}
+          {/* ═══ SIDEBAR ���═════════════��═══════════════════��═════���════════════ */}
           <aside style={{ width:"100%", maxWidth:224, flexShrink:0, borderLeft:`1px solid ${T.border}`, background:"rgba(255,255,255,0.014)", backdropFilter:"blur(12px)", display:"flex", flexDirection:"column", overflow:"hidden" }} className={`forge-sidebar${sidebarOpen ? ' open' : ''}${sidebarClosing ? ' closing' : ''}`}>
             {/* Mobile close button */}
             <div style={{ display:"flex", padding:"10px 12px", justifyContent:"space-between", alignItems:"center", borderBottom:`1px solid ${T.border}`, flexShrink:0 }} className="forge-sidebar-header">
