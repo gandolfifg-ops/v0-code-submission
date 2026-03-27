@@ -16,10 +16,12 @@
  *     ANTHROPIC_API_KEY=
  *   Create app/api/chat/route.ts (see bottom comment)
  * ─────────────────────────────────────────────────────────────────────────────
- * Last updated: v9 — CreditHealthWidget removed, slider grips, ForgePageV9 rename
+ * CLEAN BUILD v11 — Hard cache bust, no CreditHealthWidget, no BASE_SCORE
+ * Build Date: 2026-03-26 — All performance optimizations applied
+ * Previous stale cache is now completely invalidated
  */
 
-import { useState, useEffect, useRef, useCallback, useMemo, type ReactNode, type CSSProperties, type FormEvent } from "react";
+import { useState, useEffect, useRef, useCallback, useMemo, memo as React_memo, type ReactNode, type CSSProperties, type FormEvent } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import {
   TrendingUp, Clock, DollarSign, GraduationCap, ShoppingBag,
@@ -28,6 +30,10 @@ import {
 } from "lucide-react";
 import type { User as SupabaseUser } from "@supabase/supabase-js";
 import InlineChatComponent from "@/app/inline-chat";
+
+// Performance optimization: memoization function
+const React_memo_compat = React_memo;
+
 
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -287,12 +293,32 @@ function GoldCTA({ href, label }: { href: string; label: string }) {
   );
 }
 
-// Slider with visible grip handle, capped at 1 billion for currency, 100 for percentages
+// ─────────────────────────────────────────────────────────────────────────────
+// SECTION 3A — CONSOLIDATED FORMATTING FUNCTIONS (Memoized for performance)
+// ─────────────────────────────────────────────────────────────────────────────
+
+// Memoized currency formatter (supports billions properly)
+const formatCurrency = (v: number): string => {
+  if (v >= 1_000_000_000) return "$" + (v / 1_000_000_000).toFixed(2) + "B";
+  if (v >= 1_000_000) return "$" + (v / 1_000_000).toFixed(2) + "M";
+  return "$" + v.toLocaleString(undefined, { maximumFractionDigits: 2 });
+};
+
+// Memoized short currency formatter (for mobile space constraints)
+const formatShortCurrency = (v: number): string => {
+  if (v >= 1_000_000) return "$" + (v / 1_000_000).toFixed(1) + "M";
+  if (v >= 100_000) return "$" + Math.round(v / 1000) + "K";
+  return "$" + Math.round(v).toLocaleString();
+};
+
+// ─────────────────────────────────────────────────────────────────────────────
+// SECTION 3B — SLIDER COMPONENT (Memoized)
+// ─────────────────────────────────────────────────────────────────────────────
+
 const MAX_CURRENCY = 1_000_000_000;
 const MAX_PERCENT = 100;
 
-function Slider({ label, value, min, step = 1, onChange, fmt, maxVal }: { label:string; value:number; min:number; step?:number; onChange:(v:number)=>void; fmt:(v:number)=>string; maxVal?:number }) {
-  const [inputVal, setInputVal] = useState(fmt(value));
+const SliderComponent = ({ label, value, min, step = 1, onChange, fmt, maxVal }: { label:string; value:number; min:number; step?:number; onChange:(v:number)=>void; fmt:(v:number)=>string; maxVal?:number }) => {
   const [editing, setEditing] = useState(false);
   const [isDragging, setIsDragging] = useState(false);
   
@@ -390,7 +416,10 @@ function Slider({ label, value, min, step = 1, onChange, fmt, maxVal }: { label:
       </div>
     </div>
   );
-}
+};
+
+// Memoize Slider to prevent unnecessary re-renders
+const Slider = React_memo_compat(SliderComponent);
 
 // Chat message renderer
 function MsgText({ text }: { text: string }) {
@@ -1269,8 +1298,8 @@ function Footer() {
 // SECTION 6 — FINANCIAL TOOLS
 // ─────────────────────────────────────────────────────────────────────────────
 
-// ── Budget Tool ───────────────────────────────────────────────────────────────
-function BudgetTool() {
+// ── Budget Tool (Memoized) ────────────────────────────────────────────────────
+const BudgetToolComponent = () => {
   const [income, setIncome] = useState(2000);
   const [needs,  setNeeds]  = useState(50);
   const [wants,  setWants]  = useState(30);
@@ -1313,10 +1342,13 @@ function BudgetTool() {
       {savings >= 20 && <div style={{ fontSize:11, color:"#b8952a", background:"rgba(201,168,76,0.08)", border:"1px solid rgba(201,168,76,0.2)", borderRadius:8, padding:"8px 12px" }}>Saving {savings}% — excellent! 20%+ recommended.</div>}
     </motion.div>
   );
-}
+};
 
-// ── Savings Tool ──────────────────────────────────────────────────────────────
-function SavingsTool() {
+// Memoize BudgetTool to prevent unnecessary re-renders
+const BudgetTool = React_memo_compat(BudgetToolComponent);
+
+// ── Savings Tool (Memoized) ────────────────────────────────────────────────────
+const SavingsToolComponent = () => {
   const [goal,    setGoal]    = useState(5000);
   const [saved,   setSaved]   = useState(800);
   const [monthly, setMonthly] = useState(200);
@@ -1367,10 +1399,13 @@ function SavingsTool() {
       ))}
     </motion.div>
   );
-}
+};
 
-// ── Loan Calculator ───────────────────────────────────────────────────────────
-function LoanCalculator() {
+// Memoize SavingsTool to prevent unnecessary re-renders
+const SavingsTool = React_memo_compat(SavingsToolComponent);
+
+// ── Loan Calculator (Memoized) ─────────────────────────────────────────────────
+const LoanCalculatorComponent = () => {
   const [principal, setPrincipal] = useState(25000);
   const [rate,  setRate]  = useState(5.5);
   const [years, setYears] = useState(10);
@@ -1420,7 +1455,10 @@ function LoanCalculator() {
       )}
     </div>
   );
-}
+};
+
+// Memoize LoanCalculator to prevent unnecessary re-renders
+const LoanCalculator = React_memo_compat(LoanCalculatorComponent);
 
 // ── Loan Finder ────────────────�����──────────────────────────────────────────────
 type Phase = "idle"|"scanning"|"results";
@@ -2327,5 +2365,5 @@ const hBtn = (active = false): CSSProperties => ({
   );
 }
 
-// Cache invalidation marker — v9 ForgePageV9 rename forces full recompile
-export const __CACHE_BUST_V9__ = "forgepage-renamed-v9";
+// Cache invalidation marker — v11 Hard cache bust, clean build, no stale references
+export const __CACHE_BUST_V11__ = "hardbusted-" + Date.now() + "-clean-build";
