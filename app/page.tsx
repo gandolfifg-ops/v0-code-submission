@@ -156,7 +156,7 @@ const T = {
 
 // ─────────────────────────────────────────────────────────────────────────────
 // SECTION 3 — MOTION VARIANTS
-// ─────────────────────────────────────────────────────────────────────────────
+// ─────────────────────────────────────────────────────────────────────────��───
 
 const fadeUp  = { hidden:{opacity:0,y:16}, visible:{opacity:1,y:0,transition:{duration:0.36,ease:[0.22,1,0.36,1] as number[]}} };
 const stagger = { visible:{transition:{staggerChildren:0.065}} };
@@ -357,7 +357,7 @@ const formatShortCurrency = (v: number): string => {
 
 // ─────────────────────────────────────────────────────────────────────────────
 // SECTION 3B — SLIDER COMPONENT (Memoized)
-// ─────────────────────────────────────────────────────────────────────────────
+// ────────────────────────────────────────────────────────────────��────────────
 
 const MAX_CURRENCY = 1_000_000_000;
 const MAX_PERCENT = 100;
@@ -2023,25 +2023,35 @@ useEffect(() => {
       setUser(session?.user ?? null);
       setAuthLoading(false);
       
-      // If user is logged in, fetch their bookmarks from Supabase
+      // If user is logged in, fetch their bookmarks from Supabase immediately
       if (session?.user) {
         const bookmarks = await fetchBookmarksFromSupabase(session.user.id);
-        if (bookmarks.length > 0) {
-          setSavedItems(bookmarks);
-          writeSaved(bookmarks); // Sync to localStorage as backup
-        }
+        setSavedItems(bookmarks); // Always update state with DB data
+        writeSaved(bookmarks); // Sync to localStorage as backup
       }
       
       // Listen for auth changes
-      const { data: { subscription: sub } } = supabase.auth.onAuthStateChange(async (_event, session) => {
+      const { data: { subscription: sub } } = supabase.auth.onAuthStateChange(async (event, session) => {
         setUser(session?.user ?? null);
-        // Fetch bookmarks when user logs in
-        if (session?.user) {
+        
+        // Fetch bookmarks immediately when user signs in
+        if (event === "SIGNED_IN" && session?.user) {
           const bookmarks = await fetchBookmarksFromSupabase(session.user.id);
-          if (bookmarks.length > 0) {
-            setSavedItems(bookmarks);
-            writeSaved(bookmarks);
-          }
+          setSavedItems(bookmarks); // Always update, even if empty
+          writeSaved(bookmarks);
+        }
+        
+        // Also handle token refresh which keeps the session alive
+        if (event === "TOKEN_REFRESHED" && session?.user) {
+          const bookmarks = await fetchBookmarksFromSupabase(session.user.id);
+          setSavedItems(bookmarks);
+          writeSaved(bookmarks);
+        }
+        
+        // Clear saved items when user signs out
+        if (event === "SIGNED_OUT") {
+          setSavedItems([]);
+          writeSaved([]);
         }
       });
       subscription = sub;
