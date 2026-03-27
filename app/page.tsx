@@ -16,9 +16,8 @@
  *     ANTHROPIC_API_KEY=
  *   Create app/api/chat/route.ts (see bottom comment)
  * ─────────────────────────────────────────────────────────────────────────────
- * CLEAN BUILD v11 — Hard cache bust, no CreditHealthWidget, no BASE_SCORE
- * Build Date: 2026-03-26 — All performance optimizations applied
- * Previous stale cache is now completely invalidated
+ * CLEAN BUILD v49 — v46 revert applied, all stale exports cleared
+ * Build Date: 2026-03-26 — next.config.mjs updated to restart dev server
  */
 
 import { useState, useEffect, useRef, useCallback, useMemo, memo as React_memo, type ReactNode, type CSSProperties, type FormEvent } from "react";
@@ -1585,7 +1584,7 @@ function LoanTool({ onToggleSave, savedIds }: { onToggleSave: (item: ScoutResult
   );
 }
 
-// ── Scholarship Scout ─────────────────────────────────────────────────────────
+// ── Scholarship Scout ────────────────────────────────────────────��────────────
 const SCH_SCAN_MSGS = ["Connecting to scholarship databases...","Scanning national award portals...","Cross-referencing eligibility...","Aggregating live results for you..."];
 
 function ScholarshipScout({ onToggleSave, savedIds }: { onToggleSave: (item: ScoutResult) => void; savedIds: Set<string> }) {
@@ -1847,7 +1846,7 @@ const NAV_TOOLS: { id: ToolId; label: string; Icon: React.FC<{size?:number}> }[]
 ];
 
 // v15 — Renamed to ForgePageV15 to force Turbopack full recompile
-export default function ForgePageV15() {
+export default function ForgePageV49() {
   const [activeTool, setActiveTool] = useState<ToolId|"">("");
   const [panelView,  setPanelView]  = useState<"chat"|"tool">("chat");
   const [country,    setCountry]    = useState<string>("");
@@ -2034,11 +2033,16 @@ const hBtn = (active = false): CSSProperties => ({
 
         {/* ═══ HEADER ══════════════════════════════════════════════════════════ */}
         <header style={{ display:"flex", alignItems:"center", justifyContent:"space-between", padding:"7px 14px", borderBottom:`1px solid ${T.border}`, flexShrink:0, zIndex:10, background:"rgba(5,5,5,0.97)", backdropFilter:"blur(22px)", WebkitBackdropFilter:"blur(22px)", gap:10, minHeight:44 }} className="forge-header">
-          {/* Left: logo + name — minimal, fixed width */}
-          <div style={{ display:"flex", alignItems:"center", gap:8, flexShrink:0 }}>
+          {/* Left: logo + name — clickable, scrolls to top and closes sidebar */}
+          <motion.button
+            whileTap={{ scale: 0.94 }}
+            onClick={() => { closeSidebar(); window.scrollTo({ top: 0, behavior: "smooth" }); }}
+            aria-label="Back to top"
+            style={{ display:"flex", alignItems:"center", gap:8, flexShrink:0, background:"none", border:"none", cursor:"pointer", padding:0, outline:"none" }}
+          >
             <LogoMark size={24} />
             <span style={{ fontSize:17, fontWeight:900, letterSpacing:"-.03em", backgroundImage:`linear-gradient(90deg,${T.goldHi},${T.gold},${T.goldDim},${T.goldHi})`, backgroundSize:"200%", WebkitBackgroundClip:"text", WebkitTextFillColor:"transparent", animation:"wf-shimmer 5s linear infinite", textTransform:"uppercase", whiteSpace:"nowrap", lineHeight:1 }} className="forge-logo-text">Forge</span>
-          </div>
+          </motion.button>
           
           {/* Middle: Country flags + Clear button — tight group */}
           <div style={{ display:"flex", gap:6, alignItems:"center", flexWrap:"nowrap" }}>
