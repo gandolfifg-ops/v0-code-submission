@@ -2663,9 +2663,40 @@ const hBtn = (active = false): CSSProperties => ({
       </motion.button>
     </>
   ) : (
-    <motion.button variants={fadeUp} whileTap={tapAnim.tap} onClick={() => { setShowAuth(true); closeSidebar(); }}
-      style={{ display:"flex", alignItems:"center", justifyContent:"center", gap:7, padding:"10px 0", borderRadius:T.rsm, cursor:"pointer", fontFamily:"inherit", fontSize:11, fontWeight:600, border:`1px solid ${T.gold}`, background:"rgba(201,168,76,0.08)", color:T.gold, transition:"all .3s" }}>
-      <LogIn size={14} /> Member Sign In
+    <motion.button 
+      variants={fadeUp} 
+      whileTap={{ scale: 0.97 }} 
+      whileHover={{ scale: 1.02, boxShadow: isDarkMode ? "0 0 14px rgba(201,168,76,0.35)" : "0 2px 12px rgba(0,0,0,0.12)" }}
+      onClick={() => { setShowAuth(true); closeSidebar(); }}
+      style={{ 
+        display:"flex", 
+        alignItems:"center", 
+        justifyContent:"center", 
+        gap:8, 
+        padding:"12px 0", 
+        borderRadius:T.rsm, 
+        cursor:"pointer", 
+        fontFamily:"inherit", 
+        fontSize:11, 
+        fontWeight:700, 
+        border: isDarkMode ? `1.5px solid ${T.gold}` : `1px solid ${T.cardBorder}`, 
+        background: isDarkMode ? "rgba(201,168,76,0.1)" : "#FFFFFF", 
+        color: isDarkMode ? T.gold : "#0F172A", 
+        transition:"all .25s ease",
+        letterSpacing: "0.03em",
+        boxShadow: isDarkMode ? "none" : "0 1px 3px rgba(0,0,0,0.06)",
+      }}>
+      <img 
+        src="/images/wealthnutz-logo-full.png" 
+        alt="" 
+        style={{ 
+          height: 18, 
+          width: "auto", 
+          objectFit: "contain",
+          filter: isDarkMode ? "none" : "brightness(0.25)",
+        }} 
+      />
+      Member Sign In
     </motion.button>
   )}
                   
