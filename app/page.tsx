@@ -359,7 +359,7 @@ function Glass({ children, style, glow, onClick }: { children: ReactNode; style?
 }
 
 function Skel({ w = "100%", h = 14 }: { w?: string|number; h?: number }) {
-  return <div style={{ width:w, height:h, borderRadius:7, background: "linear-gradient(90deg,rgba(255,255,255,0.04) 25%,rgba(255,255,255,0.09) 50%,rgba(255,255,255,0.04) 75%)", backgroundSize:"200% 100%", animation:"wf-skel 1.6s ease infinite" }} />;
+  return <div style={{ width:w, height:h, borderRadius:7, backgroundImage:"linear-gradient(90deg,rgba(255,255,255,0.04) 25%,rgba(255,255,255,0.09) 50%,rgba(255,255,255,0.04) 75%)", backgroundSize:"200% 100%", backgroundColor:"rgba(255,255,255,0.03)", animation:"wf-skel 1.6s ease infinite" }} />;
 }
 
 function Chip({ label, color }: { label: string; color?: string }) {
@@ -1755,7 +1755,7 @@ function TopPicksSection({ country }: { country: "Canada" | "USA" }) {
   );
 }
 
-// ─────────────────────────────────────────────────────────────────────────────
+// ─────��───────────────────────────────────────────────────────────────────────
 // SECTION 5E — CREDIT PATH MODAL
 // ─────────────────────────────────────────────────────────────────────────────
 
@@ -2451,6 +2451,120 @@ function LoanTool({ onToggleSave, savedIds, userCountry }: { onToggleSave: (item
 // ── Scholarship Scout ─────────────────────������������─����──────────────────�����──────────��─
 const SCH_SCAN_MSGS = ["Connecting to scholarship databases...","Scanning national award portals...","Cross-referencing eligibility...","Aggregating live results for you..."];
 
+// Custom themed dropdown — replaces native <select> so colors work in both themes
+function ScholarshipSelect({ value, options, onChange }: { value: string; options: readonly string[]; onChange: (v: string) => void }) {
+  const [open, setOpen] = useState(false);
+  const ref = useRef<HTMLDivElement>(null);
+
+  // Close when clicking outside
+  useEffect(() => {
+    if (!open) return;
+    const handler = (e: MouseEvent) => {
+      if (ref.current && !ref.current.contains(e.target as Node)) setOpen(false);
+    };
+    document.addEventListener("mousedown", handler);
+    return () => document.removeEventListener("mousedown", handler);
+  }, [open]);
+
+  return (
+    <div ref={ref} style={{ position: "relative", minWidth: 0 }}>
+      {/* Trigger button */}
+      <button
+        type="button"
+        onClick={() => setOpen(o => !o)}
+        style={{
+          width: "100%",
+          padding: "8px 9px",
+          paddingRight: 28,
+          background: T.glass,
+          border: `1px solid ${open ? T.gold : T.border}`,
+          borderRadius: T.rsm,
+          color: T.text,
+          fontSize: 11,
+          fontFamily: "inherit",
+          outline: "none",
+          cursor: "pointer",
+          textAlign: "left",
+          boxSizing: "border-box",
+          overflow: "hidden",
+          textOverflow: "ellipsis",
+          whiteSpace: "nowrap",
+          transition: "border-color .15s",
+          position: "relative",
+        }}
+      >
+        {value}
+        {/* Chevron */}
+        <span style={{
+          position: "absolute",
+          right: 8,
+          top: "50%",
+          transform: `translateY(-50%) rotate(${open ? 180 : 0}deg)`,
+          transition: "transform .2s",
+          pointerEvents: "none",
+          color: T.mid,
+          display: "flex",
+          alignItems: "center",
+        }}>
+          <ChevronDown size={12} />
+        </span>
+      </button>
+
+      {/* Dropdown panel */}
+      <AnimatePresence>
+        {open && (
+          <motion.div
+            initial={{ opacity: 0, y: -6, scaleY: 0.92 }}
+            animate={{ opacity: 1, y: 0, scaleY: 1 }}
+            exit={{ opacity: 0, y: -6, scaleY: 0.92 }}
+            transition={{ duration: 0.15 }}
+            style={{
+              position: "absolute",
+              top: "calc(100% + 4px)",
+              left: 0,
+              minWidth: "100%",
+              maxHeight: 220,
+              overflowY: "auto",
+              background: T.cardBg,
+              border: `1px solid ${T.border}`,
+              borderRadius: T.rsm,
+              boxShadow: "0 8px 32px rgba(0,0,0,0.22)",
+              zIndex: 999,
+              transformOrigin: "top",
+            }}
+          >
+            {options.map(opt => (
+              <button
+                key={opt}
+                type="button"
+                onClick={() => { onChange(opt); setOpen(false); }}
+                style={{
+                  display: "block",
+                  width: "100%",
+                  padding: "9px 12px",
+                  border: "none",
+                  background: opt === value ? (T.gold + "22") : "rgba(0,0,0,0)",
+                  color: opt === value ? T.gold : T.text,
+                  fontSize: 12,
+                  fontFamily: "inherit",
+                  textAlign: "left",
+                  cursor: "pointer",
+                  whiteSpace: "nowrap",
+                  transition: "background .1s",
+                }}
+                onMouseEnter={e => { if (opt !== value) (e.currentTarget as HTMLElement).style.background = T.glassHi; }}
+                onMouseLeave={e => { if (opt !== value) (e.currentTarget as HTMLElement).style.background = "rgba(0,0,0,0)"; }}
+              >
+                {opt}
+              </button>
+            ))}
+          </motion.div>
+        )}
+      </AnimatePresence>
+    </div>
+  );
+}
+
 function ScholarshipScout({ onToggleSave, savedIds }: { onToggleSave: (item: ScoutResult) => void; savedIds: Set<string> }) {
   
   const [query,   setQuery]   = useState("");
@@ -2491,10 +2605,12 @@ function ScholarshipScout({ onToggleSave, savedIds }: { onToggleSave: (item: Sco
           placeholder="Tell us about yourself"
           style={{ width:"100%", padding:"10px 13px", background:T.glassHi, border:`1px solid ${T.border}`, borderRadius:T.rsm, color:T.text, fontSize:13, outline:"none", fontFamily:"inherit", boxSizing:"border-box" }} />
         <div style={{ display:"grid", gridTemplateColumns:"2fr 1fr 1fr", gap:8, width:"100%", boxSizing:"border-box" }}>
-          {[{val:major,set:setMajor,opts:SCHOLARSHIP_MAJORS},{val:year,set:setYear,opts:SCHOLARSHIP_YEARS},{val:country,set:setCountry,opts:SCHOLARSHIP_COUNTRIES}].map(({val,set,opts},i) => (
-            <select key={i} value={val} onChange={e => set(e.target.value ?? "")} style={{ width:"100%", padding:"8px 9px", background:T.glass, border:`1px solid ${T.border}`, borderRadius:T.rsm, color:T.text, fontSize:11, fontFamily:"inherit", outline:"none", boxSizing:"border-box", minWidth:0 }}>
-              {(opts as readonly string[]).map(o => <option key={o} value={o}>{o}</option>)}
-            </select>
+          {([
+            {val:major, set:setMajor, opts:SCHOLARSHIP_MAJORS as readonly string[]},
+            {val:year,  set:setYear,  opts:SCHOLARSHIP_YEARS  as readonly string[]},
+            {val:country,set:setCountry,opts:SCHOLARSHIP_COUNTRIES as readonly string[]},
+          ] as const).map(({val,set,opts},i) => (
+            <ScholarshipSelect key={i} value={val} options={opts} onChange={set} />
           ))}
         </div>
         <motion.button whileTap={tapAnim.tap} onClick={handleSearch} disabled={phase==="scanning"}
