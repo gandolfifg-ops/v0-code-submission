@@ -1834,167 +1834,6 @@ function Marketplace({ country }: { country: string }) {
 // SECTION 8 — INLINE CHAT (moved to app/inline-chat.tsx, imported as InlineChatComponent)
 // ─────────────────────────────────────────────────────────────────────────────
 
-// Keeping a small local stub so no other internal calls break
-const InlineChat = ({ country }: { country: string }) => {
-  const [msgs, setMsgs] = useState<{role:"user"|"assistant";content:string}[]>([]);
-  const [input, setInput] = useState("");
-  const [loading, setLoading] = useState(false);
-  const bottomRef = useRef<HTMLDivElement>(null);
-  const inputRef = useRef<HTMLTextAreaElement>(null);
-
-  useEffect(() => { bottomRef.current?.scrollIntoView({ behavior:"smooth" }); }, [msgs, loading]);
-
-  const submitForm = async (e: FormEvent) => {
-    e.preventDefault();
-    const txt = input?.trim() ?? "";
-    if (!txt || loading) return;
-    setMsgs(p => [...p, { role:"user", content:txt }]);
-    setInput("");
-    setLoading(true);
-
-    try {
-      const res = await fetch("/api/chat", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          messages: [...msgs, { role:"user", content:txt }],
-          system: SYSTEM_PROMPT,
-          country: country || null,
-        }),
-      });
-      if (!res.ok || !res.body) throw new Error("Network error");
-
-      const reader = res.body.getReader();
-      const decoder = new TextDecoder();
-      let acc = "";
-
-      setMsgs(p => [...p, { role:"assistant", content:"" }]);
-
-      while (true) {
-        const { done, value } = await reader.read();
-        if (done) break;
-        const chunk = decoder.decode(value, { stream: true });
-        const lines = chunk.split("\n").filter(l => l.startsWith("data: "));
-        for (const line of lines) {
-          const json = line.slice(6);
-          if (json === "[DONE]") continue;
-          try {
-            const parsed = JSON.parse(json);
-            const delta = parsed?.delta?.text ?? parsed?.choices?.[0]?.delta?.content ?? "";
-            if (delta) {
-              acc += delta;
-              setMsgs(p => {
-                const copy = [...p];
-                copy[copy.length - 1] = { role:"assistant", content:acc };
-                return copy;
-              });
-            }
-          } catch {}
-        }
-      }
-      if (!acc) {
-        setMsgs(p => {
-          const copy = [...p];
-          copy[copy.length - 1] = { role:"assistant", content:"I'm here to help! Ask me anything about budgeting, scholarships, or student finances." };
-          return copy;
-        });
-      }
-    } catch {
-      setMsgs(p => [...p, { role:"assistant", content:"Couldn't reach the AI. Please try again." }]);
-    }
-    setLoading(false);
-    inputRef.current?.focus();
-  };
-
-  const countryVal = (country === "Canada" || country === "USA") ? country : "USA";
-  
-  return (
-    <>
-      <div style={{ flex:1, overflowY:"auto", display:"flex", flexDirection:"column" }}>
-        {/* Hero Section - Loan Marketplace (Always visible at top) */}
-        {msgs.length === 0 && (
-          <div style={{ padding: "20px 20px 0", maxWidth: 900, margin: "0 auto", width: "100%" }} className="forge-hero-section">
-
-            {/* Country context banner */}
-            <AnimatePresence mode="wait">
-              {(country === "Canada" || country === "USA") && (
-                <motion.div
-                  key={country}
-                  initial={{ opacity: 0, y: -8, height: 0 }}
-                  animate={{ opacity: 1, y: 0, height: "auto" }}
-                  exit={{ opacity: 0, y: -8, height: 0 }}
-                  style={{
-                    marginBottom: 14,
-                    padding: "9px 14px",
-                    borderRadius: T.rsm,
-                    background: "rgba(201,168,76,0.07)",
-                    border: "1px solid rgba(201,168,76,0.22)",
-                    display: "flex",
-                    alignItems: "center",
-                    gap: 10,
-                    overflow: "hidden",
-                  }}
-                >
-                  <span style={{ fontSize: 20 }}>{COUNTRY_CONFIG[country as CountryKey].flag}</span>
-                  <p style={{ fontSize: 11, color: T.mid, margin: 0, lineHeight: 1.5 }}>
-                    <span style={{ color: T.gold, fontWeight: 700 }}>
-                      {COUNTRY_CONFIG[country as CountryKey].currency} Mode —
-                    </span>{" "}
-                    {COUNTRY_CONFIG[country as CountryKey].tip}
-                  </p>
-                </motion.div>
-              )}
-            </AnimatePresence>
-
-            <LoanMarketplaceHero country={countryVal} />
-            <TopPicksSection country={countryVal} />
-          </div>
-        )}
-        
-        {msgs.length === 0 && <TypewriterGreeting />}
-        <div style={{ flex:1, padding:"10px 20px", display:"flex", flexDirection:"column", gap:14, maxWidth:720, margin:"0 auto", width:"100%" }}>
-          {msgs.map((m,i) => (
-            <motion.div key={i} initial={{opacity:0,y:8}} animate={{opacity:1,y:0}} style={{ display:"flex", justifyContent:m.role==="user"?"flex-end":"flex-start", alignItems:"flex-start" }}>
-              {m.role==="assistant" && (
-                <div style={{ width:24, height:24, borderRadius:6, backgroundImage:`linear-gradient(135deg,${T.gold},${T.goldDim})`, display:"flex", alignItems:"center", justifyContent:"center", flexShrink:0, marginRight:8, marginTop:2 }}>
-                  <LogoMark size={14} />
-                </div>
-              )}
-              <div style={{ maxWidth:"78%", padding:"10px 14px", borderRadius:m.role==="user"?"14px 14px 4px 14px":"4px 14px 14px 14px", background:m.role==="user"?"rgba(201,168,76,0.1)":T.cardBg, border:`1px solid ${m.role==="user"?"rgba(201,168,76,0.18)":T.cardBorder}`, backdropFilter:T.blur, fontSize:14, lineHeight:1.7, color:m.role==="user"?"#d4c080":"#c0b8a8" }}>
-                {m.role==="assistant" ? (
-                  <>{<MsgText text={m.content ?? ""} />}{loading && i===msgs.length-1 && <span style={{ display:"inline-block", width:2, height:13, background:T.gold, marginLeft:2, verticalAlign:"middle", animation:"wf-cur .65s steps(1) infinite" }} />}</>
-                ) : (m.content ?? "")}
-              </div>
-            </motion.div>
-          ))}
-          {loading && msgs[msgs.length-1]?.role !== "assistant" && (
-            <motion.div initial={{opacity:0}} animate={{opacity:1}} style={{ display:"flex", alignItems:"flex-start" }}>
-              <div style={{ width:24, height:24, borderRadius:6, backgroundImage:`linear-gradient(135deg,${T.gold},${T.goldDim})`, display:"flex", alignItems:"center", justifyContent:"center", flexShrink:0, marginRight:8 }}><LogoMark size={14} /></div>
-              <div style={{ padding:"10px 14px", background:T.cardBg, border:`1px solid ${T.cardBorder}`, borderRadius:"4px 14px 14px 14px", backdropFilter:T.blur }}><Dots /></div>
-            </motion.div>
-          )}
-          <div ref={bottomRef} />
-        </div>
-      </div>
-      <div style={{ padding:"10px 20px 10px", flexShrink:0 }} className="forge-chat-input-bar">
-        <form onSubmit={submitForm} style={{ maxWidth:680, margin:"0 auto" }}>
-          <Glass style={{ display:"flex", gap:9, alignItems:"flex-end", padding:"10px 12px" }}>
-            <textarea ref={inputRef} value={input ?? ""} onChange={e => setInput(e.target.value ?? "")}
-              onKeyDown={e => { if (e.key==="Enter" && !e.shiftKey) { e.preventDefault(); if ((input?.trim() ?? "").length > 0) e.currentTarget.form?.requestSubmit(); } }}
-              placeholder="Tell me your situation — I'll tell you exactly what to do..."
-              rows={1}
-              style={{ flex:1, background:"transparent", border:"none", outline:"none", color:T.text, fontSize:14, lineHeight:1.6, maxHeight:90, overflowY:"auto", padding:0, resize:"none" }} />
-            <motion.button type="submit" whileTap={tapAnim.tap} disabled={!(input?.trim()) || loading}
-              style={{ width:33, height:33, borderRadius:8, border:"none", cursor:(input?.trim() && !loading)?"pointer":"not-allowed", flexShrink:0, display:"flex", alignItems:"center", justifyContent:"center", transition:"all .2s", background:(input?.trim() && !loading)?undefined:T.glassHi, backgroundImage:(input?.trim() && !loading)?`linear-gradient(135deg,${T.gold},${T.goldDim})`:undefined, color:(input?.trim() && !loading)? ("#07090d") :T.dim }}>
-              <Send size={15} />
-            </motion.button>
-          </Glass>
-        </form>
-      </div>
-    </>
-  );
-};
-
 // ─────────────────────────────────────────────────────────────────────────────
 // SECTION 9 — MAIN PAGE
 // ─────────────────────────────────────────────────────────────────────────────
@@ -2100,7 +1939,7 @@ const hBtn = (active = false): CSSProperties => ({
 
   return (
     <>
-      <div style={{ height:"100vh", display:"flex", flexDirection:"column", background:T.bg, color:T.text, fontFamily:"Inter,system-ui,-apple-system,sans-serif", overflow:"hidden", transition:"background .3s, color .3s" }}>
+      <div style={{ minHeight:"100vh", display:"flex", flexDirection:"column", background:T.bg, color:T.text, fontFamily:"Inter,system-ui,-apple-system,sans-serif", transition:"background .3s, color .3s" }}>
         <style>{`
           @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap');
           *{box-sizing:border-box}
@@ -2185,37 +2024,44 @@ const hBtn = (active = false): CSSProperties => ({
 
         {/* ═══ HEADER ══════════════════════════════════════════════════════════ */}
         <header style={{ display:"flex", alignItems:"center", justifyContent:"space-between", padding:"7px 14px", borderBottom:`1px solid ${T.border}`, flexShrink:0, zIndex:10, background:"rgba(5,5,5,0.97)", backdropFilter:"blur(22px)", WebkitBackdropFilter:"blur(22px)", gap:10, minHeight:44 }} className="forge-header">
-          {/* Left: logo + name + controls inline */}
-          <div style={{ display:"flex", alignItems:"center", gap:10, flex:1, minWidth:0 }}>
-            <LogoMark size={26} />
+          {/* Left: logo + name — minimal, fixed width */}
+          <div style={{ display:"flex", alignItems:"center", gap:8, flexShrink:0 }}>
+            <LogoMark size={24} />
             <span style={{ fontSize:17, fontWeight:900, letterSpacing:"-.03em", backgroundImage:`linear-gradient(90deg,${T.goldHi},${T.gold},${T.goldDim},${T.goldHi})`, backgroundSize:"200%", WebkitBackgroundClip:"text", WebkitTextFillColor:"transparent", animation:"wf-shimmer 5s linear infinite", textTransform:"uppercase", whiteSpace:"nowrap", lineHeight:1 }} className="forge-logo-text">Forge</span>
-            {/* CA / US / Clear buttons — tight, right next to logo */}
-            <div style={{ display:"flex", gap:5, alignItems:"center", flexWrap:"nowrap" }}>
-              {(["Canada","USA"] as const).map(c => (
-                <motion.button key={c} whileTap={tapAnim.tap} onClick={() => setCountry(country === c ? "" : c)}
-                  style={{ ...hBtn(country === c), padding:"3px 9px", fontSize:10, borderRadius:14, whiteSpace:"nowrap" }}>
-                  {c === "Canada" ? "CA" : "US"}
-                </motion.button>
-              ))}
-              {panelView==="chat" && (
-                <motion.button whileTap={tapAnim.tap} onClick={clearChat}
-                  style={{ ...hBtn(), padding:"3px 9px", fontSize:10, borderRadius:14, display:"flex", alignItems:"center", gap:3 }}
-                  onMouseEnter={e => {(e.currentTarget as HTMLElement).style.color=T.red;(e.currentTarget as HTMLElement).style.borderColor="rgba(248,113,113,.35)";}}
-                  onMouseLeave={e => {(e.currentTarget as HTMLElement).style.color=T.mid;(e.currentTarget as HTMLElement).style.borderColor=T.border;}}>
-                  <Trash2 size={11} /> Clear
-                </motion.button>
-              )}
-            </div>
           </div>
-          {/* Right: MENU button (mobile) */}
+          
+          {/* Middle: Country flags + Clear button — tight group */}
+          <div style={{ display:"flex", gap:6, alignItems:"center", flexWrap:"nowrap" }}>
+            {(["Canada","USA"] as const).map(c => {
+              const isCanada = c === "Canada";
+              const isActive = country === c;
+              return (
+                <motion.button key={c} whileTap={tapAnim.tap} onClick={() => setCountry(country === c ? "" : c)}
+                  title={c}
+                  style={{ ...hBtn(isActive), padding:"5px 8px", fontSize:14, borderRadius:10, whiteSpace:"nowrap", display:"flex", alignItems:"center", justifyContent:"center", minWidth:32, height:32 }}>
+                  {isCanada ? "🇨🇦" : "🇺🇸"}
+                </motion.button>
+              );
+            })}
+            {panelView==="chat" && (
+              <motion.button whileTap={tapAnim.tap} onClick={clearChat}
+                style={{ ...hBtn(), padding:"5px 8px", fontSize:12, borderRadius:10, display:"flex", alignItems:"center", gap:2, minWidth:32, height:32 }}
+                onMouseEnter={e => {(e.currentTarget as HTMLElement).style.color=T.red;(e.currentTarget as HTMLElement).style.borderColor="rgba(248,113,113,.35)";}}
+                onMouseLeave={e => {(e.currentTarget as HTMLElement).style.color=T.mid;(e.currentTarget as HTMLElement).style.borderColor=T.border;}}>
+                <Trash2 size={11} />
+              </motion.button>
+            )}
+          </div>
+          
+          {/* Right: MENU button (fixed width) */}
           <motion.button whileTap={{ scale: 0.93 }} onClick={() => sidebarOpen ? closeSidebar() : setSidebarOpen(true)}
-            style={{ background:"none", border:`1px solid ${T.border}`, color:"#c4b594", cursor:"pointer", padding:"4px 10px", borderRadius:T.rsm, display:"flex", alignItems:"center", gap:5, fontSize:11, fontWeight:700, letterSpacing:".05em", lineHeight:1, whiteSpace:"nowrap" }} className="forge-hamburger">
+            style={{ background:"none", border:`1px solid ${T.border}`, color:"#c4b594", cursor:"pointer", padding:"5px 10px", borderRadius:T.rsm, display:"flex", alignItems:"center", gap:5, fontSize:11, fontWeight:700, letterSpacing:".05em", lineHeight:1, whiteSpace:"nowrap", flexShrink:0 }} className="forge-hamburger">
             <span style={{ fontSize:14, lineHeight:1 }}>☰</span> MENU
           </motion.button>
         </header>
 
         {/* ═══ BODY ════════════════════════════════════════════════════════════ */}
-        <div style={{ flex:1, display:"flex", overflow:"hidden" }} className="forge-body">
+        <div style={{ flex:1, display:"flex", overflow:"auto" }} className="forge-body">
 
           {/* ── Main panel ─────────────────────────────────────────────────────── */}
           <div style={{ flex:1, display:"flex", flexDirection:"column", overflow:"hidden", minHeight:0 }} className="forge-main">
@@ -2243,23 +2089,22 @@ const hBtn = (active = false): CSSProperties => ({
             {/* Chat view */}
             {panelView==="chat" && (
               <>
-                <div style={{ flex:1, overflowY:"auto", display:"flex", flexDirection:"column", minHeight:0 }}>
+                <div style={{ flex:1, display:"flex", flexDirection:"column" }}>
                   <div style={{ flex:1 }}>
                     <InlineChatComponent key={chatKey} country={country} />
                   </div>
                 </div>
-                <footer style={{ flexShrink:0, borderTop:`1px solid ${T.border}`, background:"rgba(5,5,5,0.8)", padding:"20px 20px 16px" }}>
-                  {/* Partnerships */}
-                  <div style={{ display:"flex", justifyContent:"center", gap:20, marginBottom:16, flexWrap:"wrap" }}>
+                <footer style={{ borderTop:`1px solid ${T.border}`, background:"rgba(5,5,5,0.6)", padding:"8px 10px" }}>
+                  {/* Partners — compact horizontal */}
+                  <div style={{ display:"flex", justifyContent:"center", gap:12, marginBottom:6, flexWrap:"wrap", fontSize:9 }}>
                     {PARTNERS.map(p => (
-                      <div key={p.name} style={{ textAlign:"center" }}>
-                        <p style={{ fontSize:10, color:T.mid, margin:0, fontWeight:600 }}>{p.name}</p>
-                        <p style={{ fontSize:9, color:T.dim, margin:0 }}>{p.desc}</p>
-                      </div>
+                      <span key={p.name} style={{ color:T.dim }}>
+                        <strong style={{color:T.mid}}>{p.name}</strong> · {p.desc}
+                      </span>
                     ))}
                   </div>
-                  {/* Disclaimer — pinned to footer bottom */}
-                  <p style={{ fontSize:10, color:"#c4b594", lineHeight:1.6, margin:"0 auto", maxWidth:680, textAlign:"center", padding:"0 12px" }}>{FOOTER_TEXT}</p>
+                  {/* Disclaimer — ultra-compact */}
+                  <p style={{ fontSize:9, color:"#c4b594", lineHeight:1.4, margin:0, textAlign:"center", padding:"0 8px" }}>{FOOTER_TEXT}</p>
                 </footer>
               </>
             )}
@@ -2365,5 +2210,5 @@ const hBtn = (active = false): CSSProperties => ({
   );
 }
 
-// Cache invalidation marker — v11 Hard cache bust, clean build, no stale references
-export const __CACHE_BUST_V11__ = "hardbusted-" + Date.now() + "-clean-build";
+// Cache invalidation marker — v13 Deleted old duplicate InlineChat body (161 lines), now clean
+export const __CACHE_BUST_V13__ = "deleted-duplicate-inline-chat-" + Date.now();
