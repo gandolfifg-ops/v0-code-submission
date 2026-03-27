@@ -311,7 +311,6 @@ function Glass({ children, style, glow, onClick }: { children: ReactNode; style?
   backdropFilter: T.blur,
   WebkitBackdropFilter: T.blur,
   border: `1px solid ${hov && glow ? "rgba(201,168,76,0.38)" : T.cardBorder}`,
-  boxShadow: T.cardShadow || "none",
   borderRadius: T.r,
   boxShadow: hov && glow ? "0 0 0 1px rgba(201,168,76,0.18),0 8px 36px rgba(0,0,0,0.5)" : "0 4px 28px rgba(0,0,0,0.15)",
   transition: "border-color .22s,box-shadow .22s",
@@ -323,7 +322,7 @@ function Glass({ children, style, glow, onClick }: { children: ReactNode; style?
 }
 
 function Skel({ w = "100%", h = 14 }: { w?: string|number; h?: number }) {
-  return <div style={{ width:w, height:h, borderRadius:7, backgroundImage: "linear-gradient(90deg,rgba(255,255,255,0.04) 25%,rgba(255,255,255,0.09) 50%,rgba(255,255,255,0.04) 75%)", backgroundSize:"200% 100%", animation:"wf-skel 1.6s ease infinite" }} />;
+  return <div style={{ width:w, height:h, borderRadius:7, background: "linear-gradient(90deg,rgba(255,255,255,0.04) 25%,rgba(255,255,255,0.09) 50%,rgba(255,255,255,0.04) 75%)", backgroundSize:"200% 100%", animation:"wf-skel 1.6s ease infinite" }} />;
 }
 
 function Chip({ label, color }: { label: string; color?: string }) {
@@ -379,7 +378,7 @@ function GoldCTA({ href, label }: { href: string; label: string }) {
 
 // ─────────────────────────────────────────────────────────────────────────────
 // SECTION 3A — CONSOLIDATED FORMATTING FUNCTIONS (Memoized for performance)
-// ────────────────────────────────���────────────────────────────────────────────
+// ────────────────────────────────�����────────────────────────────────────────────
 
 // Memoized currency formatter (supports billions properly)
 const formatCurrency = (v: number): string => {
@@ -1833,7 +1832,7 @@ function LoanTool({ onToggleSave, savedIds, userCountry }: { onToggleSave: (item
   );
 }
 
-// ── Scholarship Scout ─────────────────────����������─��──────────────────�����──────────��─
+// ── Scholarship Scout ─────────────────────������������─��──────────────────�����──────────��─
 const SCH_SCAN_MSGS = ["Connecting to scholarship databases...","Scanning national award portals...","Cross-referencing eligibility...","Aggregating live results for you..."];
 
 function ScholarshipScout({ onToggleSave, savedIds }: { onToggleSave: (item: ScoutResult) => void; savedIds: Set<string> }) {
@@ -1904,8 +1903,8 @@ function ScholarshipScout({ onToggleSave, savedIds }: { onToggleSave: (item: Sco
               <motion.div key={r.id} variants={fadeUp}>
                 <Glass glow style={{ padding:14 }}>
                   <div style={{ display:"flex", justifyContent:"space-between", alignItems:"flex-start", marginBottom:7, gap:10 }}>
-                    <div><p style={{ fontSize:13, fontWeight:700, color:T.text, margin:"0 0 2px" }}>{r.title}</p><p style={{ fontSize:11, color:T.mid, margin:0 }}>{r.provider}</p></div>
-                    <div style={{ display:"flex", alignItems:"center", gap:6 }}>
+                    <div style={{ flex: 1 }}><p style={{ fontSize:13, fontWeight:700, color:T.text, margin:"0 0 2px" }}>{r.title}</p><p style={{ fontSize:11, color:T.mid, margin:0 }}>{r.provider}</p></div>
+                    <div style={{ display:"flex", alignItems:"center", gap:6, flexShrink: 0 }}>
                       <Chip label={r.amount} color={T.gold} />
                       <motion.button
                         whileTap={{ scale: 0.9 }}
@@ -1916,8 +1915,8 @@ function ScholarshipScout({ onToggleSave, savedIds }: { onToggleSave: (item: Sco
                       </motion.button>
                     </div>
                   </div>
-                  <p style={{ fontSize:11, color:T.mid, margin:"0 0 4px", lineHeight:1.4 }}>{r.eligibility}</p>
-                  <p style={{ fontSize:10, color:T.dim, margin:"0 0 10px" }}>Deadline: {r.deadline}</p>
+                  <ExpandableText text={r.eligibility} maxLines={3} />
+                  <p style={{ fontSize:10, color:T.dim, margin:"0 0 10px", marginTop: 8 }}>Deadline: {r.deadline}</p>
                   <GoldCTA href={r.url} label="Apply Now" />
                 </Glass>
               </motion.div>
