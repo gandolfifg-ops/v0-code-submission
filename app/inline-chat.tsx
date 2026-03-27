@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useRef, type FormEvent, useCallback } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Send, RotateCcw, Minus, Plus } from "lucide-react";
+import { Send, RotateCcw, Plus } from "lucide-react";
 import ReactMarkdown from "react-markdown";
 
 // ── Dark theme tokens ────────────────────────────────────────────────────────
@@ -235,7 +235,6 @@ export default function InlineChat({ country, isDarkMode = true }: { country: st
   const [msgs, setMsgs] = useState<{ role: "user" | "assistant"; content: string }[]>([]);
   const [input, setInput] = useState("");
   const [loading, setLoading] = useState(false);
-  const [minimized, setMinimized] = useState(false);
   const bottomRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLTextAreaElement>(null);
   
@@ -307,9 +306,7 @@ export default function InlineChat({ country, isDarkMode = true }: { country: st
 
   const countryVal = (country === "Canada" || country === "USA") ? country : "USA";
 
-  // Minimized state - show floating bubble
-  if (minimized) {
-    return (
+  return (
       <motion.div 
         initial={{ opacity: 0, scale: 0.8 }}
         animate={{ opacity: 1, scale: 1 }}
@@ -376,26 +373,6 @@ export default function InlineChat({ country, isDarkMode = true }: { country: st
             <RotateCcw size={12} /> Clear
           </motion.button>
         )}
-        <motion.button
-          whileHover={{ scale: 1.05 }}
-          whileTap={{ scale: 0.95 }}
-          onClick={() => setMinimized(true)}
-          style={{
-            display: "flex",
-            alignItems: "center",
-            gap: 5,
-            padding: "5px 10px",
-            borderRadius: 6,
-            border: `1px solid ${T.border}`,
-            background: T.glass,
-            color: T.mid,
-            fontSize: 11,
-            fontWeight: 600,
-            cursor: "pointer",
-          }}
-        >
-          <Minus size={12} /> Minimize
-        </motion.button>
       </div>
 
       <div style={{ flex: 1, overflowY: "auto", display: "flex", flexDirection: "column" }}>
@@ -477,7 +454,7 @@ export default function InlineChat({ country, isDarkMode = true }: { country: st
               className={isDarkMode ? "chat-input-dark" : "chat-input-light"}
               style={{ 
                 flex: 1, 
-                background: "transparent", 
+                background: "rgba(0,0,0,0)", 
                 border: "none", 
                 outline: "none", 
                 color: T.text, 

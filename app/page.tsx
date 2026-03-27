@@ -499,7 +499,7 @@ const SliderComponent = ({ label, value, min, step = 1, onChange, fmt, maxVal }:
           onFocus={handleInputFocus}
           onBlur={handleInputBlur}
           onKeyDown={e => e.key === "Enter" && e.currentTarget.blur()}
-          style={{ fontSize:12, color:T.gold, fontWeight:600, background:"transparent", border:"none", textAlign:"right", width:110, outline:"none", fontFamily:"inherit" }}
+          style={{ fontSize:12, color:T.gold, fontWeight:600, background:"rgba(0,0,0,0)", border:"none", textAlign:"right", width:110, outline:"none", fontFamily:"inherit" }}
         />
       </div>
       <div style={{ position:"relative", height:8, background:"rgba(255,255,255,0.08)", borderRadius:8, cursor:"pointer" }}>
