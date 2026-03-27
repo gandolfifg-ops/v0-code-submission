@@ -88,7 +88,14 @@ const MOCK_LOANS = [
   { id:"ml3", type:"loan" as const, title:"Wealthsimple Personal Loan",       provider:"Wealthsimple",                  amount:"From 9.99% APR", deadline:"Open — apply in minutes", eligibility:"Canadian resident, 18+, income verified",  url:"https://www.wealthsimple.com" },
 ];
 
-type ScoutResult = typeof MOCK_SCHOLARSHIPS[number] | typeof MOCK_LOANS[number];
+type ScoutResult = (typeof MOCK_SCHOLARSHIPS[number] | typeof MOCK_LOANS[number]) & {
+  // Additional fields for marketplace loan cards
+  name?: string;
+  rate?: string;
+  highlight?: string;
+  href?: string;
+  cta?: string;
+};
 
 const VIRAL_SHARE   = "Stop guessing with your money. I just found this AI tool called WealthNutz that scours the internet for the best deals, credit offers, and high-yield savings in seconds: https://wealthnutz.com";
 const WELCOME_MSG   = "WealthNutz Intelligence Co-Pilot is indexing live financial databases... How can I help you accelerate your wealth today?";
@@ -196,6 +203,40 @@ function toggleSaved(item: ScoutResult): ScoutResult[] {
   const updated = exists ? current.filter(x => x.id !== item.id) : [...current, item];
   writeSaved(updated);
   return updated;
+}
+
+// Supabase bookmark functions
+async function fetchBookmarksFromSupabase(userId: string): Promise<ScoutResult[]> {
+  try {
+    const { createClient } = await import("@/lib/supabase/client");
+    const supabase = createClient();
+    const { data, error } = await supabase
+      .from("bookmarks")
+      .select("loan_id, loan_data")
+      .eq("user_id", userId);
+    if (error) throw error;
+    return (data ?? []).map(row => row.loan_data as ScoutResult);
+  } catch { return []; }
+}
+
+async function upsertBookmarkToSupabase(userId: string, item: ScoutResult): Promise<void> {
+  try {
+    const { createClient } = await import("@/lib/supabase/client");
+    const supabase = createClient();
+    await supabase.from("bookmarks").upsert({
+      user_id: userId,
+      loan_id: item.id,
+      loan_data: item,
+    }, { onConflict: "user_id,loan_id" });
+  } catch {}
+}
+
+async function deleteBookmarkFromSupabase(userId: string, loanId: string): Promise<void> {
+  try {
+    const { createClient } = await import("@/lib/supabase/client");
+    const supabase = createClient();
+    await supabase.from("bookmarks").delete().eq("user_id", userId).eq("loan_id", loanId);
+  } catch {}
 }
 
 // Real-time search via Tavily API — falls back to mock data if API unavailable
@@ -777,7 +818,7 @@ function CountrySwitcher({
 // SECTION 5C — LOAN MARKETPLACE HERO (High Conversion)
 // ─────────────────────────────────────────────────────────────────────────────
 
-function LoanMarketplaceHero({ country, filterType }: { country: "Canada" | "USA"; filterType?: LoanType }) {
+function LoanMarketplaceHero({ country, filterType, onToggleSave, savedIds }: { country: "Canada" | "USA"; filterType?: LoanType; onToggleSave?: (item: ScoutResult) => void; savedIds?: Set<string> }) {
   const countryCode = country === "Canada" ? "CA" : "US";
   const [currentTime, setCurrentTime] = useState(() => new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }));
   
@@ -852,7 +893,7 @@ function LoanMarketplaceHero({ country, filterType }: { country: "Canada" | "USA
               <span style={{
                 position: "absolute",
                 top: 12,
-                right: 12,
+                right: onToggleSave ? 44 : 12,
                 fontSize: 9,
                 fontWeight: 800,
                 background: i === 0 ? T.gold : T.glassHi,
@@ -863,6 +904,49 @@ function LoanMarketplaceHero({ country, filterType }: { country: "Canada" | "USA
               }}>
                 {offer.badge}
               </span>
+            )}
+            
+            {/* Bookmark Button */}
+            {onToggleSave && (
+              <motion.button
+                whileTap={{ scale: 0.85 }}
+                onClick={(e) => {
+                  e.preventDefault();
+                  e.stopPropagation();
+                  const scoutItem: ScoutResult = {
+                    id: offer.id,
+                    name: offer.name,
+                    rate: offer.rate,
+                    highlight: offer.highlight,
+                    cta: offer.cta,
+                    href: offer.href,
+                    type: "loan",
+                  };
+                  onToggleSave(scoutItem);
+                }}
+                style={{
+                  position: "absolute",
+                  top: 10,
+                  right: 10,
+                  width: 28,
+                  height: 28,
+                  borderRadius: 6,
+                  border: "none",
+                  background: savedIds?.has(offer.id) ? "rgba(201,168,76,0.25)" : T.glass,
+                  cursor: "pointer",
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  zIndex: 2,
+                }}
+                aria-label={savedIds?.has(offer.id) ? "Remove from saved" : "Save for later"}
+              >
+                <Bookmark 
+                  size={14} 
+                  color={T.gold}
+                  fill={savedIds?.has(offer.id) ? T.gold : "transparent"}
+                />
+              </motion.button>
             )}
             
             {/* Content */}
@@ -1606,7 +1690,7 @@ function LoanFinder({ onToggleSave, savedIds, userCountry }: { onToggleSave: (it
       
       {/* Live Scour Marketplace — filtered by selected loan type and user country */}
       <div style={{ marginTop: 20 }}>
-        <LoanMarketplaceHero country={userCountry === "Canada" ? "Canada" : "USA"} filterType={loanType} />
+        <LoanMarketplaceHero country={userCountry === "Canada" ? "Canada" : "USA"} filterType={loanType} onToggleSave={onToggleSave} savedIds={savedIds} />
       </div>
     </div>
   );
@@ -1762,8 +1846,8 @@ function SavedItems({ saved, onRemove }: { saved: ScoutResult[]; onRemove: (item
             <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: 7, gap: 10 }}>
               <div>
                 <Chip label={r.type === "scholarship" ? "Scholarship" : "Loan"} color={r.type === "scholarship" ? T.gold : T.green} />
-                <p style={{ fontSize: 13, fontWeight: 700, color: T.text, margin: "6px 0 2px" }}>{r.title}</p>
-                <p style={{ fontSize: 11, color: T.mid, margin: 0 }}>{r.provider}</p>
+                <p style={{ fontSize: 13, fontWeight: 700, color: T.text, margin: "6px 0 2px" }}>{r.title || r.name}</p>
+                <p style={{ fontSize: 11, color: T.mid, margin: 0 }}>{r.provider || r.highlight}</p>
               </div>
               <motion.button
                 whileTap={{ scale: 0.9 }}
@@ -1773,8 +1857,8 @@ function SavedItems({ saved, onRemove }: { saved: ScoutResult[]; onRemove: (item
                 <Bookmark size={16} fill={T.gold} />
               </motion.button>
             </div>
-            <p style={{ fontSize: 12, color: T.goldHi, fontWeight: 600, margin: "0 0 10px" }}>{r.amount}</p>
-            <GoldCTA href={r.url} label={r.type === "scholarship" ? "Apply Now" : "Check Rate"} />
+            <p style={{ fontSize: 12, color: T.goldHi, fontWeight: 600, margin: "0 0 10px" }}>{r.amount || r.rate}</p>
+            <GoldCTA href={r.url || r.href} label={r.cta || (r.type === "scholarship" ? "Apply Now" : "Check Rate")} />
           </Glass>
         </motion.div>
       ))}
@@ -1912,8 +1996,18 @@ export default function ForgePageV55() {
   const [savedItems, setSavedItems] = useState<ScoutResult[]>([]);
   const savedIds = useMemo(() => new Set(savedItems.map(x => x.id)), [savedItems]);
   const [locationBarDismissed, setLocationBarDismissed] = useState(false);
+  const [toast, setToast] = useState<string | null>(null);
+  
+  // Auto-dismiss toast
+  useEffect(() => {
+    if (toast) {
+      const t = setTimeout(() => setToast(null), 3000);
+      return () => clearTimeout(t);
+    }
+  }, [toast]);
 
 useEffect(() => {
+  // Load from localStorage first (for guests)
   setSavedItems(readSaved());
   
   // Supabase auth state listener for persistent sessions
@@ -1929,9 +2023,26 @@ useEffect(() => {
       setUser(session?.user ?? null);
       setAuthLoading(false);
       
+      // If user is logged in, fetch their bookmarks from Supabase
+      if (session?.user) {
+        const bookmarks = await fetchBookmarksFromSupabase(session.user.id);
+        if (bookmarks.length > 0) {
+          setSavedItems(bookmarks);
+          writeSaved(bookmarks); // Sync to localStorage as backup
+        }
+      }
+      
       // Listen for auth changes
-      const { data: { subscription: sub } } = supabase.auth.onAuthStateChange((_event, session) => {
+      const { data: { subscription: sub } } = supabase.auth.onAuthStateChange(async (_event, session) => {
         setUser(session?.user ?? null);
+        // Fetch bookmarks when user logs in
+        if (session?.user) {
+          const bookmarks = await fetchBookmarksFromSupabase(session.user.id);
+          if (bookmarks.length > 0) {
+            setSavedItems(bookmarks);
+            writeSaved(bookmarks);
+          }
+        }
       });
       subscription = sub;
     } catch {
@@ -1946,10 +2057,27 @@ useEffect(() => {
   };
   }, []);
   
-  const handleToggleSave = useCallback((item: ScoutResult) => {
-    const updated = toggleSaved(item);
+  const handleToggleSave = useCallback(async (item: ScoutResult) => {
+    // Check if user is logged in
+    if (!user) {
+      setToast("Sign in to save this for later");
+      return;
+    }
+    
+    // Toggle locally first for instant feedback
+    const current = savedItems;
+    const exists = current.some(x => x.id === item.id);
+    const updated = exists ? current.filter(x => x.id !== item.id) : [...current, item];
     setSavedItems(updated);
-  }, []);
+    writeSaved(updated);
+    
+    // Sync with Supabase
+    if (exists) {
+      await deleteBookmarkFromSupabase(user.id, item.id);
+    } else {
+      await upsertBookmarkToSupabase(user.id, item);
+    }
+  }, [user, savedItems]);
 
   // Scroll to section by element ID and close sidebar
   const scrollToSection = useCallback((sectionId: string) => {
@@ -2372,6 +2500,51 @@ const hBtn = (active = false): CSSProperties => ({
       
       {/* Footer */}
       <Footer />
+      
+      {/* Toast Notification */}
+      <AnimatePresence>
+        {toast && (
+          <motion.div
+            initial={{ opacity: 0, y: 50, x: "-50%" }}
+            animate={{ opacity: 1, y: 0, x: "-50%" }}
+            exit={{ opacity: 0, y: 50, x: "-50%" }}
+            style={{
+              position: "fixed",
+              bottom: 24,
+              left: "50%",
+              background: T.cardBg,
+              border: `1px solid ${T.gold}`,
+              borderRadius: 12,
+              padding: "12px 20px",
+              display: "flex",
+              alignItems: "center",
+              gap: 10,
+              boxShadow: `0 8px 32px rgba(0,0,0,0.4)`,
+              zIndex: 9999,
+            }}
+          >
+            <LogIn size={16} color={T.gold} />
+            <span style={{ fontSize: 13, color: T.text, fontWeight: 500 }}>{toast}</span>
+            <motion.button
+              whileTap={{ scale: 0.9 }}
+              onClick={() => { setToast(null); setShowAuth(true); }}
+              style={{
+                background: T.gold,
+                border: "none",
+                borderRadius: 6,
+                padding: "6px 12px",
+                fontSize: 11,
+                fontWeight: 700,
+                color: "#07090d",
+                cursor: "pointer",
+                fontFamily: "inherit",
+              }}
+            >
+              Sign In
+            </motion.button>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </>
   );
 }
