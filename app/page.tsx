@@ -1584,7 +1584,7 @@ function LoanTool({ onToggleSave, savedIds }: { onToggleSave: (item: ScoutResult
   );
 }
 
-// ── Scholarship Scout ───────────────────────────────────────────�����──────────��─
+// ── Scholarship Scout ──────────────────────���────────────────────�����──────────��─
 const SCH_SCAN_MSGS = ["Connecting to scholarship databases...","Scanning national award portals...","Cross-referencing eligibility...","Aggregating live results for you..."];
 
 function ScholarshipScout({ onToggleSave, savedIds }: { onToggleSave: (item: ScoutResult) => void; savedIds: Set<string> }) {
@@ -2058,8 +2058,12 @@ const hBtn = (active = false): CSSProperties => ({
             aria-label="Go to home"
             style={{ display:"flex", alignItems:"center", gap:8, flexShrink:0, background:"none", border:"none", cursor:"pointer", padding:0, outline:"none" }}
           >
-            <LogoMark size={24} />
-            <span style={{ fontSize:17, fontWeight:900, letterSpacing:"-.03em", backgroundImage:`linear-gradient(90deg,${T.goldHi},${T.gold},${T.goldDim},${T.goldHi})`, backgroundSize:"200%", WebkitBackgroundClip:"text", WebkitTextFillColor:"transparent", animation:"wf-shimmer 5s linear infinite", textTransform:"uppercase", whiteSpace:"nowrap", lineHeight:1 }} className="forge-logo-text">WealthNutz</span>
+            <img 
+              src="/images/wealthnutz-logo.png" 
+              alt="WealthNutz" 
+              style={{ width:"clamp(28px, 8vw, 36px)", height:"auto", objectFit:"contain" }} 
+            />
+            <span style={{ fontSize:"clamp(14px, 4vw, 18px)", fontWeight:800, fontFamily:"Inter, system-ui, -apple-system, sans-serif", letterSpacing:"-.02em", color:T.gold, whiteSpace:"nowrap", lineHeight:1 }} className="forge-logo-text">WealthNutz</span>
           </motion.button>
           
           {/* Middle: Country flags + Clear button — tight group */}
