@@ -125,3 +125,14 @@
     transition: background 0.3s ease, color 0.3s ease;
   }
 }
+
+/* Chat input placeholder colors for light mode visibility */
+.chat-input-light::placeholder {
+  color: #6B7280;
+  opacity: 1;
+}
+
+.chat-input-dark::placeholder {
+  color: #9a8f7e;
+  opacity: 1;
+}

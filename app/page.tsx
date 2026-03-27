@@ -379,7 +379,7 @@ function GoldCTA({ href, label }: { href: string; label: string }) {
 
 // ─────────────────────────────────────────────────────────────────────────────
 // SECTION 3A — CONSOLIDATED FORMATTING FUNCTIONS (Memoized for performance)
-// ─────────────────────────────────────────────────────────────────────────────
+// ────────────────────────────────���────────────────────────────────────────────
 
 // Memoized currency formatter (supports billions properly)
 const formatCurrency = (v: number): string => {
@@ -1833,7 +1833,7 @@ function LoanTool({ onToggleSave, savedIds, userCountry }: { onToggleSave: (item
   );
 }
 
-// ── Scholarship Scout ─────────────────────��������─��──────────────────�����──────────��─
+// ── Scholarship Scout ─────────────────────����������─��──────────────────�����──────────��─
 const SCH_SCAN_MSGS = ["Connecting to scholarship databases...","Scanning national award portals...","Cross-referencing eligibility...","Aggregating live results for you..."];
 
 function ScholarshipScout({ onToggleSave, savedIds }: { onToggleSave: (item: ScoutResult) => void; savedIds: Set<string> }) {
@@ -2569,7 +2569,7 @@ const hBtn = (active = false): CSSProperties => ({
     </p>
   </motion.div>
   <div style={{ flex:1 }}>
-  <InlineChatComponent key={chatKey} country={country} />
+  <InlineChatComponent key={chatKey} country={country} isDarkMode={isDarkMode} />
   </div>
   
   {/* Top Picks — at bottom, visible after country selection */}

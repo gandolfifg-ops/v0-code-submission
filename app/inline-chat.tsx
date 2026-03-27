@@ -1,11 +1,12 @@
 "use client";
 
-import { useState, useEffect, useRef, type FormEvent } from "react";
+import { useState, useEffect, useRef, type FormEvent, useCallback } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Send } from "lucide-react";
+import ReactMarkdown from "react-markdown";
 
-// ── Shared constants duplicated here to avoid circular imports ────────────────
-const T = {
+// ── Dark theme tokens ────────────────────────────────────────────────────────
+const DARK_T = {
   bg:       "#07090d",
   text:     "#e8dcc8",
   mid:      "#9a8f7e",
@@ -20,10 +21,40 @@ const T = {
   glassHi:  "rgba(255,255,255,0.06)",
   cardBg:   "rgba(255,255,255,0.025)",
   cardBorder:"rgba(255,255,255,0.10)",
+  inputBg:  "transparent",
+  inputPlaceholder: "#9a8f7e",
+  aiText:   "#c0b8a8",
   blur:     "blur(12px)",
   r:        12,
   rsm:      8,
 };
+
+// ── Light theme tokens ────────────────────────────────────────────────────────
+const LIGHT_T = {
+  bg:       "#F9FAFB",
+  text:     "#0F172A",
+  mid:      "#475569",
+  dim:      "#94A3B8",
+  gold:     "#C9A84C",
+  goldHi:   "#E8C97A",
+  goldDim:  "#8B6914",
+  green:    "#16a34a",
+  red:      "#dc2626",
+  border:   "rgba(0,0,0,0.08)",
+  glass:    "rgba(255,255,255,0.9)",
+  glassHi:  "rgba(255,255,255,1)",
+  cardBg:   "#FFFFFF",
+  cardBorder:"#E2E8F0",
+  inputBg:  "#F3F4F6",
+  inputPlaceholder: "#6B7280",
+  aiText:   "#1A1A1A",
+  blur:     "blur(12px)",
+  r:        12,
+  rsm:      8,
+};
+
+// Default to dark
+let T = DARK_T;
 
 const COUNTRY_CONFIG = {
   Canada: { flag:"🍁", currency:"CAD", tip:"Showing Canadian scholarships, OSAP, NSLSC loans, and high-interest savings accounts." },
@@ -225,14 +256,25 @@ function TopPicksSection({ country }: { country: "Canada"|"USA" }) {
 }
 
 // ── Main InlineChat export ────────────────────────────────────────────────────
-export default function InlineChat({ country }: { country: string }) {
+export default function InlineChat({ country, isDarkMode = true }: { country: string; isDarkMode?: boolean }) {
+  // Update theme based on prop
+  T = isDarkMode ? DARK_T : LIGHT_T;
+  
   const [msgs, setMsgs] = useState<{ role: "user" | "assistant"; content: string }[]>([]);
   const [input, setInput] = useState("");
   const [loading, setLoading] = useState(false);
   const bottomRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLTextAreaElement>(null);
-
-  useEffect(() => { if (msgs.length > 0) bottomRef.current?.scrollIntoView({ behavior: "smooth" }); }, [msgs, loading]);
+  
+  // Auto-resize textarea callback
+  const autoResize = useCallback((el: HTMLTextAreaElement | null) => {
+    if (el) {
+      el.style.height = "auto";
+      el.style.height = Math.min(el.scrollHeight, 140) + "px"; // Max ~5-6 lines
+    }
+  }, []);
+  
+  // Removed auto-scroll - let user control viewport manually
 
   const submitForm = async (e: FormEvent) => {
     e.preventDefault();
@@ -316,9 +358,26 @@ export default function InlineChat({ country }: { country: string }) {
                   <LogoMark size={14} />
                 </div>
               )}
-              <div style={{ maxWidth: "78%", padding: "10px 14px", borderRadius: m.role === "user" ? "14px 14px 4px 14px" : "4px 14px 14px 14px", background: m.role === "user" ? "rgba(201,168,76,0.1)" : T.cardBg, border: `1px solid ${m.role === "user" ? "rgba(201,168,76,0.18)" : T.cardBorder}`, backdropFilter: T.blur, fontSize: 14, lineHeight: 1.7, color: m.role === "user" ? "#d4c080" : "#c0b8a8" }}>
+              <div style={{ maxWidth: "78%", padding: "10px 14px", borderRadius: m.role === "user" ? "14px 14px 4px 14px" : "4px 14px 14px 14px", background: m.role === "user" ? "rgba(201,168,76,0.1)" : T.cardBg, border: `1px solid ${m.role === "user" ? "rgba(201,168,76,0.18)" : T.cardBorder}`, backdropFilter: T.blur, fontSize: 14, lineHeight: 1.7, color: m.role === "user" ? (isDarkMode ? "#d4c080" : "#78350F") : T.aiText }}>
                 {m.role === "assistant" ? (
-                  <><MsgText text={m.content ?? ""} />{loading && i === msgs.length - 1 && <span style={{ display: "inline-block", width: 2, height: 13, background: T.gold, marginLeft: 2, verticalAlign: "middle", animation: "wf-cur .65s steps(1) infinite" }} />}</>
+                  <>
+                    <div className="prose prose-sm max-w-none" style={{ color: T.aiText }}>
+                      <ReactMarkdown
+                        components={{
+                          p: ({ children }) => <p style={{ margin: "0 0 8px", color: T.aiText }}>{children}</p>,
+                          strong: ({ children }) => <strong style={{ fontWeight: 700, color: T.text }}>{children}</strong>,
+                          em: ({ children }) => <em style={{ fontStyle: "italic" }}>{children}</em>,
+                          ul: ({ children }) => <ul style={{ margin: "8px 0", paddingLeft: 18 }}>{children}</ul>,
+                          ol: ({ children }) => <ol style={{ margin: "8px 0", paddingLeft: 18 }}>{children}</ol>,
+                          li: ({ children }) => <li style={{ margin: "4px 0", color: T.aiText }}>{children}</li>,
+                          a: ({ href, children }) => <a href={href} target="_blank" rel="noopener noreferrer" style={{ color: T.goldHi, textDecoration: "underline" }}>{children}</a>,
+                        }}
+                      >
+                        {m.content ?? ""}
+                      </ReactMarkdown>
+                    </div>
+                    {loading && i === msgs.length - 1 && <span style={{ display: "inline-block", width: 2, height: 13, background: T.gold, marginLeft: 2, verticalAlign: "middle", animation: "wf-cur .65s steps(1) infinite" }} />}
+                  </>
                 ) : (m.content ?? "")}
               </div>
             </motion.div>
@@ -334,17 +393,52 @@ export default function InlineChat({ country }: { country: string }) {
       </div>
       <div style={{ padding: "10px 20px", flexShrink: 0 }}>
         <form onSubmit={submitForm} style={{ maxWidth: 680, margin: "0 auto" }}>
-          <Glass style={{ display: "flex", gap: 9, alignItems: "flex-end", padding: "10px 12px" }}>
-            <textarea ref={inputRef} value={input ?? ""} onChange={e => setInput(e.target.value ?? "")}
-              onKeyDown={e => { if (e.key === "Enter" && !e.shiftKey) { e.preventDefault(); if ((input?.trim() ?? "").length > 0) e.currentTarget.form?.requestSubmit(); } }}
+          <div style={{ 
+            display: "flex", 
+            gap: 9, 
+            alignItems: "flex-end", 
+            padding: "12px 14px", 
+            background: T.inputBg, 
+            border: `1px solid ${T.cardBorder}`, 
+            borderRadius: T.r,
+            boxShadow: isDarkMode ? "none" : "0 1px 3px rgba(0,0,0,0.06)",
+          }}>
+            <textarea 
+              ref={inputRef} 
+              value={input ?? ""} 
+              onChange={e => {
+                setInput(e.target.value ?? "");
+                autoResize(e.target);
+              }}
+              onKeyDown={e => { 
+                if (e.key === "Enter" && !e.shiftKey) { 
+                  e.preventDefault(); 
+                  if ((input?.trim() ?? "").length > 0) e.currentTarget.form?.requestSubmit(); 
+                } 
+              }}
               placeholder="Tell me your situation — I'll tell you exactly what to do..."
               rows={1}
-              style={{ flex: 1, background: "transparent", border: "none", outline: "none", color: T.text, fontSize: 14, lineHeight: 1.6, maxHeight: 90, overflowY: "auto", padding: 0, resize: "none" }} />
+              className={isDarkMode ? "chat-input-dark" : "chat-input-light"}
+              style={{ 
+                flex: 1, 
+                background: "transparent", 
+                border: "none", 
+                outline: "none", 
+                color: T.text, 
+                fontSize: 14, 
+                lineHeight: 1.6, 
+                minHeight: 24,
+                maxHeight: 140, // ~5-6 lines
+                overflowY: "auto", 
+                padding: 0, 
+                resize: "none",
+              }} 
+            />
             <motion.button type="submit" whileTap={tapAnim.tap} disabled={!(input?.trim()) || loading}
               style={{ width: 33, height: 33, borderRadius: 8, border: "none", cursor: (input?.trim() && !loading) ? "pointer" : "not-allowed", flexShrink: 0, display: "flex", alignItems: "center", justifyContent: "center", transition: "all .2s", background: (input?.trim() && !loading) ? undefined : T.glassHi, backgroundImage: (input?.trim() && !loading) ? `linear-gradient(135deg,${T.gold},${T.goldDim})` : undefined, color: (input?.trim() && !loading) ? "#07090d" : T.dim }}>
               <Send size={15} />
             </motion.button>
-          </Glass>
+          </div>
         </form>
       </div>
     </>
