@@ -1977,6 +1977,24 @@ const hBtn = (active = false): CSSProperties => ({
     .forge-hero-section { padding: 16px 14px 0 !important; }
   }
 
+  /* Desktop: Full-width sidebar below main content */
+  @media (min-width: 769px) {
+    .forge-hamburger { display: none !important; }
+    .forge-body { flex-direction: column !important; }
+    .forge-main { width: 100% !important; flex: none !important; }
+    .forge-sidebar {
+      width: 100% !important;
+      max-width: none !important;
+      flex: none !important;
+      border-left: none !important;
+      border-top: 1px solid rgba(255,255,255,0.1) !important;
+      position: static !important;
+      height: auto !important;
+      overflow: visible !important;
+    }
+    .forge-sidebar-header { display: none !important; }
+  }
+
   /* MENU button visible on all screens; sidebar close header only on mobile */
   .forge-hamburger { display: flex !important; }
   .forge-sidebar-header { display: none !important; }
@@ -2068,7 +2086,7 @@ const hBtn = (active = false): CSSProperties => ({
             )}
           </div>
           
-          {/* Right: MENU button (fixed width) */}
+          {/* Right: MENU button (mobile only) */}
           <motion.button whileTap={{ scale: 0.93 }} onClick={() => sidebarOpen ? closeSidebar() : setSidebarOpen(true)}
             style={{ background:"none", border:`1px solid ${T.border}`, color:"#c4b594", cursor:"pointer", padding:"5px 10px", borderRadius:T.rsm, display:"flex", alignItems:"center", gap:5, fontSize:"clamp(10px, 2vw, 12px)", fontWeight:700, letterSpacing:".05em", lineHeight:1, whiteSpace:"nowrap", flexShrink:0 }} className="forge-hamburger">
             <span style={{ fontSize:14, lineHeight:1 }}>☰</span> MENU
@@ -2126,7 +2144,7 @@ const hBtn = (active = false): CSSProperties => ({
           </div>
 
           {/* ═══ SIDEBAR ���════════════════════════════════════════════════════ */}
-          <aside style={{ width:224, flexShrink:0, borderLeft:`1px solid ${T.border}`, background:"rgba(255,255,255,0.014)", backdropFilter:"blur(12px)", display:"flex", flexDirection:"column", overflow:"hidden" }} className={`forge-sidebar${sidebarOpen ? ' open' : ''}${sidebarClosing ? ' closing' : ''}`}>
+          <aside style={{ width:"100%", maxWidth:224, flexShrink:0, borderLeft:`1px solid ${T.border}`, background:"rgba(255,255,255,0.014)", backdropFilter:"blur(12px)", display:"flex", flexDirection:"column", overflow:"hidden" }} className={`forge-sidebar${sidebarOpen ? ' open' : ''}${sidebarClosing ? ' closing' : ''}`}>
             {/* Mobile close button */}
             <div style={{ display:"flex", padding:"10px 12px", justifyContent:"space-between", alignItems:"center", borderBottom:`1px solid ${T.border}`, flexShrink:0 }} className="forge-sidebar-header">
               <span style={{ fontSize:12, fontWeight:700, color:T.gold, letterSpacing:".06em" }}>MENU</span>

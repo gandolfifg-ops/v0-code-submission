@@ -1,5 +1,5 @@
 /** @type {import('next').NextConfig} */
-// Force dev server restart — v49 final clean build 2026-03-26T03
+// Force complete dev server restart — v50 clear all Turbopack in-memory caches
 const nextConfig = {
   typescript: {
     ignoreBuildErrors: true,
@@ -10,6 +10,7 @@ const nextConfig = {
   images: {
     unoptimized: true,
   },
+  productionBrowserSourceMaps: false,
 }
 
 export default nextConfig
