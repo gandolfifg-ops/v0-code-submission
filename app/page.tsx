@@ -156,7 +156,7 @@ const T = {
 
 // ─────────────────────────────────────────────────────────────────────────────
 // SECTION 3 — MOTION VARIANTS
-// ─────────────────────────────────────────────────────────────────────────�����───
+// ─────────────────────────────────────────────────────────────────────────����───
 
 const fadeUp  = { hidden:{opacity:0,y:16}, visible:{opacity:1,y:0,transition:{duration:0.36,ease:[0.22,1,0.36,1] as number[]}} };
 const stagger = { visible:{transition:{staggerChildren:0.065}} };
@@ -208,29 +208,44 @@ function toggleSaved(item: ScoutResult): ScoutResult[] {
 // Supabase bookmark functions
 async function fetchBookmarksFromSupabase(userId: string): Promise<ScoutResult[]> {
   try {
+    console.log("[v0] fetchBookmarksFromSupabase called for user:", userId);
     const { createClient } = await import("@/lib/supabase/client");
     const supabase = createClient();
     const { data, error } = await supabase
       .from("bookmarks")
       .select("loan_id, loan_data")
       .eq("user_id", userId);
-    if (error) throw error;
-    return (data ?? []).map(row => row.loan_data as ScoutResult);
-  } catch { 
+    if (error) {
+      console.log("[v0] fetchBookmarksFromSupabase error:", error);
+      throw error;
+    }
+    const bookmarks = (data ?? []).map(row => row.loan_data as ScoutResult);
+    console.log("[v0] fetchBookmarksFromSupabase returned:", bookmarks.length, "items", bookmarks);
+    return bookmarks;
+  } catch (e) { 
+    console.log("[v0] fetchBookmarksFromSupabase catch:", e);
     return []; 
   }
 }
 
 async function upsertBookmarkToSupabase(userId: string, item: ScoutResult): Promise<void> {
   try {
+    console.log("[v0] upsertBookmarkToSupabase called:", userId, item.id);
     const { createClient } = await import("@/lib/supabase/client");
     const supabase = createClient();
-    await supabase.from("bookmarks").upsert({
+    const { error } = await supabase.from("bookmarks").upsert({
       user_id: userId,
       loan_id: item.id,
       loan_data: item,
     }, { onConflict: "user_id,loan_id" });
-  } catch {}
+    if (error) {
+      console.log("[v0] upsertBookmarkToSupabase error:", error);
+    } else {
+      console.log("[v0] upsertBookmarkToSupabase success");
+    }
+  } catch (e) {
+    console.log("[v0] upsertBookmarkToSupabase catch:", e);
+  }
 }
 
 async function deleteBookmarkFromSupabase(userId: string, loanId: string): Promise<void> {
@@ -820,7 +835,7 @@ function CountrySwitcher({
 // SECTION 5C — LOAN MARKETPLACE HERO (High Conversion)
 // ─────────────────────────────────────────────────────────────────────────────
 
-function LoanMarketplaceHero({ country, filterType, onToggleSave, savedIds, bookmarksLoading }: { country: "Canada" | "USA"; filterType?: LoanType; onToggleSave?: (item: ScoutResult) => void; savedIds?: Set<string>; bookmarksLoading?: boolean }) {
+function LoanMarketplaceHero({ country, filterType, onToggleSave, savedIds }: { country: "Canada" | "USA"; filterType?: LoanType; onToggleSave?: (item: ScoutResult) => void; savedIds?: Set<string> }) {
   const countryCode = country === "Canada" ? "CA" : "US";
   const [currentTime, setCurrentTime] = useState(() => new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }));
   
@@ -890,26 +905,6 @@ function LoanMarketplaceHero({ country, filterType, onToggleSave, savedIds, book
             whileHover={{ scale: 1.02, borderColor: T.gold }}
             whileTap={{ scale: 0.98 }}
           >
-            {/* Country Flag Badge */}
-            <span style={{
-              position: "absolute",
-              top: 12,
-              left: 12,
-              fontSize: 10,
-              fontWeight: 700,
-              background: T.glass,
-              color: T.gold,
-              padding: "3px 8px",
-              borderRadius: 6,
-              display: "flex",
-              alignItems: "center",
-              gap: 4,
-              letterSpacing: "0.02em",
-            }}>
-              <span style={{ fontSize: 12 }}>{offer.country === "CA" ? "🇨🇦" : "🇺🇸"}</span>
-              {offer.country === "CA" ? "CAD" : "USD"}
-            </span>
-            
             {/* Badge */}
             {offer.badge && (
               <span style={{
@@ -929,7 +924,7 @@ function LoanMarketplaceHero({ country, filterType, onToggleSave, savedIds, book
             )}
             
             {/* Bookmark Button */}
-            {onToggleSave && !bookmarksLoading && (
+            {onToggleSave && (
               <motion.button
                 whileTap={{ scale: 0.85 }}
                 onClick={(e) => {
@@ -1045,11 +1040,6 @@ function TopPicksSection({ country }: { country: "Canada" | "USA" }) {
               <p style={{ fontSize: 12, fontWeight: 600, color: T.text, margin: 0 }}>{p.name}</p>
               <p style={{ fontSize: 10, color: T.mid, margin: 0 }}>{p.highlight}</p>
             </div>
-            {/* Country Flag Badge */}
-            <span style={{ fontSize: 9, background: T.glass, color: T.gold, padding: "2px 6px", borderRadius: 4, fontWeight: 600, display: "flex", alignItems: "center", gap: 3 }}>
-              <span style={{ fontSize: 11 }}>{p.country === "CA" ? "🇨🇦" : "🇺🇸"}</span>
-              {p.country === "CA" ? "CAD" : "USD"}
-            </span>
             {p.badge && (
               <span style={{ fontSize: 9, background: T.gold, color: "#07090d", padding: "2px 6px", borderRadius: 4, fontWeight: 700 }}>{p.badge}</span>
             )}
@@ -1611,11 +1601,11 @@ const LoanCalculatorComponent = () => {
 // Memoize LoanCalculator to prevent unnecessary re-renders
 const LoanCalculator = React_memo_compat(LoanCalculatorComponent);
 
-// ── Loan Finder ────��───────────�����──────────────────────────────────────────────
+// ── Loan Finder ────────────────�����──────────────────────────────────────────────
 type Phase = "idle"|"scanning"|"results";
 const SCAN_MSGS = ["Connecting to loan databases...","Scanning live lender rates...","Cross-referencing eligibility...","Compiling best rates for you..."];
 
-function LoanFinder({ onToggleSave, savedIds, userCountry, bookmarksLoading }: { onToggleSave: (item: ScoutResult) => void; savedIds: Set<string>; userCountry: string; bookmarksLoading?: boolean }) {
+function LoanFinder({ onToggleSave, savedIds, userCountry }: { onToggleSave: (item: ScoutResult) => void; savedIds: Set<string>; userCountry: string }) {
   
   const [loanType, setLoanType] = useState<LoanType>("Student");
   const [amount,   setAmount]   = useState("");
@@ -1717,14 +1707,14 @@ function LoanFinder({ onToggleSave, savedIds, userCountry, bookmarksLoading }: {
       
       {/* Live Scour Marketplace — filtered by selected loan type and user country */}
       <div style={{ marginTop: 20 }}>
-        <LoanMarketplaceHero country={userCountry === "Canada" ? "Canada" : "USA"} filterType={loanType} onToggleSave={onToggleSave} savedIds={savedIds} bookmarksLoading={bookmarksLoading} />
+        <LoanMarketplaceHero country={userCountry === "Canada" ? "Canada" : "USA"} filterType={loanType} onToggleSave={onToggleSave} savedIds={savedIds} />
       </div>
     </div>
   );
 }
 
 // ── Loan Tool (tabs) ──────────────────────────────────────────────────────────
-function LoanTool({ onToggleSave, savedIds, userCountry, bookmarksLoading }: { onToggleSave: (item: ScoutResult) => void; savedIds: Set<string>; userCountry: string; bookmarksLoading?: boolean }) {
+function LoanTool({ onToggleSave, savedIds, userCountry }: { onToggleSave: (item: ScoutResult) => void; savedIds: Set<string>; userCountry: string }) {
   
   const [tab, setTab] = useState<"calc"|"finder">("finder");
   return (
@@ -1737,7 +1727,7 @@ function LoanTool({ onToggleSave, savedIds, userCountry, bookmarksLoading }: { o
           </motion.button>
         ))}
       </div>
-      {tab==="finder" ? <LoanFinder onToggleSave={onToggleSave} savedIds={savedIds} userCountry={userCountry} bookmarksLoading={bookmarksLoading} /> : <LoanCalculator />}
+      {tab==="finder" ? <LoanFinder onToggleSave={onToggleSave} savedIds={savedIds} userCountry={userCountry} /> : <LoanCalculator />}
     </motion.div>
   );
 }
@@ -2020,7 +2010,6 @@ export default function ForgePageV55() {
   }, []);
   const [user, setUser] = useState<SupabaseUser | null>(null);
   const [authLoading, setAuthLoading] = useState(true);
-  const [bookmarksLoading, setBookmarksLoading] = useState(true);
   const [savedItems, setSavedItems] = useState<ScoutResult[]>([]);
   const savedIds = useMemo(() => new Set(savedItems.map(x => x.id)), [savedItems]);
   const [locationBarDismissed, setLocationBarDismissed] = useState(false);
@@ -2035,8 +2024,9 @@ export default function ForgePageV55() {
   }, [toast]);
 
 useEffect(() => {
-  // Load from localStorage first (for guests) - provides instant UI while we check auth
+  // Load from localStorage first (for guests)
   const localSaved = readSaved();
+  console.log("[v0] Initial localStorage saved items:", localSaved.length, localSaved);
   setSavedItems(localSaved);
   
   // Supabase auth state listener for persistent sessions
@@ -2044,23 +2034,26 @@ useEffect(() => {
   
   const initAuth = async () => {
     try {
+      console.log("[v0] initAuth starting...");
       const { createClient } = await import("@/lib/supabase/client");
       const supabase = createClient();
       
-      // Get initial session immediately on mount
+      // Get initial session
       const { data: { session } } = await supabase.auth.getSession();
+      console.log("[v0] getSession result:", session?.user?.id ?? "no user");
       setUser(session?.user ?? null);
       setAuthLoading(false);
       
       // If user is logged in, fetch their bookmarks from Supabase immediately
       if (session?.user) {
+        console.log("[v0] User logged in, fetching bookmarks...");
         const bookmarks = await fetchBookmarksFromSupabase(session.user.id);
+        console.log("[v0] Setting savedItems from Supabase:", bookmarks.length);
         setSavedItems(bookmarks); // Always update state with DB data
         writeSaved(bookmarks); // Sync to localStorage as backup
+      } else {
+        console.log("[v0] No user session found on mount");
       }
-      
-      // Mark bookmarks as loaded after initial fetch
-      setBookmarksLoading(false);
       
       // Listen for auth changes
       const { data: { subscription: sub } } = supabase.auth.onAuthStateChange(async (event, session) => {
@@ -2306,8 +2299,8 @@ const hBtn = (active = false): CSSProperties => ({
           
           {/* Right: MENU button (mobile only) */}
           <motion.button whileTap={{ scale: 0.93 }} onClick={() => sidebarOpen ? closeSidebar() : setSidebarOpen(true)}
-            style={{ background:"rgba(255,255,255,0.1)", border:"1px solid rgba(255,255,255,0.3)", color:"#FFFFFF", cursor:"pointer", padding:"6px 12px", borderRadius:T.rsm, display:"flex", alignItems:"center", gap:6, fontSize:12, fontWeight:700, letterSpacing:".05em", lineHeight:1, whiteSpace:"nowrap", flexShrink:0 }} className="forge-hamburger">
-            <span style={{ fontSize:16, lineHeight:1, color:"#FFFFFF" }}>☰</span> MENU
+            style={{ background:"rgba(201,168,76,0.15)", border:`1px solid ${T.gold}`, color:T.gold, cursor:"pointer", padding:"6px 12px", borderRadius:T.rsm, display:"flex", alignItems:"center", gap:6, fontSize:12, fontWeight:700, letterSpacing:".05em", lineHeight:1, whiteSpace:"nowrap", flexShrink:0 }} className="forge-hamburger">
+            <span style={{ fontSize:16, lineHeight:1, color:T.gold }}>☰</span> MENU
           </motion.button>
         </header>
 
@@ -2409,7 +2402,7 @@ const hBtn = (active = false): CSSProperties => ({
                 <div style={{ flex:1, overflowY:"auto", padding:20 }}>
                   {activeTool==="budget"  && <BudgetTool />}
                   {activeTool==="savings" && <SavingsTool />}
-                  {activeTool==="loan"    && <LoanTool onToggleSave={handleToggleSave} savedIds={savedIds} userCountry={country} bookmarksLoading={bookmarksLoading} />}
+                  {activeTool==="loan"    && <LoanTool onToggleSave={handleToggleSave} savedIds={savedIds} userCountry={country} />}
                   {activeTool==="scholar" && <ScholarshipScout onToggleSave={handleToggleSave} savedIds={savedIds} />}
                   {activeTool==="saved"   && <SavedItems saved={savedItems} onRemove={handleToggleSave} />}
                 </div>
