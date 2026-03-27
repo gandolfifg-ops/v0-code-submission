@@ -156,7 +156,7 @@ const T = {
 
 // ─────────────────────────────────────────────────────────────────────────────
 // SECTION 3 — MOTION VARIANTS
-// ─────────────────────────────────────────────────────────────────────────��───
+// ─────────────────────────────────────────────────────────────────────────���───
 
 const fadeUp  = { hidden:{opacity:0,y:16}, visible:{opacity:1,y:0,transition:{duration:0.36,ease:[0.22,1,0.36,1] as number[]}} };
 const stagger = { visible:{transition:{staggerChildren:0.065}} };
@@ -2274,8 +2274,8 @@ const hBtn = (active = false): CSSProperties => ({
           
           {/* Right: MENU button (mobile only) */}
           <motion.button whileTap={{ scale: 0.93 }} onClick={() => sidebarOpen ? closeSidebar() : setSidebarOpen(true)}
-            style={{ background:"none", border:`1px solid ${T.border}`, color:"#c4b594", cursor:"pointer", padding:"5px 10px", borderRadius:T.rsm, display:"flex", alignItems:"center", gap:5, fontSize:"clamp(10px, 2vw, 12px)", fontWeight:700, letterSpacing:".05em", lineHeight:1, whiteSpace:"nowrap", flexShrink:0 }} className="forge-hamburger">
-            <span style={{ fontSize:14, lineHeight:1 }}>☰</span> MENU
+            style={{ background:"rgba(201,168,76,0.15)", border:`1px solid ${T.gold}`, color:T.gold, cursor:"pointer", padding:"6px 12px", borderRadius:T.rsm, display:"flex", alignItems:"center", gap:6, fontSize:12, fontWeight:700, letterSpacing:".05em", lineHeight:1, whiteSpace:"nowrap", flexShrink:0 }} className="forge-hamburger">
+            <span style={{ fontSize:16, lineHeight:1, color:T.gold }}>☰</span> MENU
           </motion.button>
         </header>
 
