@@ -26,7 +26,7 @@ import {
   TrendingUp, Clock, DollarSign, GraduationCap, ShoppingBag,
   Send, Share2, Check, ChevronLeft, User, Search,
   BarChart2, PiggyBank, BookOpen, ExternalLink, Bookmark, X, LogIn, LogOut,
-  Sun, Moon,
+  Sun, Moon, SlidersHorizontal, ChevronDown, RotateCcw,
 } from "lucide-react";
 import type { User as SupabaseUser } from "@supabase/supabase-js";
 import InlineChatComponent from "@/app/inline-chat";
@@ -74,6 +74,43 @@ const SCHOLARSHIP_COUNTRIES= ["Canada","USA","Both"] as const;
 const SCHOLARSHIP_YEARS    = ["Any Year","1st Year","2nd Year","3rd Year","4th Year","Graduate"] as const;
 const LOAN_TYPES           = ["Student","Personal","Auto"] as const;
 type  LoanType             = typeof LOAN_TYPES[number];
+
+// ── FILTER & SORT OPTIONS ───────────────────────────────────────────────────
+type SortOption = "best-match" | "highest-award" | "lowest-rate" | "newest" | "deadline-soonest";
+const SORT_OPTIONS: { value: SortOption; label: string }[] = [
+  { value: "best-match", label: "Best Match" },
+  { value: "highest-award", label: "Highest Award / Lowest Rate" },
+  { value: "newest", label: "Newly Added" },
+  { value: "deadline-soonest", label: "Deadline Soonest" },
+];
+
+// Scholarship filters
+type ScholarshipFilters = {
+  awardAmount: "any" | "under-1k" | "1k-5k" | "5k-10k" | "10k-plus";
+  educationLevel: "any" | "undergrad" | "graduate" | "any-level";
+  noEssay: boolean;
+  noGpaReq: boolean;
+};
+
+// Loan filters  
+type LoanFilters = {
+  interestType: "any" | "fixed" | "variable";
+  noCoSigner: boolean;
+  defermentAvailable: boolean;
+};
+
+const DEFAULT_SCHOLARSHIP_FILTERS: ScholarshipFilters = {
+  awardAmount: "any",
+  educationLevel: "any",
+  noEssay: false,
+  noGpaReq: false,
+};
+
+const DEFAULT_LOAN_FILTERS: LoanFilters = {
+  interestType: "any",
+  noCoSigner: false,
+  defermentAvailable: false,
+};
 
 // Mock data — shown instantly while DB / search API is connecting
 const MOCK_SCHOLARSHIPS = [
@@ -368,7 +405,7 @@ function GoldCTA({ href, label }: { href: string; label: string }) {
   const safe = (href?.trim?.() ?? "").length > 0 ? href : "#";
   return (
   <motion.a href={safe} target="_blank" rel="noopener noreferrer" whileTap={tapAnim.tap}
-  style={{ display:"block", textAlign:"center", padding:"10px 0", borderRadius:T.rsm, textDecoration:"none", fontFamily:"inherit", backgroundImage:`linear-gradient(135deg,${T.gold},${T.goldDim})`, color:T.goldText, fontSize:12, fontWeight:800, letterSpacing:".03em", boxShadow:`0 0 18px ${T.glow}`, transition:"box-shadow .2s" }}
+  style={{ display:"block", textAlign:"center", padding:"10px 0", borderRadius:T.rsm, textDecoration:"none", fontFamily:"inherit", background:`linear-gradient(135deg,${T.gold},${T.goldDim})`, color:T.goldText, fontSize:12, fontWeight:800, letterSpacing:".03em", boxShadow:`0 0 18px ${T.glow}`, transition:"box-shadow .2s" }}
       onMouseEnter={e => (e.currentTarget.style.boxShadow = "0 0 32px rgba(201,168,76,0.5)")}
       onMouseLeave={e => (e.currentTarget.style.boxShadow = `0 0 18px ${T.glow}`)}>
       {label} →
@@ -467,7 +504,7 @@ const SliderComponent = ({ label, value, min, step = 1, onChange, fmt, maxVal }:
       </div>
       <div style={{ position:"relative", height:8, background:"rgba(255,255,255,0.08)", borderRadius:8, cursor:"pointer" }}>
         {/* Active fill bar */}
-        <div style={{ position:"absolute", left:0, top:0, height:"100%", width:`${pct}%`, backgroundImage:`linear-gradient(90deg,${T.goldDim},${T.gold})`, borderRadius:8, transition: isDragging ? "none" : "width .15s" }} />
+        <div style={{ position:"absolute", left:0, top:0, height:"100%", width:`${pct}%`, background:`linear-gradient(90deg,${T.goldDim},${T.gold})`, borderRadius:8, transition: isDragging ? "none" : "width .15s" }} />
         {/* Grip handle */}
         <div style={{
           position:"absolute",
@@ -529,7 +566,7 @@ function TypewriterGreeting() {
   const { out, done } = useTypewriter(WELCOME_MSG, 26);
   return (
     <motion.div variants={fadeUp} initial="hidden" animate="visible" style={{ padding:"26px 4px 14px", maxWidth:640, margin:"0 auto", textAlign:"center" }}>
-      <p style={{ fontFamily:"Inter,system-ui,sans-serif", fontSize:"clamp(14px,2vw,19px)", fontWeight:400, lineHeight:1.7, margin:0, backgroundImage:`linear-gradient(120deg,${T.text} 0%,${T.goldHi} 40%,${T.gold} 65%,${T.mid} 100%)`, WebkitBackgroundClip:"text", WebkitTextFillColor:"transparent", letterSpacing:"-.005em" }}>
+      <p style={{ fontFamily:"Inter,system-ui,sans-serif", fontSize:"clamp(14px,2vw,19px)", fontWeight:400, lineHeight:1.7, margin:0, background:`linear-gradient(120deg,${T.text} 0%,${T.goldHi} 40%,${T.gold} 65%,${T.mid} 100%)`, WebkitBackgroundClip:"text", WebkitTextFillColor:"transparent", letterSpacing:"-.005em" }}>
         {out}
         {!done && <span style={{ display:"inline-block", width:2, height:"1em", backgroundColor:T.gold, marginLeft:2, verticalAlign:"middle", animation:"wf-cur .65s steps(1) infinite" }} />}
       </p>
@@ -698,7 +735,7 @@ function AuthModal({ onClose }: { onClose: () => void }) {
             disabled={isLoading}
             style={{
               padding: "12px 0",
-              backgroundImage: `linear-gradient(135deg, ${T.gold}, ${T.goldDim})`,
+              background: `linear-gradient(135deg, ${T.gold}, ${T.goldDim})`,
               border: "none",
               borderRadius: T.rsm,
               color: "#07090d",
@@ -929,12 +966,496 @@ function ExpandableText({ text, maxLines = 2 }: { text: string; maxLines?: numbe
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
-// SECTION 5C — LOAN MARKETPLACE HERO (High Conversion)
+// SECTION 5C-1 — FILTER SIDEBAR (Desktop) & SORT DROPDOWN
 // ─────────────────────────────────────────────────────────────────────────────
 
-function LoanMarketplaceHero({ country, filterType, onToggleSave, savedIds }: { country: "Canada" | "USA"; filterType?: LoanType; onToggleSave?: (item: ScoutResult) => void; savedIds?: Set<string> }) {
+function FilterCheckbox({ label, checked, onChange, count }: { label: string; checked: boolean; onChange: (v: boolean) => void; count?: number }) {
+  return (
+    <motion.label 
+      whileTap={{ scale: 0.98 }}
+      style={{ 
+        display: "flex", 
+        alignItems: "center", 
+        gap: 10, 
+        padding: "8px 0", 
+        cursor: "pointer",
+        fontSize: 12,
+        color: checked ? T.text : T.mid,
+        transition: "color 0.2s",
+      }}
+    >
+      <span style={{
+        width: 18,
+        height: 18,
+        borderRadius: 4,
+        border: `2px solid ${checked ? T.gold : T.border}`,
+        background: checked ? T.gold : "transparent",
+        display: "flex",
+        alignItems: "center",
+        justifyContent: "center",
+        transition: "all 0.2s",
+        flexShrink: 0,
+      }}>
+        {checked && <Check size={12} color="#07090d" strokeWidth={3} />}
+      </span>
+      <span style={{ flex: 1 }}>{label}</span>
+      {count !== undefined && (
+        <span style={{ fontSize: 10, color: T.dim, background: T.glass, padding: "2px 6px", borderRadius: 10 }}>
+          {count}
+        </span>
+      )}
+      <input type="checkbox" checked={checked} onChange={e => onChange(e.target.checked)} style={{ display: "none" }} />
+    </motion.label>
+  );
+}
+
+function FilterRadio({ label, selected, onSelect, count }: { label: string; selected: boolean; onSelect: () => void; count?: number }) {
+  return (
+    <motion.label 
+      whileTap={{ scale: 0.98 }}
+      onClick={onSelect}
+      style={{ 
+        display: "flex", 
+        alignItems: "center", 
+        gap: 10, 
+        padding: "8px 0", 
+        cursor: "pointer",
+        fontSize: 12,
+        color: selected ? T.text : T.mid,
+        transition: "color 0.2s",
+      }}
+    >
+      <span style={{
+        width: 18,
+        height: 18,
+        borderRadius: "50%",
+        border: `2px solid ${selected ? T.gold : T.border}`,
+        background: "transparent",
+        display: "flex",
+        alignItems: "center",
+        justifyContent: "center",
+        transition: "all 0.2s",
+        flexShrink: 0,
+      }}>
+        {selected && <span style={{ width: 8, height: 8, borderRadius: "50%", background: T.gold }} />}
+      </span>
+      <span style={{ flex: 1 }}>{label}</span>
+      {count !== undefined && (
+        <span style={{ fontSize: 10, color: T.dim, background: T.glass, padding: "2px 6px", borderRadius: 10 }}>
+          {count}
+        </span>
+      )}
+    </motion.label>
+  );
+}
+
+function FilterGroup({ title, children }: { title: string; children: ReactNode }) {
+  return (
+    <div style={{ marginBottom: 20 }}>
+      <h4 style={{ fontSize: 11, fontWeight: 700, color: T.mid, marginBottom: 8, textTransform: "uppercase", letterSpacing: "0.05em" }}>
+        {title}
+      </h4>
+      {children}
+    </div>
+  );
+}
+
+function SortDropdown({ value, onChange, resultCount }: { value: SortOption; onChange: (v: SortOption) => void; resultCount: number }) {
+  const [open, setOpen] = useState(false);
+  const currentLabel = SORT_OPTIONS.find(o => o.value === value)?.label || "Best Match";
+  
+  return (
+    <div style={{ position: "relative" }}>
+      <motion.button
+        whileTap={{ scale: 0.98 }}
+        onClick={() => setOpen(!open)}
+        style={{
+          display: "flex",
+          alignItems: "center",
+          gap: 8,
+          padding: "8px 14px",
+          borderRadius: T.rsm,
+          border: `1px solid ${T.border}`,
+          background: T.glass,
+          color: T.text,
+          fontSize: 12,
+          fontWeight: 500,
+          cursor: "pointer",
+          minWidth: 160,
+        }}
+      >
+        <span style={{ flex: 1, textAlign: "left" }}>{currentLabel}</span>
+        <motion.span animate={{ rotate: open ? 180 : 0 }} transition={{ duration: 0.2 }}>
+          <ChevronDown size={14} color={T.mid} />
+        </motion.span>
+      </motion.button>
+      
+      <AnimatePresence>
+        {open && (
+          <>
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              onClick={() => setOpen(false)}
+              style={{ position: "fixed", inset: 0, zIndex: 99 }}
+            />
+            <motion.div
+              initial={{ opacity: 0, y: -8 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -8 }}
+              style={{
+                position: "absolute",
+                top: "calc(100% + 6px)",
+                left: 0,
+                right: 0,
+                background: T.cardBg,
+                border: `1px solid ${T.border}`,
+                borderRadius: T.rsm,
+                overflow: "hidden",
+                zIndex: 100,
+                boxShadow: "0 8px 24px rgba(0,0,0,0.3)",
+              }}
+            >
+              {SORT_OPTIONS.map(opt => (
+                <motion.button
+                  key={opt.value}
+                  whileHover={{ background: T.glassHi }}
+                  onClick={() => { onChange(opt.value); setOpen(false); }}
+                  style={{
+                    display: "block",
+                    width: "100%",
+                    padding: "10px 14px",
+                    border: "none",
+                    background: value === opt.value ? T.glassHi : "transparent",
+                    color: value === opt.value ? T.gold : T.text,
+                    fontSize: 12,
+                    textAlign: "left",
+                    cursor: "pointer",
+                  }}
+                >
+                  {opt.label}
+                </motion.button>
+              ))}
+            </motion.div>
+          </>
+        )}
+      </AnimatePresence>
+      
+      <span style={{ fontSize: 11, color: T.mid, marginLeft: 12 }}>{resultCount} results</span>
+    </div>
+  );
+}
+
+function LoanFilterSidebar({ 
+  filters, 
+  onChange, 
+  onClear,
+  counts 
+}: { 
+  filters: LoanFilters; 
+  onChange: (f: LoanFilters) => void; 
+  onClear: () => void;
+  counts: { fixed: number; variable: number; noCoSigner: number; deferment: number };
+}) {
+  const hasActiveFilters = filters.interestType !== "any" || filters.noCoSigner || filters.defermentAvailable;
+  
+  return (
+    <div style={{ padding: 16 }}>
+      <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 16 }}>
+        <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+          <SlidersHorizontal size={16} color={T.gold} />
+          <h3 style={{ fontSize: 14, fontWeight: 700, color: T.text, margin: 0 }}>Filters</h3>
+        </div>
+        {hasActiveFilters && (
+          <motion.button
+            whileTap={{ scale: 0.95 }}
+            onClick={onClear}
+            style={{
+              display: "flex",
+              alignItems: "center",
+              gap: 4,
+              padding: "4px 10px",
+              borderRadius: 6,
+              border: "none",
+              background: "rgba(248,113,113,0.15)",
+              color: "#f87171",
+              fontSize: 10,
+              fontWeight: 600,
+              cursor: "pointer",
+            }}
+          >
+            <RotateCcw size={10} /> Clear All
+          </motion.button>
+        )}
+      </div>
+      
+      <FilterGroup title="Interest Type">
+        <FilterRadio label="Any" selected={filters.interestType === "any"} onSelect={() => onChange({ ...filters, interestType: "any" })} />
+        <FilterRadio label="Fixed Rate" selected={filters.interestType === "fixed"} onSelect={() => onChange({ ...filters, interestType: "fixed" })} count={counts.fixed} />
+        <FilterRadio label="Variable Rate" selected={filters.interestType === "variable"} onSelect={() => onChange({ ...filters, interestType: "variable" })} count={counts.variable} />
+      </FilterGroup>
+      
+      <FilterGroup title="Requirements">
+        <FilterCheckbox label="No Co-Signer Required" checked={filters.noCoSigner} onChange={v => onChange({ ...filters, noCoSigner: v })} count={counts.noCoSigner} />
+        <FilterCheckbox label="Deferment Available" checked={filters.defermentAvailable} onChange={v => onChange({ ...filters, defermentAvailable: v })} count={counts.deferment} />
+      </FilterGroup>
+    </div>
+  );
+}
+
+function ScholarshipFilterSidebar({ 
+  filters, 
+  onChange, 
+  onClear,
+  counts 
+}: { 
+  filters: ScholarshipFilters; 
+  onChange: (f: ScholarshipFilters) => void; 
+  onClear: () => void;
+  counts: { under1k: number; k1to5: number; k5to10: number; k10plus: number; undergrad: number; graduate: number; noEssay: number; noGpa: number };
+}) {
+  const hasActiveFilters = filters.awardAmount !== "any" || filters.educationLevel !== "any" || filters.noEssay || filters.noGpaReq;
+  
+  return (
+    <div style={{ padding: 16 }}>
+      <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 16 }}>
+        <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+          <SlidersHorizontal size={16} color={T.gold} />
+          <h3 style={{ fontSize: 14, fontWeight: 700, color: T.text, margin: 0 }}>Filters</h3>
+        </div>
+        {hasActiveFilters && (
+          <motion.button
+            whileTap={{ scale: 0.95 }}
+            onClick={onClear}
+            style={{
+              display: "flex",
+              alignItems: "center",
+              gap: 4,
+              padding: "4px 10px",
+              borderRadius: 6,
+              border: "none",
+              background: "rgba(248,113,113,0.15)",
+              color: "#f87171",
+              fontSize: 10,
+              fontWeight: 600,
+              cursor: "pointer",
+            }}
+          >
+            <RotateCcw size={10} /> Clear All
+          </motion.button>
+        )}
+      </div>
+      
+      <FilterGroup title="Award Amount">
+        <FilterRadio label="Any Amount" selected={filters.awardAmount === "any"} onSelect={() => onChange({ ...filters, awardAmount: "any" })} />
+        <FilterRadio label="Under $1,000" selected={filters.awardAmount === "under-1k"} onSelect={() => onChange({ ...filters, awardAmount: "under-1k" })} count={counts.under1k} />
+        <FilterRadio label="$1,000 - $5,000" selected={filters.awardAmount === "1k-5k"} onSelect={() => onChange({ ...filters, awardAmount: "1k-5k" })} count={counts.k1to5} />
+        <FilterRadio label="$5,000 - $10,000" selected={filters.awardAmount === "5k-10k"} onSelect={() => onChange({ ...filters, awardAmount: "5k-10k" })} count={counts.k5to10} />
+        <FilterRadio label="$10,000+" selected={filters.awardAmount === "10k-plus"} onSelect={() => onChange({ ...filters, awardAmount: "10k-plus" })} count={counts.k10plus} />
+      </FilterGroup>
+      
+      <FilterGroup title="Education Level">
+        <FilterRadio label="Any Level" selected={filters.educationLevel === "any"} onSelect={() => onChange({ ...filters, educationLevel: "any" })} />
+        <FilterRadio label="Undergraduate" selected={filters.educationLevel === "undergrad"} onSelect={() => onChange({ ...filters, educationLevel: "undergrad" })} count={counts.undergrad} />
+        <FilterRadio label="Graduate" selected={filters.educationLevel === "graduate"} onSelect={() => onChange({ ...filters, educationLevel: "graduate" })} count={counts.graduate} />
+      </FilterGroup>
+      
+      <FilterGroup title="Easy Apply">
+        <FilterCheckbox label="No Essay Required" checked={filters.noEssay} onChange={v => onChange({ ...filters, noEssay: v })} count={counts.noEssay} />
+        <FilterCheckbox label="No GPA Requirement" checked={filters.noGpaReq} onChange={v => onChange({ ...filters, noGpaReq: v })} count={counts.noGpa} />
+      </FilterGroup>
+    </div>
+  );
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// SECTION 5C-2 — FILTER BOTTOM SHEET (Mobile)
+// ─────────────────────────────────────────────────────────────────────────────
+
+function FilterBottomSheet({ 
+  isOpen, 
+  onClose, 
+  children,
+  title = "Filter & Sort"
+}: { 
+  isOpen: boolean; 
+  onClose: () => void; 
+  children: ReactNode;
+  title?: string;
+}) {
+  return (
+    <AnimatePresence>
+      {isOpen && (
+        <>
+          {/* Backdrop */}
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            onClick={onClose}
+            style={{
+              position: "fixed",
+              inset: 0,
+              background: "rgba(0,0,0,0.6)",
+              zIndex: 200,
+            }}
+          />
+          {/* Sheet */}
+          <motion.div
+            initial={{ y: "100%" }}
+            animate={{ y: 0 }}
+            exit={{ y: "100%" }}
+            transition={{ type: "spring", damping: 28, stiffness: 300 }}
+            style={{
+              position: "fixed",
+              bottom: 0,
+              left: 0,
+              right: 0,
+              maxHeight: "80vh",
+              background: T.cardBg,
+              borderRadius: "20px 20px 0 0",
+              zIndex: 201,
+              overflow: "hidden",
+              display: "flex",
+              flexDirection: "column",
+            }}
+          >
+            {/* Handle */}
+            <div style={{ padding: "12px 0 8px", display: "flex", justifyContent: "center" }}>
+              <div style={{ width: 40, height: 4, borderRadius: 2, background: T.dim }} />
+            </div>
+            
+            {/* Header */}
+            <div style={{ 
+              display: "flex", 
+              alignItems: "center", 
+              justifyContent: "space-between", 
+              padding: "0 20px 16px",
+              borderBottom: `1px solid ${T.border}`,
+            }}>
+              <h3 style={{ fontSize: 16, fontWeight: 700, color: T.text, margin: 0 }}>{title}</h3>
+              <motion.button
+                whileTap={{ scale: 0.9 }}
+                onClick={onClose}
+                style={{
+                  width: 32,
+                  height: 32,
+                  borderRadius: "50%",
+                  border: "none",
+                  background: T.glass,
+                  cursor: "pointer",
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  color: T.mid,
+                }}
+              >
+                <X size={18} />
+              </motion.button>
+            </div>
+            
+            {/* Content */}
+            <div style={{ flex: 1, overflowY: "auto", padding: "8px 4px" }}>
+              {children}
+            </div>
+            
+            {/* Apply Button */}
+            <div style={{ padding: 16, borderTop: `1px solid ${T.border}` }}>
+              <motion.button
+                whileTap={{ scale: 0.98 }}
+                onClick={onClose}
+                style={{
+                  width: "100%",
+                  padding: 14,
+                  borderRadius: T.rsm,
+                  border: "none",
+                  background: `linear-gradient(135deg, ${T.gold}, ${T.goldDim})`,
+                  color: "#07090d",
+                  fontSize: 14,
+                  fontWeight: 700,
+                  cursor: "pointer",
+                }}
+              >
+                Apply Filters
+              </motion.button>
+            </div>
+          </motion.div>
+        </>
+      )}
+    </AnimatePresence>
+  );
+}
+
+function MobileFilterButton({ onClick, hasFilters }: { onClick: () => void; hasFilters: boolean }) {
+  return (
+    <motion.button
+      whileTap={{ scale: 0.95 }}
+      onClick={onClick}
+      style={{
+        position: "fixed",
+        bottom: 80,
+        right: 16,
+        display: "flex",
+        alignItems: "center",
+        gap: 8,
+        padding: "12px 18px",
+        borderRadius: 30,
+        border: "none",
+        background: `linear-gradient(135deg, ${T.gold}, ${T.goldDim})`,
+        color: "#07090d",
+        fontSize: 13,
+        fontWeight: 700,
+        cursor: "pointer",
+        boxShadow: "0 4px 20px rgba(201,168,76,0.4)",
+        zIndex: 50,
+      }}
+      className="mobile-filter-btn"
+    >
+      <SlidersHorizontal size={16} />
+      Filter & Sort
+      {hasFilters && (
+        <span style={{
+          width: 8,
+          height: 8,
+          borderRadius: "50%",
+          background: "#f87171",
+          position: "absolute",
+          top: 8,
+          right: 8,
+        }} />
+      )}
+    </motion.button>
+  );
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// SECTION 5C-3 — LOAN MARKETPLACE HERO (High Conversion)
+// ─────────────────────────────────────────────────────────────────────────────
+
+function LoanMarketplaceHero({ 
+  country, 
+  filterType, 
+  onToggleSave, 
+  savedIds,
+  filters,
+  sortBy = "best-match",
+  onFiltersChange,
+  onSortChange,
+}: { 
+  country: "Canada" | "USA"; 
+  filterType?: LoanType; 
+  onToggleSave?: (item: ScoutResult) => void; 
+  savedIds?: Set<string>;
+  filters?: LoanFilters;
+  sortBy?: SortOption;
+  onFiltersChange?: (f: LoanFilters) => void;
+  onSortChange?: (s: SortOption) => void;
+}) {
   const countryCode = country === "Canada" ? "CA" : "US";
   const [currentTime, setCurrentTime] = useState(() => new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }));
+  const [mobileFilterOpen, setMobileFilterOpen] = useState(false);
+  const activeFilters = filters || DEFAULT_LOAN_FILTERS;
   
   useEffect(() => {
     const interval = setInterval(() => {
@@ -943,11 +1464,37 @@ function LoanMarketplaceHero({ country, filterType, onToggleSave, savedIds }: { 
     return () => clearInterval(interval);
   }, []);
   
-  const offers = LOAN_MARKETPLACE.filter(o => {
-    if (o.country !== countryCode) return false;
-    if (filterType && o.loanType !== filterType) return false;
+  // Calculate filter counts for dynamic badges
+  const allCountryOffers = LOAN_MARKETPLACE.filter(o => o.country === countryCode && (!filterType || o.loanType === filterType));
+  const filterCounts = useMemo(() => ({
+    fixed: allCountryOffers.filter(o => o.rate.toLowerCase().includes("fixed") || !o.rate.toLowerCase().includes("variable")).length,
+    variable: allCountryOffers.filter(o => o.rate.toLowerCase().includes("variable") || o.rate.toLowerCase().includes("prime")).length,
+    noCoSigner: allCountryOffers.filter(o => o.highlight.toLowerCase().includes("no co-signer") || o.highlight.toLowerCase().includes("no cosigner")).length,
+    deferment: allCountryOffers.filter(o => o.highlight.toLowerCase().includes("defer") || o.highlight.toLowerCase().includes("skip") || o.highlight.toLowerCase().includes("while in school")).length,
+  }), [allCountryOffers]);
+  
+  // Apply filters
+  const filteredOffers = allCountryOffers.filter(o => {
+    if (activeFilters.interestType === "fixed" && (o.rate.toLowerCase().includes("variable") || o.rate.toLowerCase().includes("prime"))) return false;
+    if (activeFilters.interestType === "variable" && !o.rate.toLowerCase().includes("variable") && !o.rate.toLowerCase().includes("prime")) return false;
+    // Additional filter logic would go here based on actual data properties
     return true;
   });
+  
+  // Apply sorting
+  const offers = useMemo(() => {
+    const sorted = [...filteredOffers];
+    if (sortBy === "lowest-rate" || sortBy === "highest-award") {
+      sorted.sort((a, b) => {
+        const rateA = parseFloat(a.rate.replace(/[^0-9.]/g, "")) || 99;
+        const rateB = parseFloat(b.rate.replace(/[^0-9.]/g, "")) || 99;
+        return rateA - rateB;
+      });
+    }
+    return sorted;
+  }, [filteredOffers, sortBy]);
+  
+  const hasActiveFilters = activeFilters.interestType !== "any" || activeFilters.noCoSigner || activeFilters.defermentAvailable;
   
   return (
     <motion.div variants={stagger} initial="hidden" animate="visible" style={{ marginBottom: 24 }}>
@@ -979,8 +1526,52 @@ function LoanMarketplaceHero({ country, filterType, onToggleSave, savedIds }: { 
         <p style={{ fontSize: 12, color: T.mid, margin: 0 }}>Top loan offers matched to your profile. Pre-qualify without affecting your credit.</p>
       </motion.div>
       
-      {/* Loan Cards Grid */}
-      <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(280px, 1fr))", gap: 12 }}>
+      {/* Sort & Filter Controls */}
+      {onSortChange && (
+        <motion.div variants={fadeUp} style={{ marginBottom: 16, display: "flex", alignItems: "center", justifyContent: "space-between", flexWrap: "wrap", gap: 12 }}>
+          <SortDropdown value={sortBy} onChange={onSortChange} resultCount={offers.length} />
+          {hasActiveFilters && (
+            <motion.button
+              whileTap={{ scale: 0.95 }}
+              onClick={() => onFiltersChange?.(DEFAULT_LOAN_FILTERS)}
+              style={{
+                display: "flex",
+                alignItems: "center",
+                gap: 4,
+                padding: "6px 12px",
+                borderRadius: 6,
+                border: "none",
+                background: "rgba(248,113,113,0.15)",
+                color: "#f87171",
+                fontSize: 11,
+                fontWeight: 600,
+                cursor: "pointer",
+              }}
+            >
+              <RotateCcw size={12} /> Clear Filters
+            </motion.button>
+          )}
+        </motion.div>
+      )}
+      
+      {/* Main Content with Sidebar */}
+      <div style={{ display: "flex", gap: 16 }}>
+        {/* Desktop Filter Sidebar */}
+        {onFiltersChange && (
+          <div className="desktop-filter-sidebar" style={{ width: 220, flexShrink: 0 }}>
+            <Glass style={{ position: "sticky", top: 70 }}>
+              <LoanFilterSidebar 
+                filters={activeFilters}
+                onChange={onFiltersChange}
+                onClear={() => onFiltersChange(DEFAULT_LOAN_FILTERS)}
+                counts={filterCounts}
+              />
+            </Glass>
+          </div>
+        )}
+        
+        {/* Loan Cards Grid */}
+        <div style={{ flex: 1, display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(260px, 1fr))", gap: 12 }}>
         {offers.map((offer, i) => (
 <motion.a
           key={offer.id}
@@ -1084,7 +1675,7 @@ function LoanMarketplaceHero({ country, filterType, onToggleSave, savedIds }: { 
               gap: 6,
               padding: "10px 20px",
               borderRadius: 8,
-              backgroundImage: `linear-gradient(135deg, ${T.gold}, ${T.goldDim})`,
+              background: `linear-gradient(135deg, ${T.gold}, ${T.goldDim})`,
               color: "#07090d",
               fontSize: 12,
               fontWeight: 800,
@@ -1094,7 +1685,23 @@ function LoanMarketplaceHero({ country, filterType, onToggleSave, savedIds }: { 
             </div>
           </motion.a>
         ))}
+        </div>
       </div>
+      
+      {/* Mobile Filter Button & Bottom Sheet */}
+      {onFiltersChange && (
+        <>
+          <MobileFilterButton onClick={() => setMobileFilterOpen(true)} hasFilters={hasActiveFilters} />
+          <FilterBottomSheet isOpen={mobileFilterOpen} onClose={() => setMobileFilterOpen(false)} title="Filter Loans">
+            <LoanFilterSidebar 
+              filters={activeFilters}
+              onChange={onFiltersChange}
+              onClear={() => onFiltersChange(DEFAULT_LOAN_FILTERS)}
+              counts={filterCounts}
+            />
+          </FilterBottomSheet>
+        </>
+      )}
     </motion.div>
   );
 }
@@ -1366,7 +1973,7 @@ function CreditPathModal({ onClose, country }: { onClose: () => void; country: s
               transition={{ duration: 0.4 }}
               style={{
                 height: "100%",
-                backgroundImage: `linear-gradient(90deg, ${T.gold}, ${T.goldDim})`,
+                background: `linear-gradient(90deg, ${T.gold}, ${T.goldDim})`,
                 borderRadius: 3,
               }}
             />
@@ -1381,7 +1988,7 @@ function CreditPathModal({ onClose, country }: { onClose: () => void; country: s
             width: "100%",
             padding: "12px 0",
             borderRadius: T.rsm,
-            backgroundImage: `linear-gradient(135deg, ${T.gold}, ${T.goldDim})`,
+            background: `linear-gradient(135deg, ${T.gold}, ${T.goldDim})`,
             border: "none",
             color: "#07090d",
             fontSize: 13,
@@ -1713,6 +2320,8 @@ function LoanFinder({ onToggleSave, savedIds, userCountry }: { onToggleSave: (it
   const [results,  setResults]  = useState<ScoutResult[]>([]);
   const [scanIdx,  setScanIdx]  = useState(0);
   const [hist,     setHist]     = useState<HistRec[]>([]);
+  const [loanFilters, setLoanFilters] = useState<LoanFilters>(DEFAULT_LOAN_FILTERS);
+  const [loanSort, setLoanSort] = useState<SortOption>("best-match");
   useEffect(() => { setHist(readHist().filter(h => h.type==="loan")); }, []);
   useEffect(() => {
     if (phase !== "scanning") return;
@@ -1747,7 +2356,7 @@ function LoanFinder({ onToggleSave, savedIds, userCountry }: { onToggleSave: (it
         placeholder="Amount needed (e.g. $20,000)"
         style={{ padding:"10px 13px", background:T.glassHi, border:`1px solid ${T.border}`, borderRadius:T.rsm, color:T.text, fontSize:13, outline:"none", fontFamily:"inherit" }} />
       <motion.button whileTap={tapAnim.tap} onClick={handleSearch} disabled={phase==="scanning"}
-        style={{ padding:"11px 0", borderRadius:T.rsm, border:"none", cursor:"pointer", backgroundImage:`linear-gradient(135deg,${T.gold},${T.goldDim})`, color:"#07090d", fontSize:13, fontWeight:800, fontFamily:"inherit", opacity:phase==="scanning"?.65:1, boxShadow:`0 0 18px ${T.glow}` }}>
+        style={{ padding:"11px 0", borderRadius:T.rsm, border:"none", cursor:"pointer", background:`linear-gradient(135deg,${T.gold},${T.goldDim})`, color:"#07090d", fontSize:13, fontWeight:800, fontFamily:"inherit", opacity:phase==="scanning"?.65:1, boxShadow:`0 0 18px ${T.glow}` }}>
         {phase==="scanning" ? "Scanning lenders..." : "Find Best Rates"}
       </motion.button>
       <AnimatePresence>
@@ -1807,7 +2416,16 @@ function LoanFinder({ onToggleSave, savedIds, userCountry }: { onToggleSave: (it
       
       {/* Live Scour Marketplace — filtered by selected loan type and user country */}
       <div style={{ marginTop: 20 }}>
-        <LoanMarketplaceHero country={userCountry === "Canada" ? "Canada" : "USA"} filterType={loanType} onToggleSave={onToggleSave} savedIds={savedIds} />
+        <LoanMarketplaceHero 
+          country={userCountry === "Canada" ? "Canada" : "USA"} 
+          filterType={loanType} 
+          onToggleSave={onToggleSave} 
+          savedIds={savedIds}
+          filters={loanFilters}
+          sortBy={loanSort}
+          onFiltersChange={setLoanFilters}
+          onSortChange={setLoanSort}
+        />
       </div>
     </div>
   );
@@ -1832,7 +2450,7 @@ function LoanTool({ onToggleSave, savedIds, userCountry }: { onToggleSave: (item
   );
 }
 
-// ── Scholarship Scout ─────────────────────������������─��──────────────────�����──────────��─
+// ── Scholarship Scout ─────────────────────������������─����──────────────────�����──────────��─
 const SCH_SCAN_MSGS = ["Connecting to scholarship databases...","Scanning national award portals...","Cross-referencing eligibility...","Aggregating live results for you..."];
 
 function ScholarshipScout({ onToggleSave, savedIds }: { onToggleSave: (item: ScoutResult) => void; savedIds: Set<string> }) {
@@ -1845,6 +2463,9 @@ function ScholarshipScout({ onToggleSave, savedIds }: { onToggleSave: (item: Sco
   const [results, setResults] = useState<ScoutResult[]>([]);
   const [scanIdx, setScanIdx] = useState(0);
   const [hist,    setHist]    = useState<HistRec[]>([]);
+  const [schFilters, setSchFilters] = useState<ScholarshipFilters>(DEFAULT_SCHOLARSHIP_FILTERS);
+  const [schSort, setSchSort] = useState<SortOption>("best-match");
+  const [mobileFilterOpen, setMobileFilterOpen] = useState(false);
   useEffect(() => { setHist(readHist().filter(h => h.type==="scholarship")); }, []);
   useEffect(() => {
     if (phase !== "scanning") return;
@@ -1879,7 +2500,7 @@ function ScholarshipScout({ onToggleSave, savedIds }: { onToggleSave: (item: Sco
           ))}
         </div>
         <motion.button whileTap={tapAnim.tap} onClick={handleSearch} disabled={phase==="scanning"}
-          style={{ width:"100%", padding:"11px 0", borderRadius:T.rsm, border:"none", cursor:"pointer", backgroundImage:`linear-gradient(135deg,${T.gold},${T.goldDim})`, color:"#07090d", fontSize:13, fontWeight:800, fontFamily:"inherit", opacity:phase==="scanning"?.65:1, boxShadow:`0 0 18px ${T.glow}`, boxSizing:"border-box" }}>
+          style={{ width:"100%", padding:"11px 0", borderRadius:T.rsm, border:"none", cursor:"pointer", background:`linear-gradient(135deg,${T.gold},${T.goldDim})`, color:"#07090d", fontSize:13, fontWeight:800, fontFamily:"inherit", opacity:phase==="scanning"?.65:1, boxShadow:`0 0 18px ${T.glow}`, boxSizing:"border-box" }}>
           {phase==="scanning" ? "Scanning databases..." : "Find Scholarships"}
         </motion.button>
       </Glass>
@@ -1896,10 +2517,98 @@ function ScholarshipScout({ onToggleSave, savedIds }: { onToggleSave: (item: Sco
           </motion.div>
         )}
       </AnimatePresence>
-      <AnimatePresence>
-        {phase==="results" && results.length>0 && (
-          <motion.div key="sr" variants={stagger} initial="hidden" animate="visible" style={{ display:"flex", flexDirection:"column", gap:10 }}>
-            {results.map(r => (
+      {/* Filter counts calculation */}
+      {(() => {
+        // Parse amount from string like "$5,000" or "$2,500-$6,000"
+        const parseAmount = (amt: string) => {
+          const match = amt.match(/\$?([\d,]+)/);
+          return match ? parseInt(match[1].replace(/,/g, ""), 10) : 0;
+        };
+        
+        const filterCounts = {
+          under1k: results.filter(r => parseAmount(r.amount ?? "0") < 1000).length,
+          k1to5: results.filter(r => { const a = parseAmount(r.amount ?? "0"); return a >= 1000 && a <= 5000; }).length,
+          k5to10: results.filter(r => { const a = parseAmount(r.amount ?? "0"); return a > 5000 && a <= 10000; }).length,
+          k10plus: results.filter(r => parseAmount(r.amount ?? "0") > 10000).length,
+          undergrad: results.filter(r => (r.eligibility ?? "").toLowerCase().includes("undergrad") || !(r.eligibility ?? "").toLowerCase().includes("graduate")).length,
+          graduate: results.filter(r => (r.eligibility ?? "").toLowerCase().includes("graduate")).length,
+          noEssay: results.filter(r => (r.eligibility ?? "").toLowerCase().includes("no essay")).length,
+          noGpa: results.filter(r => !(r.eligibility ?? "").toLowerCase().includes("gpa")).length,
+        };
+        
+        // Apply filters
+        const filteredResults = results.filter(r => {
+          const amt = parseAmount(r.amount ?? "0");
+          if (schFilters.awardAmount === "under-1k" && amt >= 1000) return false;
+          if (schFilters.awardAmount === "1k-5k" && (amt < 1000 || amt > 5000)) return false;
+          if (schFilters.awardAmount === "5k-10k" && (amt <= 5000 || amt > 10000)) return false;
+          if (schFilters.awardAmount === "10k-plus" && amt <= 10000) return false;
+          if (schFilters.noEssay && !(r.eligibility ?? "").toLowerCase().includes("no essay")) return false;
+          if (schFilters.noGpaReq && (r.eligibility ?? "").toLowerCase().includes("gpa")) return false;
+          return true;
+        });
+        
+        // Apply sorting
+        const sortedResults = [...filteredResults].sort((a, b) => {
+          if (schSort === "highest-award") {
+            return parseAmount(b.amount ?? "0") - parseAmount(a.amount ?? "0");
+          }
+          if (schSort === "deadline-soonest") {
+            // Simple sort - real implementation would parse dates
+            return (a.deadline ?? "").localeCompare(b.deadline ?? "");
+          }
+          return 0;
+        });
+        
+        const hasActiveFilters = schFilters.awardAmount !== "any" || schFilters.educationLevel !== "any" || schFilters.noEssay || schFilters.noGpaReq;
+        
+        return (
+          <AnimatePresence>
+            {phase==="results" && results.length>0 && (
+              <>
+                {/* Sort & Filter Controls */}
+                <motion.div variants={fadeUp} style={{ marginBottom: 16, display: "flex", alignItems: "center", justifyContent: "space-between", flexWrap: "wrap", gap: 12 }}>
+                  <SortDropdown value={schSort} onChange={setSchSort} resultCount={sortedResults.length} />
+                  {hasActiveFilters && (
+                    <motion.button
+                      whileTap={{ scale: 0.95 }}
+                      onClick={() => setSchFilters(DEFAULT_SCHOLARSHIP_FILTERS)}
+                      style={{
+                        display: "flex",
+                        alignItems: "center",
+                        gap: 4,
+                        padding: "6px 12px",
+                        borderRadius: 6,
+                        border: "none",
+                        background: "rgba(248,113,113,0.15)",
+                        color: "#f87171",
+                        fontSize: 11,
+                        fontWeight: 600,
+                        cursor: "pointer",
+                      }}
+                    >
+                      <RotateCcw size={12} /> Clear Filters
+                    </motion.button>
+                  )}
+                </motion.div>
+                
+                {/* Main Content with Sidebar */}
+                <div style={{ display: "flex", gap: 16 }}>
+                  {/* Desktop Filter Sidebar */}
+                  <div className="desktop-filter-sidebar" style={{ width: 220, flexShrink: 0 }}>
+                    <Glass style={{ position: "sticky", top: 70 }}>
+                      <ScholarshipFilterSidebar 
+                        filters={schFilters}
+                        onChange={setSchFilters}
+                        onClear={() => setSchFilters(DEFAULT_SCHOLARSHIP_FILTERS)}
+                        counts={filterCounts}
+                      />
+                    </Glass>
+                  </div>
+                  
+                  {/* Results */}
+                  <motion.div key="sr" variants={stagger} initial="hidden" animate="visible" style={{ flex: 1, display:"flex", flexDirection:"column", gap:10 }}>
+                    {sortedResults.map(r => (
               <motion.div key={r.id} variants={fadeUp}>
                 <Glass glow style={{ padding:14 }}>
                   <div style={{ display:"flex", justifyContent:"space-between", alignItems:"flex-start", marginBottom:7, gap:10 }}>
@@ -1920,10 +2629,25 @@ function ScholarshipScout({ onToggleSave, savedIds }: { onToggleSave: (item: Sco
                   <GoldCTA href={r.url} label="Apply Now" />
                 </Glass>
               </motion.div>
-            ))}
-          </motion.div>
-        )}
-      </AnimatePresence>
+                    ))}
+                  </motion.div>
+                </div>
+                
+                {/* Mobile Filter Button & Bottom Sheet */}
+                <MobileFilterButton onClick={() => setMobileFilterOpen(true)} hasFilters={hasActiveFilters} />
+                <FilterBottomSheet isOpen={mobileFilterOpen} onClose={() => setMobileFilterOpen(false)} title="Filter Scholarships">
+                  <ScholarshipFilterSidebar 
+                    filters={schFilters}
+                    onChange={setSchFilters}
+                    onClear={() => setSchFilters(DEFAULT_SCHOLARSHIP_FILTERS)}
+                    counts={filterCounts}
+                  />
+                </FilterBottomSheet>
+              </>
+            )}
+          </AnimatePresence>
+        );
+      })()}
       {hist.length > 0 && (
         <div>
           <p style={{ fontSize:10, color:T.dim, letterSpacing:".08em", margin:"4px 2px 8px" }}>RECENT SEARCHES</p>
