@@ -212,7 +212,7 @@ async function fetchResults(type: "scholarship"|"loan", filters: Record<string,s
   }
 }
 
-// ────────────────────────────────────────────────────────────────────────────��
+// ────────────────────────────────────────────────────��───────────────────────��
 // SECTION 5 — PRIMITIVE UI COMPONENTS
 // ─────────────────────────────────────────────────────────────────────────────
 
@@ -1584,7 +1584,7 @@ function LoanTool({ onToggleSave, savedIds }: { onToggleSave: (item: ScoutResult
   );
 }
 
-// ── Scholarship Scout ──────────────────────���────────────────────�����──────────��─
+// ── Scholarship Scout ──────────────────────�����────────────────────�����──────────��─
 const SCH_SCAN_MSGS = ["Connecting to scholarship databases...","Scanning national award portals...","Cross-referencing eligibility...","Aggregating live results for you..."];
 
 function ScholarshipScout({ onToggleSave, savedIds }: { onToggleSave: (item: ScoutResult) => void; savedIds: Set<string> }) {
@@ -2051,19 +2051,19 @@ const hBtn = (active = false): CSSProperties => ({
 
         {/* ═══ HEADER ══════════════════════════════════════════════════════════ */}
         <header style={{ display:"flex", alignItems:"center", justifyContent:"space-between", padding:"7px 14px", borderBottom:`1px solid ${T.border}`, flexShrink:0, zIndex:10, background:"rgba(5,5,5,0.97)", backdropFilter:"blur(22px)", WebkitBackdropFilter:"blur(22px)", gap:10, minHeight:44 }} className="forge-header">
-          {/* Left: logo + name — clickable, scrolls to top, closes sidebar, returns home */}
+          {/* Left: logo — clickable, scrolls to top, closes sidebar, returns home */}
           <motion.button
             whileTap={{ scale: 0.94 }}
             onClick={() => { closeSidebar(); setPanelView("chat"); setActiveTool(""); window.scrollTo({ top: 0, behavior: "smooth" }); }}
             aria-label="Go to home"
-            style={{ display:"flex", alignItems:"center", gap:8, flexShrink:0, background:"none", border:"none", cursor:"pointer", padding:0, outline:"none" }}
+            style={{ display:"flex", alignItems:"center", flexShrink:0, background:"none", border:"none", cursor:"pointer", padding:0, outline:"none" }}
           >
             <img 
-              src="/images/wealthnutz-logo.png" 
+              src="/images/wealthnutz-logo-full.png" 
               alt="WealthNutz" 
-              style={{ width:"clamp(28px, 8vw, 36px)", height:"auto", objectFit:"contain" }} 
+              style={{ height:"clamp(28px, 7vw, 38px)", width:"auto", objectFit:"contain" }} 
+              className="wealthnutz-logo"
             />
-            <span style={{ fontSize:"clamp(14px, 4vw, 18px)", fontWeight:800, fontFamily:"Inter, system-ui, -apple-system, sans-serif", letterSpacing:"-.02em", color:T.gold, whiteSpace:"nowrap", lineHeight:1 }} className="forge-logo-text">WealthNutz</span>
           </motion.button>
           
           {/* Middle: Country flags + Clear button — tight group */}
