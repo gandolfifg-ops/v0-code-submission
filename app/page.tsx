@@ -24,7 +24,7 @@ import { useState, useEffect, useRef, useCallback, useMemo, memo as React_memo, 
 import { motion, AnimatePresence } from "framer-motion";
 import {
   TrendingUp, Clock, DollarSign, GraduationCap, ShoppingBag,
-  Send, Share2, Check, ChevronLeft, Trash2, User, Search,
+  Send, Share2, Check, ChevronLeft, User, Search,
   BarChart2, PiggyBank, BookOpen, ExternalLink, Bookmark, X, LogIn, LogOut,
 } from "lucide-react";
 import type { User as SupabaseUser } from "@supabase/supabase-js";
@@ -2043,9 +2043,13 @@ const hBtn = (active = false): CSSProperties => ({
     .forge-sidebar-header { display: none !important; }
   }
 
-  /* MENU button visible on all screens; sidebar close header only on mobile */
-  .forge-hamburger { display: flex !important; }
+  /* MENU button hidden on desktop, visible only on mobile */
+  .forge-hamburger { display: none !important; }
   .forge-sidebar-header { display: none !important; }
+  
+  @media (max-width: 768px) {
+    .forge-hamburger { display: flex !important; }
+  }
 
   @media (max-width: 640px) {
   .forge-header { padding: 5px 10px !important; gap: 5px !important; }
@@ -2127,15 +2131,7 @@ const hBtn = (active = false): CSSProperties => ({
                 </motion.button>
               );
             })}
-            {panelView==="chat" && (
-              <motion.button whileTap={tapAnim.tap} onClick={clearChat}
-                style={{ ...hBtn(), padding:"5px 8px", fontSize:"clamp(10px, 2vw, 12px)", borderRadius:10, display:"flex", alignItems:"center", gap:2, minWidth:32, height:32 }}
-                onMouseEnter={e => {(e.currentTarget as HTMLElement).style.color=T.red;(e.currentTarget as HTMLElement).style.borderColor="rgba(248,113,113,.35)";}}
-                onMouseLeave={e => {(e.currentTarget as HTMLElement).style.color=T.mid;(e.currentTarget as HTMLElement).style.borderColor=T.border;}}>
-                <Trash2 size={11} />
-                <span style={{display:"none"}}>Clear</span>
-              </motion.button>
-            )}
+
           </div>
           
           {/* Right: MENU button (mobile only) */}
@@ -2254,6 +2250,12 @@ const hBtn = (active = false): CSSProperties => ({
             {panelView==="chat" && (
               <>
                 <div style={{ flex:1, display:"flex", flexDirection:"column" }}>
+                  {/* Top Picks — only visible after country selection */}
+                  {country && (
+                    <div style={{ padding: "16px 16px 0" }}>
+                      <TopPicksSection country={country === "Canada" ? "Canada" : "USA"} />
+                    </div>
+                  )}
                   <div style={{ flex:1 }}>
                     <InlineChatComponent key={chatKey} country={country} />
                   </div>

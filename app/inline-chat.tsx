@@ -232,7 +232,7 @@ export default function InlineChat({ country }: { country: string }) {
   const bottomRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLTextAreaElement>(null);
 
-  useEffect(() => { bottomRef.current?.scrollIntoView({ behavior: "smooth" }); }, [msgs, loading]);
+  useEffect(() => { if (msgs.length > 0) bottomRef.current?.scrollIntoView({ behavior: "smooth" }); }, [msgs, loading]);
 
   const submitForm = async (e: FormEvent) => {
     e.preventDefault();
