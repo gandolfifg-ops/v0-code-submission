@@ -263,11 +263,7 @@ function useTypewriter(text: string, speed = 26) {
   return { out, done };
 }
 
-const HIST_KEY = "wf_hist_v3";
-const SAVED_KEY = "wf_saved_v1";
-type HistRec = { id: string; label: string; type: "scholarship"|"loan"; results: ScoutResult[]; ts: number };
-function readHist(): HistRec[] { try { return JSON.parse(typeof window !== "undefined" ? localStorage.getItem(HIST_KEY) ?? "[]" : "[]"); } catch { return []; } }
-function pushHist(r: HistRec) { try { const n = [r, ...readHist().filter(x => x.id !== r.id)].slice(0,10); localStorage.setItem(HIST_KEY, JSON.stringify(n)); } catch {} }
+
 
 function readSaved(): ScoutResult[] { try { return JSON.parse(typeof window !== "undefined" ? localStorage.getItem(SAVED_KEY) ?? "[]" : "[]"); } catch { return []; } }
 function writeSaved(items: ScoutResult[]) { try { localStorage.setItem(SAVED_KEY, JSON.stringify(items)); } catch {} }
@@ -2321,10 +2317,8 @@ function LoanFinder({ onToggleSave, savedIds, userCountry }: { onToggleSave: (it
   const [phase,    setPhase]    = useState<Phase>("idle");
   const [results,  setResults]  = useState<ScoutResult[]>([]);
   const [scanIdx,  setScanIdx]  = useState(0);
-  const [hist,     setHist]     = useState<HistRec[]>([]);
   const [loanFilters, setLoanFilters] = useState<LoanFilters>(DEFAULT_LOAN_FILTERS);
   const [loanSort, setLoanSort] = useState<SortOption>("best-match");
-  useEffect(() => { setHist(readHist().filter(h => h.type==="loan")); }, []);
   useEffect(() => {
     if (phase !== "scanning") return;
     setScanIdx(0);
@@ -2337,9 +2331,7 @@ function LoanFinder({ onToggleSave, savedIds, userCountry }: { onToggleSave: (it
       const data = await fetchResults("loan", { loanType, amount: amount?.trim() ?? "" });
       const final = (data?.length ?? 0) > 0 ? data : MOCK_LOANS;
       setResults(final);
-      const rec: HistRec = { id:String(Date.now()), label:`${loanType}${amount?.trim() ? " — "+amount.trim() : ""}`, type:"loan", results:final, ts:Date.now() };
-      pushHist(rec);
-      setHist(readHist().filter(h => h.type==="loan"));
+
     } catch { setResults(MOCK_LOANS); }
     setPhase("results");
   };
@@ -2402,20 +2394,6 @@ function LoanFinder({ onToggleSave, savedIds, userCountry }: { onToggleSave: (it
           </motion.div>
         )}
       </AnimatePresence>
-      {hist.length > 0 && (
-        <div>
-          <p style={{ fontSize:10, color:T.dim, letterSpacing:".08em", margin:"4px 2px 8px" }}>RECENT SEARCHES</p>
-          {hist.slice(0,3).map(h => (
-            <Glass key={h.id} style={{ padding:"9px 12px", marginBottom:6, cursor:"pointer" }} onClick={() => { setResults(h.results ?? []); setPhase("results"); }}>
-              <div style={{ display:"flex", justifyContent:"space-between" }}>
-                <span style={{ fontSize:12, color:T.text }}>{h.label}</span>
-                <span style={{ fontSize:10, color:T.dim }}>{new Date(h.ts).toLocaleDateString()}</span>
-              </div>
-            </Glass>
-          ))}
-        </div>
-      )}
-      
       {/* Live Scour Marketplace — filtered by selected loan type and user country */}
       <div style={{ marginTop: 20 }}>
         <LoanMarketplaceHero 
@@ -2577,11 +2555,9 @@ function ScholarshipScout({ onToggleSave, savedIds }: { onToggleSave: (item: Sco
   const [phase,   setPhase]   = useState<Phase>("idle");
   const [results, setResults] = useState<ScoutResult[]>([]);
   const [scanIdx, setScanIdx] = useState(0);
-  const [hist,    setHist]    = useState<HistRec[]>([]);
   const [schFilters, setSchFilters] = useState<ScholarshipFilters>(DEFAULT_SCHOLARSHIP_FILTERS);
   const [schSort, setSchSort] = useState<SortOption>("best-match");
   const [mobileFilterOpen, setMobileFilterOpen] = useState(false);
-  useEffect(() => { setHist(readHist().filter(h => h.type==="scholarship")); }, []);
   useEffect(() => {
     if (phase !== "scanning") return;
     setScanIdx(0);
@@ -2594,9 +2570,7 @@ function ScholarshipScout({ onToggleSave, savedIds }: { onToggleSave: (item: Sco
       const data = await fetchResults("scholarship", { major, country, year, query: query?.trim() ?? "" });
       const final = (data?.length ?? 0) > 0 ? data : MOCK_SCHOLARSHIPS;
       setResults(final);
-      const rec: HistRec = { id:String(Date.now()), label:query?.trim() || major, type:"scholarship", results:final, ts:Date.now() };
-      pushHist(rec);
-      setHist(readHist().filter(h => h.type==="scholarship"));
+
     } catch { setResults(MOCK_SCHOLARSHIPS); }
     setPhase("results");
   };
@@ -2770,19 +2744,6 @@ function ScholarshipScout({ onToggleSave, savedIds }: { onToggleSave: (item: Sco
           </AnimatePresence>
         );
       })()}
-      {hist.length > 0 && (
-        <div>
-          <p style={{ fontSize:10, color:T.dim, letterSpacing:".08em", margin:"4px 2px 8px" }}>RECENT SEARCHES</p>
-          {hist.slice(0,3).map(h => (
-            <Glass key={h.id} style={{ padding:"9px 12px", marginBottom:6, cursor:"pointer" }} onClick={() => { setResults(h.results ?? []); setPhase("results"); }}>
-              <div style={{ display:"flex", justifyContent:"space-between" }}>
-                <span style={{ fontSize:12, color:T.text }}>{h.label}</span>
-                <span style={{ fontSize:10, color:T.dim }}>{new Date(h.ts).toLocaleDateString()}</span>
-              </div>
-            </Glass>
-          ))}
-        </div>
-      )}
     </motion.div>
   );
 }

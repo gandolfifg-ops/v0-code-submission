@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useRef, type FormEvent, useCallback } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Send, RotateCcw, Plus } from "lucide-react";
+import { Send, RotateCcw } from "lucide-react";
 import ReactMarkdown from "react-markdown";
 
 // ── Dark theme tokens ────────────────────────────────────────────────────────
@@ -415,7 +415,7 @@ export default function InlineChat({ country, isDarkMode = true }: { country: st
                   if ((input?.trim() ?? "").length > 0) e.currentTarget.form?.requestSubmit(); 
                 } 
               }}
-              placeholder="Tell me your situation — I'll tell you exactly what to do..."
+              placeholder="Tell me your situation - I'll tell you exactly what to do..."
               rows={1}
               className={isDarkMode ? "chat-input-dark" : "chat-input-light"}
               style={{ 
