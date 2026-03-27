@@ -1,5 +1,5 @@
 /** @type {import('next').NextConfig} */
-// Force complete dev server restart — v50 clear all Turbopack in-memory caches
+// v52 — HARD DEV SERVER RESTART — Recreated config, new module graphs only
 const nextConfig = {
   typescript: {
     ignoreBuildErrors: true,

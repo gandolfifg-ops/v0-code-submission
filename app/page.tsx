@@ -1845,8 +1845,8 @@ const NAV_TOOLS: { id: ToolId; label: string; Icon: React.FC<{size?:number}> }[]
   { id:"saved",   label:"My Saved",     Icon: ({size=15}) => <Bookmark   size={size} /> },
 ];
 
-// v15 — Renamed to ForgePageV15 to force Turbopack full recompile
-export default function ForgePageV49() {
+// v52 — Hard dev server restart, all Turbopack caches cleared
+export default function ForgePageV52() {
   const [activeTool, setActiveTool] = useState<ToolId|"">("");
   const [panelView,  setPanelView]  = useState<"chat"|"tool">("chat");
   const [country,    setCountry]    = useState<string>("");
