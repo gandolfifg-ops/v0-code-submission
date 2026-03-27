@@ -1617,21 +1617,21 @@ function ScholarshipScout({ onToggleSave, savedIds }: { onToggleSave: (item: Sco
     setPhase("results");
   };
   return (
-    <motion.div variants={fadeUp} initial="hidden" animate="visible" style={{ display:"flex", flexDirection:"column", gap:14 }}>
-      <Glass glow style={{ padding:18, display:"flex", flexDirection:"column", gap:11 }}>
+    <motion.div variants={fadeUp} initial="hidden" animate="visible" style={{ display:"flex", flexDirection:"column", gap:14, width:"100%", maxWidth:"90vw", boxSizing:"border-box" }}>
+      <Glass glow style={{ padding:18, display:"flex", flexDirection:"column", gap:11, width:"100%", boxSizing:"border-box" }}>
         <p style={{ fontSize:10, color:T.mid, margin:0, letterSpacing:".08em" }}>AI SCHOLARSHIP SCOUT</p>
         <input value={query} onChange={e => setQuery(e.target.value ?? "")} onKeyDown={e => e.key==="Enter" && handleSearch()}
-          placeholder='e.g. "first-gen student, Ontario, 3.5 GPA"'
+          placeholder="Tell us about yourself"
           style={{ width:"100%", padding:"10px 13px", background:T.glassHi, border:`1px solid ${T.border}`, borderRadius:T.rsm, color:T.text, fontSize:13, outline:"none", fontFamily:"inherit", boxSizing:"border-box" }} />
-        <div style={{ display:"grid", gridTemplateColumns:"2fr 1fr 1fr", gap:8 }}>
+        <div style={{ display:"grid", gridTemplateColumns:"2fr 1fr 1fr", gap:8, width:"100%", boxSizing:"border-box" }}>
           {[{val:major,set:setMajor,opts:SCHOLARSHIP_MAJORS},{val:year,set:setYear,opts:SCHOLARSHIP_YEARS},{val:country,set:setCountry,opts:SCHOLARSHIP_COUNTRIES}].map(({val,set,opts},i) => (
-            <select key={i} value={val} onChange={e => set(e.target.value ?? "")} style={{ padding:"8px 9px", background:T.glass, border:`1px solid ${T.border}`, borderRadius:T.rsm, color:T.text, fontSize:11, fontFamily:"inherit", outline:"none" }}>
+            <select key={i} value={val} onChange={e => set(e.target.value ?? "")} style={{ width:"100%", padding:"8px 9px", background:T.glass, border:`1px solid ${T.border}`, borderRadius:T.rsm, color:T.text, fontSize:11, fontFamily:"inherit", outline:"none", boxSizing:"border-box", minWidth:0 }}>
               {(opts as readonly string[]).map(o => <option key={o} value={o}>{o}</option>)}
             </select>
           ))}
         </div>
         <motion.button whileTap={tapAnim.tap} onClick={handleSearch} disabled={phase==="scanning"}
-          style={{ padding:"11px 0", borderRadius:T.rsm, border:"none", cursor:"pointer", backgroundImage:`linear-gradient(135deg,${T.gold},${T.goldDim})`, color:"#07090d", fontSize:13, fontWeight:800, fontFamily:"inherit", opacity:phase==="scanning"?.65:1, boxShadow:`0 0 18px ${T.glow}` }}>
+          style={{ width:"100%", padding:"11px 0", borderRadius:T.rsm, border:"none", cursor:"pointer", backgroundImage:`linear-gradient(135deg,${T.gold},${T.goldDim})`, color:"#07090d", fontSize:13, fontWeight:800, fontFamily:"inherit", opacity:phase==="scanning"?.65:1, boxShadow:`0 0 18px ${T.glow}`, boxSizing:"border-box" }}>
           {phase==="scanning" ? "Scanning databases..." : "Find Scholarships"}
         </motion.button>
       </Glass>
@@ -2033,11 +2033,11 @@ const hBtn = (active = false): CSSProperties => ({
 
         {/* ═══ HEADER ══════════════════════════════════════════════════════════ */}
         <header style={{ display:"flex", alignItems:"center", justifyContent:"space-between", padding:"7px 14px", borderBottom:`1px solid ${T.border}`, flexShrink:0, zIndex:10, background:"rgba(5,5,5,0.97)", backdropFilter:"blur(22px)", WebkitBackdropFilter:"blur(22px)", gap:10, minHeight:44 }} className="forge-header">
-          {/* Left: logo + name — clickable, scrolls to top and closes sidebar */}
+          {/* Left: logo + name — clickable, scrolls to top, closes sidebar, returns home */}
           <motion.button
             whileTap={{ scale: 0.94 }}
-            onClick={() => { closeSidebar(); window.scrollTo({ top: 0, behavior: "smooth" }); }}
-            aria-label="Back to top"
+            onClick={() => { closeSidebar(); setPanelView("chat"); setActiveTool(""); window.scrollTo({ top: 0, behavior: "smooth" }); }}
+            aria-label="Go to home"
             style={{ display:"flex", alignItems:"center", gap:8, flexShrink:0, background:"none", border:"none", cursor:"pointer", padding:0, outline:"none" }}
           >
             <LogoMark size={24} />
