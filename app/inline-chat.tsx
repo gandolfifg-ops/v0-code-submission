@@ -400,22 +400,7 @@ export default function InlineChat({ country, isDarkMode = true }: { country: st
 
       <div style={{ flex: 1, overflowY: "auto", display: "flex", flexDirection: "column" }}>
         {msgs.length === 0 && (
-          <div style={{ padding: "20px 20px 0", maxWidth: 900, margin: "0 auto", width: "100%" }}>
-            <AnimatePresence mode="wait">
-              {(country === "Canada" || country === "USA") && (
-                <motion.div key={country}
-                  initial={{ opacity: 0, y: -8, height: 0 }}
-                  animate={{ opacity: 1, y: 0, height: "auto" }}
-                  exit={{ opacity: 0, y: -8, height: 0 }}
-                  style={{ marginBottom: 14, padding: "9px 14px", borderRadius: T.rsm, background: "rgba(201,168,76,0.07)", border: "1px solid rgba(201,168,76,0.22)", display: "flex", alignItems: "center", gap: 10, overflow: "hidden" }}>
-                  <span style={{ fontSize: 20 }}>{COUNTRY_CONFIG[country as CountryKey].flag}</span>
-                  <p style={{ fontSize: 11, color: T.mid, margin: 0, lineHeight: 1.5 }}>
-                    <span style={{ color: T.gold, fontWeight: 700 }}>{COUNTRY_CONFIG[country as CountryKey].currency} Mode —</span>{" "}
-                    {COUNTRY_CONFIG[country as CountryKey].tip}
-                  </p>
-                </motion.div>
-              )}
-            </AnimatePresence>
+          <div style={{ padding: "16px 20px 0", maxWidth: 900, margin: "0 auto", width: "100%" }}>
             <LoanMarketplaceHero country={countryVal} />
           </div>
         )}

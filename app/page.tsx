@@ -989,7 +989,7 @@ function FilterCheckbox({ label, checked, onChange, count }: { label: string; ch
         height: 18,
         borderRadius: 4,
         border: `2px solid ${checked ? T.gold : T.border}`,
-        background: checked ? T.gold : "transparent",
+        background: checked ? T.gold : "rgba(0,0,0,0)",
         display: "flex",
         alignItems: "center",
         justifyContent: "center",
@@ -1030,7 +1030,7 @@ function FilterRadio({ label, selected, onSelect, count }: { label: string; sele
         height: 18,
         borderRadius: "50%",
         border: `2px solid ${selected ? T.gold : T.border}`,
-        background: "transparent",
+        background: "rgba(0,0,0,0)",
         display: "flex",
         alignItems: "center",
         justifyContent: "center",
@@ -1127,7 +1127,7 @@ function SortDropdown({ value, onChange, resultCount }: { value: SortOption; onC
                     width: "100%",
                     padding: "10px 14px",
                     border: "none",
-                    background: value === opt.value ? T.glassHi : "transparent",
+                    background: value === opt.value ? T.glassHi : "rgba(0,0,0,0)",
                     color: value === opt.value ? T.gold : T.text,
                     fontSize: 12,
                     textAlign: "left",
@@ -1498,32 +1498,30 @@ function LoanMarketplaceHero({
   
   return (
     <motion.div variants={stagger} initial="hidden" animate="visible" style={{ marginBottom: 24 }}>
-      {/* Live Scour Status Bar */}
-      <motion.div variants={fadeUp} style={{ marginBottom: 12 }}>
-        <Glass style={{ padding: "10px 14px", display: "flex", alignItems: "center", justifyContent: "space-between", gap: 12 }}>
-          <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-            <span style={{ 
-              width: 8, height: 8, borderRadius: "50%", 
-              background: "#22c55e", 
-              boxShadow: "0 0 8px #22c55e, 0 0 16px rgba(34,197,94,0.4)",
-              animation: "wf-pulse 2s ease-in-out infinite"
-            }} />
-            <span style={{ fontSize: 11, fontWeight: 600, color: "#22c55e", letterSpacing: "0.02em" }}>LIVE</span>
-          </div>
-          <span style={{ fontSize: 11, color: T.mid }}>AI Status: Scour complete as of {currentTime}</span>
-        </Glass>
-      </motion.div>
-      
       {/* Section Header */}
-      <motion.div variants={fadeUp} style={{ marginBottom: 16 }}>
-        <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 6 }}>
-          <DollarSign size={18} color={T.gold} />
-          <h2 style={{ fontSize: 16, fontWeight: 800, color: T.text, margin: 0, letterSpacing: "-0.02em" }}>
-            {filterType ? `${filterType} Loan Matches` : "Financial Matches"}
-          </h2>
-          <span style={{ fontSize: 10, background: T.gold, color: "#07090d", padding: "2px 8px", borderRadius: 10, fontWeight: 700 }}>PERSONALIZED</span>
+      <motion.div variants={fadeUp} style={{ marginBottom: 12 }}>
+        <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 4 }}>
+          <div style={{
+            width: 34,
+            height: 34,
+            borderRadius: 10,
+            background: `linear-gradient(135deg, ${T.gold}, ${T.goldDim})`,
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            flexShrink: 0,
+            boxShadow: `0 0 16px ${T.glow || "rgba(201,168,76,0.3)"}`,
+          }}>
+            <DollarSign size={20} color="#07090d" strokeWidth={2.5} />
+          </div>
+          <div>
+            <h2 style={{ fontSize: 22, fontWeight: 900, color: T.text, margin: 0, letterSpacing: "-0.03em", lineHeight: 1.15 }}>
+              {filterType ? `${filterType} Loan Marketplace` : "Loan Marketplace"}
+            </h2>
+            <p style={{ fontSize: 12, color: T.mid, margin: 0, marginTop: 2 }}>Pre-qualify without affecting your credit score.</p>
+          </div>
+          <span style={{ fontSize: 9, background: T.gold, color: "#07090d", padding: "3px 8px", borderRadius: 10, fontWeight: 800, letterSpacing: "0.05em", marginLeft: 4, alignSelf: "flex-start", marginTop: 4 }}>LIVE</span>
         </div>
-        <p style={{ fontSize: 12, color: T.mid, margin: 0 }}>Top loan offers matched to your profile. Pre-qualify without affecting your credit.</p>
       </motion.div>
       
       {/* Sort & Filter Controls */}
@@ -2440,7 +2438,7 @@ function LoanTool({ onToggleSave, savedIds, userCountry }: { onToggleSave: (item
       <div style={{ display:"flex", gap:4, background:T.glass, borderRadius:T.rsm, padding:3, marginBottom:16 }}>
         {([["finder","Loan Finder"],["calc","Calculator"]] as const).map(([id,lbl]) => (
           <motion.button key={id} whileTap={tapAnim.tap} onClick={() => setTab(id)}
-            style={{ flex:1, padding:"8px 0", borderRadius:7, border:"none", cursor:"pointer", fontFamily:"inherit", fontSize:12, fontWeight:600, background:tab===id?"rgba(201,168,76,0.18)":"transparent", color:tab===id?T.gold:T.mid }}>
+            style={{ flex:1, padding:"8px 0", borderRadius:7, border:"none", cursor:"pointer", fontFamily:"inherit", fontSize:12, fontWeight:600, background:tab===id?"rgba(201,168,76,0.18)":"rgba(0,0,0,0)", color:tab===id?T.gold:T.mid }}>
             {lbl}
           </motion.button>
         ))}
@@ -2974,7 +2972,7 @@ const handleSignOut = useCallback(async () => {
 const hBtn = (active = false): CSSProperties => ({
   padding:"4px 10px", borderRadius:20, fontFamily:"inherit", fontSize:11, cursor:"pointer", fontWeight: 500,
   border:`1px solid ${active ? T.gold : T.border}`,
-  background: active ? "rgba(201,168,76,0.12)" : "transparent",
+  background: active ? "rgba(201,168,76,0.12)" : "rgba(0,0,0,0)",
   color: active ? T.gold : T.mid,
   transition:"all .2s",
   });
@@ -3331,7 +3329,7 @@ const hBtn = (active = false): CSSProperties => ({
             <div style={{ display:"flex", padding:"10px 10px 0", gap:4, flexShrink:0, borderBottom:`1px solid ${T.border}` }}>
               {([["tools","Tools"],["market","Marketplace"]] as const).map(([id,lbl]) => (
                 <motion.button key={id} whileTap={tapAnim.tap} onClick={() => { setSideTab(id); if (id === "market") closeSidebar(); }}
-                  style={{ flex:1, padding:"7px 4px", borderRadius:7, border:"none", cursor:"pointer", fontFamily:"inherit", fontSize:10, fontWeight:700, letterSpacing:".04em", marginBottom:8, background:sideTab===id?"rgba(201,168,76,0.14)":"transparent", color:sideTab===id?T.gold:"#c4b594", transition:"all .2s" }}>
+                  style={{ flex:1, padding:"7px 4px", borderRadius:7, border:"none", cursor:"pointer", fontFamily:"inherit", fontSize:10, fontWeight:700, letterSpacing:".04em", marginBottom:8, background:sideTab===id?"rgba(201,168,76,0.14)":"rgba(0,0,0,0)", color:sideTab===id?T.gold:"#c4b594", transition:"all .2s" }}>
                   {lbl}
                 </motion.button>
               ))}
@@ -3347,9 +3345,9 @@ const hBtn = (active = false): CSSProperties => ({
                     const on = activeTool===t.id && panelView==="tool";
                     return (
                       <motion.button key={t.id} variants={fadeUp} whileTap={tapAnim.tap} onClick={() => { openTool(t.id); closeSidebar(); }}
-                        style={{ display:"flex", alignItems:"center", gap:9, padding:"9px 10px", borderRadius:T.rsm, border:`1px solid ${on?"rgba(201,168,76,0.4)":"transparent"}`, background:on?"rgba(201,168,76,0.14)":"transparent", color:on?T.gold:T.mid, cursor:"pointer", fontSize:12, fontWeight:on?600:400, width:"100%", textAlign:"left", fontFamily:"inherit", transition:"all .2s" }}
-                        onMouseEnter={e => { if(!on){(e.currentTarget as HTMLElement).style.background=T.glassHi;(e.currentTarget as HTMLElement).style.color=T.text;} }}
-                        onMouseLeave={e => { if(!on){(e.currentTarget as HTMLElement).style.background="transparent";(e.currentTarget as HTMLElement).style.color=T.mid;} }}>
+style={{ display:"flex", alignItems:"center", gap:9, padding:"9px 10px", borderRadius:T.rsm, border:`1px solid ${on?"rgba(201,168,76,0.4)":"rgba(0,0,0,0)"}`, background:on?"rgba(201,168,76,0.14)":"rgba(0,0,0,0)", color:on?T.gold:T.mid, cursor:"pointer", fontSize:12, fontWeight:on?600:400, width:"100%", textAlign:"left", fontFamily:"inherit", transition:"all .2s" }}
+          onMouseEnter={e => { if(!on){(e.currentTarget as HTMLElement).style.background=T.glassHi;(e.currentTarget as HTMLElement).style.color=T.text;} }}
+          onMouseLeave={e => { if(!on){(e.currentTarget as HTMLElement).style.background="rgba(0,0,0,0)";(e.currentTarget as HTMLElement).style.color=T.mid;} }}>
                         <t.Icon />{t.label}
                         {t.id === "saved" && savedItems.length > 0 && (
                           <span style={{ marginLeft:"auto", fontSize:10, background:T.gold, color:"#07090d", borderRadius:10, padding:"1px 6px", fontWeight:700 }}>{savedItems.length}</span>
