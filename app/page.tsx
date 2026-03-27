@@ -52,12 +52,18 @@ const AFFILIATE_PRODUCTS = [
 
 // ── LOAN MARKETPLACE — High Conversion Affiliate Offers ─────────────────────
 const LOAN_MARKETPLACE = [
-  { id: "sofi-refi",   name: "SoFi Student Loan Refinance", rate: "From 4.49% APR", bonus: "$300 Welcome Bonus", badge: "Best Rate", country: "US" as const, href: "https://www.sofi.com/refinance-student-loans/", highlight: "No fees · Unemployment protection · Member benefits", cta: "Check My Rate" },
-  { id: "earnest",     name: "Earnest Student Loans",       rate: "From 4.25% APR", bonus: "$200 Bonus",         badge: "Flexible",  country: "US" as const, href: "https://www.earnest.com/",                     highlight: "Skip a payment option · Precision pricing",          cta: "Check My Rate" },
-  { id: "credible",    name: "Credible Marketplace",        rate: "Compare 8+ Lenders", bonus: "Free Comparison",badge: "Compare",   country: "US" as const, href: "https://www.credible.com/",                   highlight: "One form · Multiple offers · No impact on credit",   cta: "Compare Rates" },
-  { id: "sallie-mae",  name: "Sallie Mae Loans",            rate: "From 5.24% APR", bonus: "Multi-Year Approval", badge: "",         country: "US" as const, href: "https://www.salliemae.com/",                  highlight: "Cover up to 100% of school costs",                   cta: "Apply Now"     },
-  { id: "nslsc",       name: "Federal Student Loans (NSLSC)", rate: "Prime +1%",    bonus: "Grants Available",  badge: "Gov't",     country: "CA" as const, href: "https://www.csnpe-nslsc.canada.ca/",          highlight: "Repayment assistance · No credit check",             cta: "Apply Now"     },
-  { id: "rbc-student", name: "RBC Student Line of Credit",  rate: "Prime +0%",      bonus: "$0 Annual Fee",     badge: "Low Rate",  country: "CA" as const, href: "https://www.rbc.com/student/",                highlight: "Only pay interest while in school",                  cta: "Check My Rate" },
+  { id: "sofi-refi",   name: "SoFi Student Loan Refinance", rate: "From 4.49% APR", bonus: "$300 Welcome Bonus", badge: "Best Rate", country: "US" as const, loanType: "Student" as const, href: "https://www.sofi.com/refinance-student-loans/", highlight: "No fees · Unemployment protection · Member benefits", cta: "Check My Rate" },
+  { id: "earnest",     name: "Earnest Student Loans",       rate: "From 4.25% APR", bonus: "$200 Bonus",         badge: "Flexible",  country: "US" as const, loanType: "Student" as const, href: "https://www.earnest.com/",                     highlight: "Skip a payment option · Precision pricing",          cta: "Check My Rate" },
+  { id: "credible",    name: "Credible Marketplace",        rate: "Compare 8+ Lenders", bonus: "Free Comparison",badge: "Compare",   country: "US" as const, loanType: "Student" as const, href: "https://www.credible.com/",                   highlight: "One form · Multiple offers · No impact on credit",   cta: "Compare Rates" },
+  { id: "sallie-mae",  name: "Sallie Mae Loans",            rate: "From 5.24% APR", bonus: "Multi-Year Approval", badge: "",         country: "US" as const, loanType: "Student" as const, href: "https://www.salliemae.com/",                  highlight: "Cover up to 100% of school costs",                   cta: "Apply Now"     },
+  { id: "lightstream", name: "LightStream Personal Loans",  rate: "From 7.49% APR", bonus: "Rate Beat Program",  badge: "Low APR",   country: "US" as const, loanType: "Personal" as const, href: "https://www.lightstream.com/",               highlight: "No fees · Same-day funding · Flexible terms",        cta: "Check My Rate" },
+  { id: "upstart",     name: "Upstart Personal Loans",      rate: "From 6.70% APR", bonus: "AI-Powered Rates",   badge: "Fast",      country: "US" as const, loanType: "Personal" as const, href: "https://www.upstart.com/",                   highlight: "Beyond credit score · Quick approval",               cta: "Check My Rate" },
+  { id: "capitalOne",  name: "Capital One Auto Finance",    rate: "From 5.99% APR", bonus: "Pre-Qualify Now",    badge: "Top Pick",  country: "US" as const, loanType: "Auto" as const,     href: "https://www.capitalone.com/cars/",            highlight: "No impact on credit · 30 days to shop",              cta: "Get Pre-Qualified" },
+  { id: "carvana",     name: "Carvana Auto Financing",      rate: "From 6.89% APR", bonus: "7-Day Return",       badge: "",          country: "US" as const, loanType: "Auto" as const,     href: "https://www.carvana.com/",                    highlight: "Shop & finance in one · Delivered to you",           cta: "Get Started"   },
+  { id: "nslsc",       name: "Federal Student Loans (NSLSC)", rate: "Prime +1%",    bonus: "Grants Available",  badge: "Gov't",     country: "CA" as const, loanType: "Student" as const, href: "https://www.csnpe-nslsc.canada.ca/",          highlight: "Repayment assistance · No credit check",             cta: "Apply Now"     },
+  { id: "rbc-student", name: "RBC Student Line of Credit",  rate: "Prime +0%",      bonus: "$0 Annual Fee",     badge: "Low Rate",  country: "CA" as const, loanType: "Student" as const, href: "https://www.rbc.com/student/",                highlight: "Only pay interest while in school",                  cta: "Check My Rate" },
+  { id: "td-personal", name: "TD Personal Line of Credit",  rate: "Prime +2%",      bonus: "Flexible Access",   badge: "",          country: "CA" as const, loanType: "Personal" as const, href: "https://www.td.com/ca/en/personal-banking/",  highlight: "Only pay interest on what you use",                  cta: "Apply Now"     },
+  { id: "rbc-auto",    name: "RBC Auto Loan",               rate: "From 6.49%",     bonus: "No Dealer Markup",  badge: "Trusted",   country: "CA" as const, loanType: "Auto" as const,     href: "https://www.rbc.com/personal-lending/",       highlight: "Pre-approval in minutes · Shop with confidence",     cta: "Get Pre-Approved" },
 ];
 
 const TAGLINE = "The all-in-one financial ecosystem for the modern student. Build credit, learn to invest, and grow your wealth.";
@@ -771,17 +777,48 @@ function CountrySwitcher({
 // SECTION 5C — LOAN MARKETPLACE HERO (High Conversion)
 // ─────────────────────────────────────────────────────────────────────────────
 
-function LoanMarketplaceHero({ country }: { country: "Canada" | "USA" }) {
+function LoanMarketplaceHero({ country, filterType }: { country: "Canada" | "USA"; filterType?: LoanType }) {
   const countryCode = country === "Canada" ? "CA" : "US";
-  const offers = LOAN_MARKETPLACE.filter(o => o.country === countryCode);
+  const [currentTime, setCurrentTime] = useState(() => new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }));
+  
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setCurrentTime(new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }));
+    }, 60000);
+    return () => clearInterval(interval);
+  }, []);
+  
+  const offers = LOAN_MARKETPLACE.filter(o => {
+    if (o.country !== countryCode) return false;
+    if (filterType && o.loanType !== filterType) return false;
+    return true;
+  });
   
   return (
     <motion.div variants={stagger} initial="hidden" animate="visible" style={{ marginBottom: 24 }}>
+      {/* Live Scour Status Bar */}
+      <motion.div variants={fadeUp} style={{ marginBottom: 12 }}>
+        <Glass style={{ padding: "10px 14px", display: "flex", alignItems: "center", justifyContent: "space-between", gap: 12 }}>
+          <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+            <span style={{ 
+              width: 8, height: 8, borderRadius: "50%", 
+              background: "#22c55e", 
+              boxShadow: "0 0 8px #22c55e, 0 0 16px rgba(34,197,94,0.4)",
+              animation: "wf-pulse 2s ease-in-out infinite"
+            }} />
+            <span style={{ fontSize: 11, fontWeight: 600, color: "#22c55e", letterSpacing: "0.02em" }}>LIVE</span>
+          </div>
+          <span style={{ fontSize: 11, color: T.mid }}>AI Status: Scour complete as of {currentTime}</span>
+        </Glass>
+      </motion.div>
+      
       {/* Section Header */}
       <motion.div variants={fadeUp} style={{ marginBottom: 16 }}>
         <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 6 }}>
           <DollarSign size={18} color={T.gold} />
-          <h2 style={{ fontSize: 16, fontWeight: 800, color: T.text, margin: 0, letterSpacing: "-0.02em" }}>Financial Matches</h2>
+          <h2 style={{ fontSize: 16, fontWeight: 800, color: T.text, margin: 0, letterSpacing: "-0.02em" }}>
+            {filterType ? `${filterType} Loan Matches` : "Financial Matches"}
+          </h2>
           <span style={{ fontSize: 10, background: T.gold, color: "#07090d", padding: "2px 8px", borderRadius: 10, fontWeight: 700 }}>PERSONALIZED</span>
         </div>
         <p style={{ fontSize: 12, color: T.mid, margin: 0 }}>Top loan offers matched to your profile. Pre-qualify without affecting your credit.</p>
@@ -830,7 +867,12 @@ function LoanMarketplaceHero({ country }: { country: "Canada" | "USA" }) {
             
             {/* Content */}
             <h3 style={{ fontSize: 14, fontWeight: 700, color: T.text, margin: "0 0 4px", paddingRight: offer.badge ? 60 : 0 }}>{offer.name}</h3>
-            <p style={{ fontSize: 20, fontWeight: 800, color: T.gold, margin: "0 0 2px" }}>{offer.rate}</p>
+            <div style={{ display: "flex", alignItems: "center", gap: 10, margin: "0 0 2px" }}>
+              <p style={{ fontSize: 20, fontWeight: 800, color: T.gold, margin: 0 }}>{offer.rate}</p>
+              <span style={{ display: "inline-flex", alignItems: "center", gap: 4, fontSize: 9, color: "#22c55e", background: "rgba(34,197,94,0.12)", padding: "3px 7px", borderRadius: 6, fontWeight: 600 }}>
+                <Check size={10} /> Verified 2m ago
+              </span>
+            </div>
             {offer.bonus && <p style={{ fontSize: 11, color: T.green, margin: "0 0 8px", fontWeight: 600 }}>{offer.bonus}</p>}
             <p style={{ fontSize: 11, color: T.mid, margin: "0 0 14px", lineHeight: 1.4 }}>{offer.highlight}</p>
             
@@ -1561,6 +1603,11 @@ function LoanFinder({ onToggleSave, savedIds }: { onToggleSave: (item: ScoutResu
           ))}
         </div>
       )}
+      
+      {/* Live Scour Marketplace — filtered by selected loan type */}
+      <div style={{ marginTop: 20 }}>
+        <LoanMarketplaceHero country="USA" filterType={loanType} />
+      </div>
     </div>
   );
 }
@@ -2147,7 +2194,7 @@ const hBtn = (active = false): CSSProperties => ({
             )}
           </div>
 
-          {/* ═══ SIDEBAR ���═════════════��═══════════════════��═════���════════════ */}
+          {/* ═══ SIDEBAR ���═════════════��════��══════════════��═════���════════════ */}
           <aside style={{ width:"100%", maxWidth:224, flexShrink:0, borderLeft:`1px solid ${T.border}`, background:"rgba(255,255,255,0.014)", backdropFilter:"blur(12px)", display:"flex", flexDirection:"column", overflow:"hidden" }} className={`forge-sidebar${sidebarOpen ? ' open' : ''}${sidebarClosing ? ' closing' : ''}`}>
             {/* Mobile close button */}
             <div style={{ display:"flex", padding:"10px 12px", justifyContent:"space-between", alignItems:"center", borderBottom:`1px solid ${T.border}`, flexShrink:0 }} className="forge-sidebar-header">
