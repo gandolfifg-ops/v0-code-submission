@@ -1,4 +1,4 @@
-// Layout v15 — Force full recompile of all child routes
+// Layout v53 — Force complete Turbopack module graph rebuild 2026-03-26
 import type { Metadata } from 'next'
 import { Geist, Geist_Mono } from 'next/font/google'
 import { Analytics } from '@vercel/analytics/next'

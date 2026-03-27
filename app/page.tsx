@@ -1171,9 +1171,9 @@ function Footer() {
       { label: "Security", href: "#" },
     ],
     Legal: [
-      { label: "Privacy Policy", href: "#" },
-      { label: "Terms of Service", href: "#" },
-      { label: "Cookie Policy", href: "#" },
+      { label: "Privacy Policy", href: "/privacy" },
+      { label: "Terms of Service", href: "/terms" },
+      { label: "Cookie Policy", href: "/cookies" },
     ],
   };
 
@@ -1834,7 +1834,7 @@ function Marketplace({ country }: { country: string }) {
 
 // ─────────────────────────────────────────────────────────────────────────────
 // SECTION 9 — MAIN PAGE
-// ───────────────────────────��──────────────────��──────────────────────────────
+// ───────────────────────────��──────���───────────��──────────────────────────────
 
 type ToolId = "budget"|"savings"|"loan"|"scholar"|"saved";
 const NAV_TOOLS: { id: ToolId; label: string; Icon: React.FC<{size?:number}> }[] = [
@@ -1845,8 +1845,8 @@ const NAV_TOOLS: { id: ToolId; label: string; Icon: React.FC<{size?:number}> }[]
   { id:"saved",   label:"My Saved",     Icon: ({size=15}) => <Bookmark   size={size} /> },
 ];
 
-// v52 — Hard dev server restart, all Turbopack caches cleared
-export default function ForgePageV52() {
+// v53 — Complete module graph rebuild, layout updated
+export default function ForgePageV53() {
   const [activeTool, setActiveTool] = useState<ToolId|"">("");
   const [panelView,  setPanelView]  = useState<"chat"|"tool">("chat");
   const [country,    setCountry]    = useState<string>("");
@@ -2143,7 +2143,7 @@ const hBtn = (active = false): CSSProperties => ({
             )}
           </div>
 
-          {/* ═══ SIDEBAR ���════════════════════════════════════════════════════ */}
+          {/* ═══ SIDEBAR ���═══════════════════════════════════════���════════════ */}
           <aside style={{ width:"100%", maxWidth:224, flexShrink:0, borderLeft:`1px solid ${T.border}`, background:"rgba(255,255,255,0.014)", backdropFilter:"blur(12px)", display:"flex", flexDirection:"column", overflow:"hidden" }} className={`forge-sidebar${sidebarOpen ? ' open' : ''}${sidebarClosing ? ' closing' : ''}`}>
             {/* Mobile close button */}
             <div style={{ display:"flex", padding:"10px 12px", justifyContent:"space-between", alignItems:"center", borderBottom:`1px solid ${T.border}`, flexShrink:0 }} className="forge-sidebar-header">
