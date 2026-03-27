@@ -1568,23 +1568,23 @@ function LoanFinder({ onToggleSave, savedIds }: { onToggleSave: (item: ScoutResu
 // ── Loan Tool (tabs) ──────────────────────────────────────────────────────────
 function LoanTool({ onToggleSave, savedIds }: { onToggleSave: (item: ScoutResult) => void; savedIds: Set<string> }) {
   
-  const [tab, setTab] = useState<"calc"|"finder">("calc");
+  const [tab, setTab] = useState<"calc"|"finder">("finder");
   return (
     <motion.div variants={fadeUp} initial="hidden" animate="visible" style={{ display:"flex", flexDirection:"column", gap:0 }}>
       <div style={{ display:"flex", gap:4, background:T.glass, borderRadius:T.rsm, padding:3, marginBottom:16 }}>
-        {([["calc","Calculator"],["finder","Loan Finder"]] as const).map(([id,lbl]) => (
+        {([["finder","Loan Finder"],["calc","Calculator"]] as const).map(([id,lbl]) => (
           <motion.button key={id} whileTap={tapAnim.tap} onClick={() => setTab(id)}
             style={{ flex:1, padding:"8px 0", borderRadius:7, border:"none", cursor:"pointer", fontFamily:"inherit", fontSize:12, fontWeight:600, background:tab===id?"rgba(201,168,76,0.18)":"transparent", color:tab===id?T.gold:T.mid }}>
             {lbl}
           </motion.button>
         ))}
       </div>
-      {tab==="calc" ? <LoanCalculator /> : <LoanFinder onToggleSave={onToggleSave} savedIds={savedIds} />}
+      {tab==="finder" ? <LoanFinder onToggleSave={onToggleSave} savedIds={savedIds} /> : <LoanCalculator />}
     </motion.div>
   );
 }
 
-// ── Scholarship Scout ──────────────────────�����────────────────────�����──────────��─
+// ── Scholarship Scout ─────────────────────��������────────────────────�����──────────��─
 const SCH_SCAN_MSGS = ["Connecting to scholarship databases...","Scanning national award portals...","Cross-referencing eligibility...","Aggregating live results for you..."];
 
 function ScholarshipScout({ onToggleSave, savedIds }: { onToggleSave: (item: ScoutResult) => void; savedIds: Set<string> }) {
