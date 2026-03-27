@@ -27,6 +27,7 @@ import {
   BarChart2, PiggyBank, BookOpen, ExternalLink, Bookmark, X, LogIn, LogOut,
 } from "lucide-react";
 import type { User as SupabaseUser } from "@supabase/supabase-js";
+import InlineChatComponent from "@/app/inline-chat";
 
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -1719,20 +1720,11 @@ function Marketplace({ country }: { country: string }) {
   );
 }
 
-// ─────���───────────────────────────────────────────────────────────────────────
-// SECTION 8 — INLINE CHAT
-// ────────────────────────────────────────────────────────��────────────────────
+// ─────────────────────────────────────────────────────────────────────────────
+// SECTION 8 — INLINE CHAT (moved to app/inline-chat.tsx, imported as InlineChatComponent)
+// ─────────────────────────────────────────────────────────────────────────────
 
-function Dots() {
-  
-  return (
-    <div style={{ display:"flex", gap:4, alignItems:"center", padding:"6px 0" }}>
-      {[0,1,2].map(i => <span key={i} style={{ width:5, height:5, borderRadius:"50%", background:T.gold, animation:`wf-bounce .8s ${i*0.15}s infinite` }} />)}
-    </div>
-  );
-}
-
-// v3 — arrow function form forces .next cache invalidation
+// Keeping a small local stub so no other internal calls break
 const InlineChat = ({ country }: { country: string }) => {
   const [msgs, setMsgs] = useState<{role:"user"|"assistant";content:string}[]>([]);
   const [input, setInput] = useState("");
@@ -2115,7 +2107,7 @@ const hBtn = (active = false): CSSProperties => ({
         <div style={{ flex:1, display:"flex", overflow:"hidden" }} className="forge-body">
 
           {/* ── Main panel ─────────────────────────────────────────────────────── */}
-          <div style={{ flex:1, display:"flex", flexDirection:"column", overflow:"hidden" }} className="forge-main">
+          <div style={{ flex:1, display:"flex", flexDirection:"column", overflow:"hidden", minHeight:0 }} className="forge-main">
 
             {/* Tool view */}
             {panelView==="tool" && activeTool && (
@@ -2140,11 +2132,14 @@ const hBtn = (active = false): CSSProperties => ({
             {/* Chat view */}
             {panelView==="chat" && (
               <>
-                <InlineChat key={chatKey} country={country} />
-                <footer style={{ padding:"10px 20px 14px", flexShrink:0, borderTop:`1px solid ${T.border}`, background:"rgba(5,5,5,0.6)" }}>
-                  <p style={{ fontSize:9, color:"#c4b594", lineHeight:1.55, margin:0, maxWidth:680, marginInline:"auto", textAlign:"center" }}>{FOOTER_TEXT}</p>
-                  {/* Partnerships section */}
-                  <div style={{ display:"flex", justifyContent:"center", gap:20, marginTop:12, flexWrap:"wrap" }}>
+                <div style={{ flex:1, overflowY:"auto", display:"flex", flexDirection:"column", minHeight:0 }}>
+                  <div style={{ flex:1 }}>
+                    <InlineChatComponent key={chatKey} country={country} />
+                  </div>
+                </div>
+                <footer style={{ flexShrink:0, borderTop:`1px solid ${T.border}`, background:"rgba(5,5,5,0.8)", padding:"20px 20px 16px" }}>
+                  {/* Partnerships */}
+                  <div style={{ display:"flex", justifyContent:"center", gap:20, marginBottom:16, flexWrap:"wrap" }}>
                     {PARTNERS.map(p => (
                       <div key={p.name} style={{ textAlign:"center" }}>
                         <p style={{ fontSize:10, color:T.mid, margin:0, fontWeight:600 }}>{p.name}</p>
@@ -2152,6 +2147,8 @@ const hBtn = (active = false): CSSProperties => ({
                       </div>
                     ))}
                   </div>
+                  {/* Disclaimer — pinned to footer bottom */}
+                  <p style={{ fontSize:10, color:"#c4b594", lineHeight:1.6, margin:"0 auto", maxWidth:680, textAlign:"center", padding:"0 12px" }}>{FOOTER_TEXT}</p>
                 </footer>
               </>
             )}
@@ -2257,5 +2254,5 @@ const hBtn = (active = false): CSSProperties => ({
   );
 }
 
-// Cache invalidation marker — v6
-export const __CACHE_BUST__ = Date.now();
+// Cache invalidation marker — v7 footer spacing, no CreditHealthWidget
+export const __CACHE_BUST_V7__ = "footer-spacing-clean";
