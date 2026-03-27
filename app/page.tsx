@@ -963,7 +963,7 @@ function ExpandableText({ text, maxLines = 2 }: { text: string; maxLines?: numbe
 
 // ─────────────────────────────────────────────────────────────────────────────
 // SECTION 5C-1 — FILTER SIDEBAR (Desktop) & SORT DROPDOWN
-// ─────────────────────────────────────────────────────────────────────────────
+// ───────────────────────���─────────────────────────────────────────────────────
 
 function FilterCheckbox({ label, checked, onChange, count }: { label: string; checked: boolean; onChange: (v: boolean) => void; count?: number }) {
   return (
@@ -3110,10 +3110,9 @@ const hBtn = (active = false): CSSProperties => ({
 .wealthnutz-sidebar-header { display: none !important; }
 }
 
-@media (max-width: 639px) {
-  .wealthnutz-hamburger { display: none !important; }
+  @media (max-width: 639px) {
   .wealthnutz-sidebar-header { display: none !important; }
-}
+  }
 
 @media (max-width: 479px) {
   .wealthnutz-hamburger { display: flex !important; }
