@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 
-// Forge theme tokens
+// WealthNutz theme tokens
 const T = {
   bg: "#07090d",
   gold: "#c4b594",
@@ -33,7 +33,7 @@ export default function AboutPage() {
           Learn more about WealthNutz and our commitment to your financial success.
         </p>
 
-        {/* Section 1: About Forge Finances */}
+        {/* Section 1: About WealthNutz */}
         <section style={{ marginBottom: 48 }}>
           <div style={{ display: "flex", alignItems: "center", gap: 12, marginBottom: 16 }}>
             <div style={{ width: 40, height: 40, borderRadius: 10, background: `linear-gradient(135deg, ${T.gold}, ${T.goldDim})`, display: "flex", alignItems: "center", justifyContent: "center" }}>

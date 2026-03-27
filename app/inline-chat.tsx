@@ -307,40 +307,6 @@ export default function InlineChat({ country, isDarkMode = true }: { country: st
   const countryVal = (country === "Canada" || country === "USA") ? country : "USA";
 
   return (
-      <motion.div 
-        initial={{ opacity: 0, scale: 0.8 }}
-        animate={{ opacity: 1, scale: 1 }}
-        style={{ 
-          position: "fixed", 
-          bottom: 20, 
-          right: 20, 
-          zIndex: 100,
-        }}
-      >
-        <motion.button
-          whileHover={{ scale: 1.05 }}
-          whileTap={{ scale: 0.95 }}
-          onClick={() => setMinimized(false)}
-          style={{
-            width: 56,
-            height: 56,
-            borderRadius: "50%",
-            background: `linear-gradient(135deg, ${T.gold}, ${T.goldDim})`,
-            border: "none",
-            cursor: "pointer",
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "center",
-            boxShadow: "0 4px 20px rgba(201,168,76,0.4)",
-          }}
-        >
-          <Plus size={24} color="#07090d" />
-        </motion.button>
-      </motion.div>
-    );
-  }
-
-  return (
     <>
       {/* Chat Controls Bar */}
       <div style={{ 

@@ -1,7 +1,7 @@
 "use client";
 
 /**
- * Forge — Single File, v0-Ready
+ * WealthNutz — Single File, v0-Ready
  * ─────────────────────────────────────────────────────────────────────────────
  * Paste this entire file into app/page.tsx in any Next.js project.
  *
@@ -387,7 +387,7 @@ function LogoMark({ size = 32 }: { size?: number }) {
   // Gold "F" shield logo - rendered without background
   return (
     <img 
-src="/images/forge-logo.png"
+    src="/images/wealthnutz-logo.png"
             alt="WealthNutz"
       width={size} 
       height={size} 
@@ -1271,7 +1271,7 @@ function ScholarshipFilterSidebar({
   );
 }
 
-// ─────────────────────────────────────────────────────────────────────────────
+// ───────────────────────────────────────────────────────────────���─────────────
 // SECTION 5C-2 — FILTER BOTTOM SHEET (Mobile)
 // ─────────────────────────────────────────────────────────────────────────────
 
@@ -2939,8 +2939,8 @@ const NAV_TOOLS: { id: ToolId; label: string; Icon: React.FC<{size?:number}> }[]
   { id:"saved",   label:"My Saved",     Icon: ({size=15}) => <Bookmark   size={size} /> },
 ];
 
-// v55 — inputVal verified at line 319, browser running stale ForgePageV9 cache
-export default function ForgePageV55() {
+// v55 — inputVal verified at line 319, browser running stale WealthNutzPageV9 cache
+export default function WealthNutzPageV55() {
   const [activeTool, setActiveTool] = useState<ToolId|"">("");
   const [panelView,  setPanelView]  = useState<"chat"|"tool">("chat");
   const [country,    setCountry]    = useState<string>("");
@@ -3122,22 +3122,21 @@ const hBtn = (active = false): CSSProperties => ({
 
   /* ── Mobile responsiveness ─────────────────────────────────────────── */
   @media (max-width: 768px) {
-  .forge-header { padding: 6px 10px !important; gap: 6px !important; }
-  .forge-logo-text { font-size: 15px !important; }
-  .forge-body { flex-direction: column !important; }
-  }
-    .forge-main { min-width: 0 !important; }
-    .forge-picks-credit-row { flex-direction: column !important; gap: 12px !important; }
-    .forge-picks-credit-row > * { flex: 1 1 100% !important; min-width: 0 !important; }
-    .forge-hero-section { padding: 16px 14px 0 !important; }
+.wealthnutz-header { padding: 6px 10px !important; gap: 6px !important; }
+.wealthnutz-logo-text { font-size: 15px !important; }
+.wealthnutz-body { flex-direction: column !important; }
+.wealthnutz-main { min-width: 0 !important; }
+.wealthnutz-picks-credit-row { flex-direction: column !important; gap: 12px !important; }
+.wealthnutz-picks-credit-row > * { flex: 1 1 100% !important; min-width: 0 !important; }
+.wealthnutz-hero-section { padding: 16px 14px 0 !important; }
   }
 
   /* Desktop: Full-width sidebar below main content */
   @media (min-width: 769px) {
-    .forge-hamburger { display: none !important; }
-    .forge-body { flex-direction: column !important; }
-    .forge-main { width: 100% !important; flex: none !important; }
-    .forge-sidebar {
+.wealthnutz-hamburger { display: none !important; }
+.wealthnutz-body { flex-direction: column !important; }
+.wealthnutz-main { width: 100% !important; flex: none !important; }
+.wealthnutz-sidebar {
       width: 100% !important;
       max-width: none !important;
       flex: none !important;
@@ -3147,24 +3146,25 @@ const hBtn = (active = false): CSSProperties => ({
       height: auto !important;
       overflow: visible !important;
     }
-    .forge-sidebar-header { display: none !important; }
-  }
+.wealthnutz-sidebar-header { display: none !important; }
+}
 
-  /* MENU button hidden on desktop, visible only on mobile */
-  .forge-hamburger { display: none !important; }
-  .forge-sidebar-header { display: none !important; }
-  
-  @media (max-width: 768px) {
-    .forge-hamburger { display: flex !important; }
+@media (max-width: 639px) {
+  .wealthnutz-hamburger { display: none !important; }
+  .wealthnutz-sidebar-header { display: none !important; }
+}
+
+@media (max-width: 479px) {
+  .wealthnutz-hamburger { display: flex !important; }
   }
 
   @media (max-width: 640px) {
-  .forge-header { padding: 5px 10px !important; gap: 5px !important; }
-  .forge-logo-text { font-size: 14px !important; }
-  .forge-hamburger { display: flex !important; }
-    .forge-body { flex-direction: column !important; }
-    .forge-main { overflow-x: hidden !important; }
-    .forge-sidebar {
+.wealthnutz-header { padding: 5px 10px !important; gap: 5px !important; }
+.wealthnutz-logo-text { font-size: 14px !important; }
+.wealthnutz-hamburger { display: flex !important; }
+.wealthnutz-body { flex-direction: column !important; }
+.wealthnutz-main { overflow-x: hidden !important; }
+.wealthnutz-sidebar {
       position: fixed !important;
       top: 0 !important; left: 0 !important;
       width: 88vw !important;
@@ -3179,20 +3179,23 @@ const hBtn = (active = false): CSSProperties => ({
       box-shadow: 4px 0 24px rgba(0,0,0,0.6) !important;
       overflow-y: auto !important;
     }
-    .forge-sidebar.open {
-      transform: translateX(0) !important;
-      opacity: 1 !important;
-    }
-    .forge-sidebar.closing {
-      transform: translateX(40px) !important;
-      opacity: 0 !important;
-    }
-    .forge-sidebar-header { display: flex !important; }
-    .forge-hero-section { padding: 12px 12px 0 !important; }
-    .forge-picks-credit-row { flex-direction: column !important; }
-    .forge-footer-grid { grid-template-columns: 1fr 1fr !important; gap: 16px !important; }
-    /* Ensure chat input and messages have proper edge padding */
-    .forge-chat-input-bar { padding: 10px 12px !important; }
+.wealthnutz-sidebar.open {
+    transform: translateX(0);
+    z-index: 99;
+  }
+
+  .wealthnutz-sidebar.closing {
+    animation: slideOut 0.2s ease-out forwards;
+  }
+
+  .wealthnutz-sidebar-header { display: flex !important; }
+  .wealthnutz-hero-section { padding: 12px 12px 0 !important; }
+  .wealthnutz-picks-credit-row { flex-direction: column !important; }
+  .wealthnutz-footer-grid { grid-template-columns: 1fr 1fr !important; gap: 16px !important; }
+}
+
+@media (max-width: 359px) {
+  .wealthnutz-chat-input-bar { padding: 10px 12px !important; }
   }
 
   @media (max-width: 400px) {
@@ -3209,7 +3212,7 @@ const hBtn = (active = false): CSSProperties => ({
 
 
         {/* ═══ HEADER ══════════════════════════════════════════════════════════ */}
-        <header style={{ display:"flex", alignItems:"center", justifyContent:"space-between", padding:"10px 14px", borderBottom:`1px solid ${T.border}`, flexShrink:0, zIndex:10, background: isDarkMode ? "rgba(5,5,5,0.97)" : "rgba(250,250,250,0.97)", backdropFilter:"blur(22px)", WebkitBackdropFilter:"blur(22px)", gap:8, minHeight:52 }} className="forge-header">
+        <header style={{ display:"flex", alignItems:"center", justifyContent:"space-between", padding:"10px 14px", borderBottom:`1px solid ${T.border}`, flexShrink:0, zIndex:10, background: isDarkMode ? "rgba(5,5,5,0.97)" : "rgba(250,250,250,0.97)", backdropFilter:"blur(22px)", WebkitBackdropFilter:"blur(22px)", gap:8, minHeight:52 }} className="wealthnutz-header">
           
           {/* Left: Country flags */}
           <div style={{ display:"flex", gap:6, alignItems:"center", flexWrap:"nowrap", minWidth: 80 }}>
@@ -3265,7 +3268,7 @@ const hBtn = (active = false): CSSProperties => ({
             
             {/* MENU button (mobile only) */}
             <motion.button whileTap={{ scale: 0.93 }} onClick={() => sidebarOpen ? closeSidebar() : setSidebarOpen(true)}
-              style={{ background: isDarkMode ? "rgba(255,255,255,0.1)" : "rgba(0,0,0,0.05)", border: `1px solid ${isDarkMode ? "rgba(255,255,255,0.3)" : "rgba(0,0,0,0.15)"}`, color: isDarkMode ? "#FFFFFF" : "#0F172A", cursor:"pointer", padding:"6px 12px", borderRadius:T.rsm, display:"flex", alignItems:"center", gap:6, fontSize:12, fontWeight:700, letterSpacing:".05em", lineHeight:1, whiteSpace:"nowrap", flexShrink:0 }} className="forge-hamburger">
+              style={{ background: isDarkMode ? "rgba(255,255,255,0.1)" : "rgba(0,0,0,0.05)", border: `1px solid ${isDarkMode ? "rgba(255,255,255,0.3)" : "rgba(0,0,0,0.15)"}`, color: isDarkMode ? "#FFFFFF" : "#0F172A", cursor:"pointer", padding:"6px 12px", borderRadius:T.rsm, display:"flex", alignItems:"center", gap:6, fontSize:12, fontWeight:700, letterSpacing:".05em", lineHeight:1, whiteSpace:"nowrap", flexShrink:0 }} className="wealthnutz-hamburger">
               <span style={{ fontSize:16, lineHeight:1, color: isDarkMode ? "#FFFFFF" : "#0F172A" }}>☰</span> MENU
             </motion.button>
           </div>
@@ -3351,10 +3354,10 @@ const hBtn = (active = false): CSSProperties => ({
         </AnimatePresence>
 
         {/* ═══ BODY ════════════════════════════════════════════════════════════ */}
-        <div style={{ flex:1, display:"flex", overflow:"auto" }} className="forge-body">
+        <div style={{ flex:1, display:"flex", overflow:"auto" }} className="wealthnutz-body">
 
           {/* ── Main panel ─────────────────────────────────────────────────────── */}
-          <div style={{ flex:1, display:"flex", flexDirection:"column", overflow:"hidden", minHeight:0 }} className="forge-main">
+          <div style={{ flex:1, display:"flex", flexDirection:"column", overflow:"hidden", minHeight:0 }} className="wealthnutz-main">
 
             {/* Tool view */}
             {panelView==="tool" && activeTool && (
@@ -3441,9 +3444,9 @@ const hBtn = (active = false): CSSProperties => ({
           </div>
 
           {/* ═══ SIDEBAR ���═════════════��════��══════════════��═════���════════════ */}
-          <aside style={{ width:"100%", maxWidth:224, flexShrink:0, borderLeft:`1px solid ${T.border}`, background: isDarkMode ? "rgba(10,10,10,0.95)" : "rgba(255,255,255,0.98)", backdropFilter:"blur(12px)", display:"flex", flexDirection:"column", overflow:"hidden" }} className={`forge-sidebar${sidebarOpen ? ' open' : ''}${sidebarClosing ? ' closing' : ''}`}>
+          <aside style={{ width:"100%", maxWidth:224, flexShrink:0, borderLeft:`1px solid ${T.border}`, background: isDarkMode ? "rgba(10,10,10,0.95)" : "rgba(255,255,255,0.98)", backdropFilter:"blur(12px)", display:"flex", flexDirection:"column", overflow:"hidden" }} className={`wealthnutz-sidebar${sidebarOpen ? ' open' : ''}${sidebarClosing ? ' closing' : ''}`}>
             {/* Mobile close button */}
-            <div style={{ display:"flex", padding:"10px 12px", justifyContent:"space-between", alignItems:"center", borderBottom:`1px solid ${T.border}`, flexShrink:0 }} className="forge-sidebar-header">
+            <div style={{ display:"flex", padding:"10px 12px", justifyContent:"space-between", alignItems:"center", borderBottom:`1px solid ${T.border}`, flexShrink:0 }} className="wealthnutz-sidebar-header">
               <span style={{ fontSize:12, fontWeight:700, color:T.gold, letterSpacing:".06em" }}>MENU</span>
               <button onClick={() => closeSidebar()} style={{ background:"none", border:`1px solid ${T.border}`, color:T.text, cursor:"pointer", borderRadius:6, width:28, height:28, display:"flex", alignItems:"center", justifyContent:"center", fontSize:16, lineHeight:1 }}>
                 <X size={16} />
