@@ -244,10 +244,18 @@ export default function ForgePage() {
     <div style={{ minHeight:"100vh", display:"flex", flexDirection:"column", background:T.bg, color:T.text, fontFamily:"Inter,system-ui,-apple-system,sans-serif", transition:"background .3s, color .3s", paddingBottom:"24px" }}>
       {/* Header */}
       <div style={{ padding:"12px 16px", borderBottom:`1px solid ${T.border}`, display:"flex", justifyContent:"space-between", alignItems:"center", gap:10 }}>
-        <div style={{ display:"flex", alignItems:"center", gap:8, flexShrink:0 }}>
+        <motion.button
+          whileTap={{ scale: 0.95 }}
+          onClick={() => {
+            closeSidebar();
+            window.scrollTo({ top: 0, behavior: "smooth" });
+          }}
+          style={{ display:"flex", alignItems:"center", gap:8, flexShrink:0, background:"none", border:"none", cursor:"pointer", padding:0 }}
+          aria-label="Go to top"
+        >
           <span style={{ fontSize:20, fontWeight:900 }}>🔥</span>
           <span style={{ fontSize:17, fontWeight:900, color:T.gold }}>FORGE</span>
-        </div>
+        </motion.button>
         <div style={{ display:"flex", gap:6, alignItems:"center", flexWrap:"nowrap" }}>
           {(["Canada","USA"] as const).map(c => (
             <motion.button key={c} whileTap={tapAnim.tap} onClick={() => setCountry(country === c ? "" : c)}
