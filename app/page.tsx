@@ -26,6 +26,7 @@ import {
   TrendingUp, Clock, DollarSign, GraduationCap, ShoppingBag,
   Send, Share2, Check, ChevronLeft, User, Search,
   BarChart2, PiggyBank, BookOpen, ExternalLink, Bookmark, X, LogIn, LogOut,
+  Sun, Moon,
 } from "lucide-react";
 import type { User as SupabaseUser } from "@supabase/supabase-js";
 import InlineChatComponent from "@/app/inline-chat";
@@ -128,10 +129,10 @@ const PARTNERS = [
 ];
 
 // ─────────────────────────────────────────────────────────────────────────────
-// SECTION 2 — DESIGN TOKENS (Dark Mode Only)
+// SECTION 2 — DESIGN TOKENS (Light/Dark Mode Support)
 // ─────────────────────────────────────────────────────────────────────────────
 
-const T = {
+const DARK_THEME = {
   bg:      "#050505",
   glass:   "rgba(255,255,255,0.044)",
   glassHi: "rgba(255,255,255,0.085)",
@@ -149,14 +150,42 @@ const T = {
   red:     "#f87171",
   r:       "13px",
   rsm:     "9px",
+  rmd:     "13px",
   blur:    "blur(20px)",
   cardBg:  "rgba(255,255,255,0.1)",
   cardBorder: "rgba(255,255,255,0.2)",
 };
 
+const LIGHT_THEME = {
+  bg:      "#FAFAFA",
+  glass:   "rgba(0,0,0,0.04)",
+  glassHi: "rgba(0,0,0,0.08)",
+  border:  "rgba(0,0,0,0.12)",
+  gold:    "#B8922F",
+  goldHi:  "#C9A84C",
+  goldDim: "#8B6914",
+  glow:    "rgba(184,146,47,0.18)",
+  text:    "#1A1A1A",
+  mid:     "#5A5A5A",
+  dim:     "#8A8A8A",
+  dimmer:  "#E5E5E5",
+  green:   "#16a34a",
+  blue:    "#2563eb",
+  red:     "#dc2626",
+  r:       "13px",
+  rsm:     "9px",
+  rmd:     "13px",
+  blur:    "blur(20px)",
+  cardBg:  "rgba(0,0,0,0.03)",
+  cardBorder: "rgba(0,0,0,0.1)",
+};
+
+// Default to dark theme - will be overridden by state
+let T = DARK_THEME;
+
 // ─────────────────────────────────────────────────────────────────────────────
 // SECTION 3 — MOTION VARIANTS
-// ─────────────────────────────────────────────────────────────────────────�����───
+// ─────────────────────────────────────────────────────────────────────────������───
 
 const fadeUp  = { hidden:{opacity:0,y:16}, visible:{opacity:1,y:0,transition:{duration:0.36,ease:[0.22,1,0.36,1] as number[]}} };
 const stagger = { visible:{transition:{staggerChildren:0.065}} };
@@ -208,44 +237,29 @@ function toggleSaved(item: ScoutResult): ScoutResult[] {
 // Supabase bookmark functions
 async function fetchBookmarksFromSupabase(userId: string): Promise<ScoutResult[]> {
   try {
-    console.log("[v0] fetchBookmarksFromSupabase called for user:", userId);
     const { createClient } = await import("@/lib/supabase/client");
     const supabase = createClient();
     const { data, error } = await supabase
       .from("bookmarks")
       .select("loan_id, loan_data")
       .eq("user_id", userId);
-    if (error) {
-      console.log("[v0] fetchBookmarksFromSupabase error:", error);
-      throw error;
-    }
-    const bookmarks = (data ?? []).map(row => row.loan_data as ScoutResult);
-    console.log("[v0] fetchBookmarksFromSupabase returned:", bookmarks.length, "items", bookmarks);
-    return bookmarks;
-  } catch (e) { 
-    console.log("[v0] fetchBookmarksFromSupabase catch:", e);
+    if (error) throw error;
+    return (data ?? []).map(row => row.loan_data as ScoutResult);
+  } catch { 
     return []; 
   }
 }
 
 async function upsertBookmarkToSupabase(userId: string, item: ScoutResult): Promise<void> {
   try {
-    console.log("[v0] upsertBookmarkToSupabase called:", userId, item.id);
     const { createClient } = await import("@/lib/supabase/client");
     const supabase = createClient();
-    const { error } = await supabase.from("bookmarks").upsert({
+    await supabase.from("bookmarks").upsert({
       user_id: userId,
       loan_id: item.id,
       loan_data: item,
     }, { onConflict: "user_id,loan_id" });
-    if (error) {
-      console.log("[v0] upsertBookmarkToSupabase error:", error);
-    } else {
-      console.log("[v0] upsertBookmarkToSupabase success");
-    }
-  } catch (e) {
-    console.log("[v0] upsertBookmarkToSupabase catch:", e);
-  }
+  } catch {}
 }
 
 async function deleteBookmarkFromSupabase(userId: string, loanId: string): Promise<void> {
@@ -1087,7 +1101,7 @@ function TopPicksSection({ country }: { country: "Canada" | "USA" }) {
     <motion.div variants={stagger} initial="hidden" animate="visible" style={{ marginBottom: 20 }}>
       <motion.div variants={fadeUp} style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 12 }}>
         <TrendingUp size={16} color={T.gold} />
-        <h3 style={{ fontSize: 13, fontWeight: 700, color: T.text, margin: 0 }}>Top Picks for You</h3>
+        <h3 style={{ fontSize: 13, fontWeight: 700, color: T.text, margin: 0 }}>Top Picks</h3>
       </motion.div>
       
       <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
@@ -2080,6 +2094,11 @@ export default function ForgePageV55() {
   const [showAuth,   setShowAuth]   = useState(false);
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [sidebarClosing, setSidebarClosing] = useState(false);
+  const [isDarkMode, setIsDarkMode] = useState(true);
+  
+  // Update theme tokens when mode changes
+  T = isDarkMode ? DARK_THEME : LIGHT_THEME;
+  
   const closeSidebar = useCallback(() => {
     setSidebarClosing(true);
     setTimeout(() => { setSidebarOpen(false); setSidebarClosing(false); }, 240);
@@ -2102,7 +2121,6 @@ export default function ForgePageV55() {
 useEffect(() => {
   // Load from localStorage first (for guests)
   const localSaved = readSaved();
-  console.log("[v0] Initial localStorage saved items:", localSaved.length, localSaved);
   setSavedItems(localSaved);
   
   // Supabase auth state listener for persistent sessions
@@ -2110,25 +2128,19 @@ useEffect(() => {
   
   const initAuth = async () => {
     try {
-      console.log("[v0] initAuth starting...");
       const { createClient } = await import("@/lib/supabase/client");
       const supabase = createClient();
       
       // Get initial session
       const { data: { session } } = await supabase.auth.getSession();
-      console.log("[v0] getSession result:", session?.user?.id ?? "no user");
       setUser(session?.user ?? null);
       setAuthLoading(false);
       
       // If user is logged in, fetch their bookmarks from Supabase immediately
       if (session?.user) {
-        console.log("[v0] User logged in, fetching bookmarks...");
         const bookmarks = await fetchBookmarksFromSupabase(session.user.id);
-        console.log("[v0] Setting savedItems from Supabase:", bookmarks.length);
         setSavedItems(bookmarks); // Always update state with DB data
         writeSaved(bookmarks); // Sync to localStorage as backup
-      } else {
-        console.log("[v0] No user session found on mount");
       }
       
       // Listen for auth changes
@@ -2341,24 +2353,10 @@ const hBtn = (active = false): CSSProperties => ({
 
 
         {/* ═══ HEADER ══════════════════════════════════════════════════════════ */}
-        <header style={{ display:"flex", alignItems:"center", justifyContent:"space-between", padding:"7px 14px", borderBottom:`1px solid ${T.border}`, flexShrink:0, zIndex:10, background:"rgba(5,5,5,0.97)", backdropFilter:"blur(22px)", WebkitBackdropFilter:"blur(22px)", gap:10, minHeight:44 }} className="forge-header">
-          {/* Left: logo — clickable, scrolls to top, closes sidebar, returns home */}
-          <motion.button
-            whileTap={{ scale: 0.94 }}
-            onClick={() => { closeSidebar(); setPanelView("chat"); setActiveTool(""); window.scrollTo({ top: 0, behavior: "smooth" }); }}
-            aria-label="Go to home"
-            style={{ display:"flex", alignItems:"center", flexShrink:0, background:"none", border:"none", cursor:"pointer", padding:0, outline:"none" }}
-          >
-            <img 
-              src="/images/wealthnutz-logo-full.png" 
-              alt="WealthNutz" 
-              style={{ height:"clamp(28px, 7vw, 38px)", width:"auto", objectFit:"contain" }} 
-              className="wealthnutz-logo"
-            />
-          </motion.button>
+        <header style={{ display:"flex", alignItems:"center", justifyContent:"space-between", padding:"10px 14px", borderBottom:`1px solid ${T.border}`, flexShrink:0, zIndex:10, background: isDarkMode ? "rgba(5,5,5,0.97)" : "rgba(250,250,250,0.97)", backdropFilter:"blur(22px)", WebkitBackdropFilter:"blur(22px)", gap:8, minHeight:52 }} className="forge-header">
           
-          {/* Middle: Country flags + Clear button — tight group */}
-          <div style={{ display:"flex", gap:6, alignItems:"center", flexWrap:"nowrap" }}>
+          {/* Left: Country flags */}
+          <div style={{ display:"flex", gap:6, alignItems:"center", flexWrap:"nowrap", minWidth: 80 }}>
             {(["Canada","USA"] as const).map(c => {
               const isCanada = c === "Canada";
               const isActive = country === c;
@@ -2370,14 +2368,51 @@ const hBtn = (active = false): CSSProperties => ({
                 </motion.button>
               );
             })}
-
           </div>
           
-          {/* Right: MENU button (mobile only) */}
-          <motion.button whileTap={{ scale: 0.93 }} onClick={() => sidebarOpen ? closeSidebar() : setSidebarOpen(true)}
-            style={{ background:"rgba(201,168,76,0.15)", border:`1px solid ${T.gold}`, color:T.gold, cursor:"pointer", padding:"6px 12px", borderRadius:T.rsm, display:"flex", alignItems:"center", gap:6, fontSize:12, fontWeight:700, letterSpacing:".05em", lineHeight:1, whiteSpace:"nowrap", flexShrink:0 }} className="forge-hamburger">
-            <span style={{ fontSize:16, lineHeight:1, color:T.gold }}>☰</span> MENU
+          {/* Center: Logo — clickable, scrolls to top, closes sidebar, returns home */}
+          <motion.button
+            whileTap={{ scale: 0.94 }}
+            onClick={() => { closeSidebar(); setPanelView("chat"); setActiveTool(""); window.scrollTo({ top: 0, behavior: "smooth" }); }}
+            aria-label="Go to home"
+            style={{ display:"flex", alignItems:"center", justifyContent:"center", flex:1, background:"none", border:"none", cursor:"pointer", padding:0, outline:"none" }}
+          >
+            <img 
+              src="/images/wealthnutz-logo-full.png" 
+              alt="WealthNutz" 
+              style={{ height:"clamp(34px, 8vw, 46px)", width:"auto", objectFit:"contain" }} 
+              className="wealthnutz-logo"
+            />
           </motion.button>
+          
+          {/* Right: Theme toggle + MENU button */}
+          <div style={{ display:"flex", gap:8, alignItems:"center", minWidth: 80, justifyContent:"flex-end" }}>
+            {/* Theme Toggle */}
+            <motion.button 
+              whileTap={{ scale: 0.9 }}
+              onClick={() => setIsDarkMode(!isDarkMode)}
+              style={{ 
+                background: T.glass, 
+                border: `1px solid ${T.border}`, 
+                borderRadius: 8, 
+                padding: "6px 8px", 
+                cursor: "pointer", 
+                display: "flex", 
+                alignItems: "center", 
+                justifyContent: "center",
+                color: T.gold,
+              }}
+              aria-label={isDarkMode ? "Switch to light mode" : "Switch to dark mode"}
+            >
+              {isDarkMode ? <Sun size={16} /> : <Moon size={16} />}
+            </motion.button>
+            
+            {/* MENU button (mobile only) */}
+            <motion.button whileTap={{ scale: 0.93 }} onClick={() => sidebarOpen ? closeSidebar() : setSidebarOpen(true)}
+              style={{ background:"rgba(255,255,255,0.1)", border:"1px solid rgba(255,255,255,0.3)", color:"#FFFFFF", cursor:"pointer", padding:"6px 12px", borderRadius:T.rsm, display:"flex", alignItems:"center", gap:6, fontSize:12, fontWeight:700, letterSpacing:".05em", lineHeight:1, whiteSpace:"nowrap", flexShrink:0 }} className="forge-hamburger">
+              <span style={{ fontSize:16, lineHeight:1, color:"#FFFFFF" }}>☰</span> MENU
+            </motion.button>
+          </div>
         </header>
 
         {/* ═══ LOCATION BAR ════════════════════════════════════════════════════ */}
@@ -2485,21 +2520,55 @@ const hBtn = (active = false): CSSProperties => ({
               </motion.div>
             )}
 
-            {/* Chat view */}
-            {panelView==="chat" && (
-              <>
-                <div style={{ flex:1, display:"flex", flexDirection:"column" }}>
-                  {/* Top Picks — only visible after country selection */}
-                  {country && (
-                    <div style={{ padding: "16px 16px 0" }}>
-                      <TopPicksSection country={country === "Canada" ? "Canada" : "USA"} />
-                    </div>
-                  )}
-                  <div style={{ flex:1 }}>
-                    <InlineChatComponent key={chatKey} country={country} />
-                  </div>
-                </div>
-                <footer style={{ borderTop:`1px solid ${T.border}`, background:"rgba(5,5,5,0.6)", padding:"8px 10px" }}>
+{/* Chat view */}
+  {panelView==="chat" && (
+  <>
+  <div style={{ flex:1, display:"flex", flexDirection:"column" }}>
+  {/* Hero Section */}
+  <motion.div 
+    initial={{ opacity: 0, y: 20 }}
+    animate={{ opacity: 1, y: 0 }}
+    transition={{ duration: 0.5 }}
+    style={{ 
+      padding: "40px 20px 30px", 
+      textAlign: "center",
+      background: `linear-gradient(180deg, ${isDarkMode ? "rgba(201,168,76,0.08)" : "rgba(184,146,47,0.06)"} 0%, transparent 100%)`,
+    }}
+  >
+    <h1 style={{ 
+      fontSize: "clamp(24px, 5vw, 36px)", 
+      fontWeight: 800, 
+      color: T.text, 
+      margin: "0 0 12px",
+      lineHeight: 1.2,
+      letterSpacing: "-0.02em",
+    }}>
+      Stop searching and start finding.
+    </h1>
+    <p style={{ 
+      fontSize: "clamp(13px, 2.5vw, 15px)", 
+      color: T.mid, 
+      margin: 0,
+      maxWidth: 420,
+      marginLeft: "auto",
+      marginRight: "auto",
+      lineHeight: 1.5,
+    }}>
+      {TAGLINE}
+    </p>
+  </motion.div>
+  <div style={{ flex:1 }}>
+  <InlineChatComponent key={chatKey} country={country} />
+  </div>
+  
+  {/* Top Picks — at bottom, visible after country selection */}
+  {country && (
+    <div style={{ padding: "16px 16px 20px", borderTop: `1px solid ${T.border}` }}>
+      <TopPicksSection country={country === "Canada" ? "Canada" : "USA"} />
+    </div>
+  )}
+  </div>
+  <footer style={{ borderTop:`1px solid ${T.border}`, background: isDarkMode ? "rgba(5,5,5,0.6)" : "rgba(250,250,250,0.9)", padding:"8px 10px" }}>
                   {/* Partners — compact horizontal */}
                   <div style={{ display:"flex", justifyContent:"center", gap:12, marginBottom:6, flexWrap:"wrap", fontSize:9 }}>
                     {PARTNERS.map(p => (
