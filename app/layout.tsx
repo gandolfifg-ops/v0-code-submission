@@ -6,7 +6,7 @@ import './globals.css'
 const inter = Inter({ subsets: ['latin'] })
 
 export const metadata: Metadata = {
-  title: 'Forge Finances — AI-Powered Financial Intelligence',
+  title: 'WealthNutz — AI-Powered Financial Intelligence',
   description: 'Smart financial tools for students in Canada and USA. Budget planning, savings goals, loan calculations, and AI-powered insights.',
 }
 

@@ -31,7 +31,7 @@ const COUNTRY_CONFIG = {
 } as const;
 type CountryKey = keyof typeof COUNTRY_CONFIG;
 
-const SYSTEM_PROMPT = `You are the Forge Intelligence Co-Pilot — a world-class Quantitative Financial Advisor and AI Wealth Intelligence Engine for students in Canada and the USA. You are highly analytical, data-driven, and objective. Your mission is to help students optimize for the highest Net Worth through smart financial arbitrage.
+const SYSTEM_PROMPT = `You are the WealthNutz Intelligence Co-Pilot — a world-class Quantitative Financial Advisor and AI Wealth Intelligence Engine for students in Canada and the USA. You are highly analytical, data-driven, and objective. Your mission is to help students optimize for the highest Net Worth through smart financial arbitrage.
 
 CORE PHILOSOPHY:
 You treat personal finance as a game of quantitative optimization. You always recommend the highest-yield, lowest-risk path. You are direct, specific, and never vague.
@@ -110,7 +110,7 @@ function GoldCTA({ href, label }: { href: string; label: string }) {
 }
 
 function AffNote() {
-  return <p style={{ fontSize:9, color:"#c4b594", textAlign:"center", marginTop:10, lineHeight:1.5 }}>Forge may earn a referral commission if you open an account through our links. This never affects our recommendations.</p>;
+  return <p style={{ fontSize:9, color:"#c4b594", textAlign:"center", marginTop:10, lineHeight:1.5 }}>WealthNutz may earn a referral commission if you open an account through our links. This never affects our recommendations.</p>;
 }
 
 // ── Dots typing indicator ─────────────────────────────────────────────────────

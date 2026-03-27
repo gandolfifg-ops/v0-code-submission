@@ -60,7 +60,7 @@ const LOAN_MARKETPLACE = [
   { id: "rbc-student", name: "RBC Student Line of Credit",  rate: "Prime +0%",      bonus: "$0 Annual Fee",     badge: "Low Rate",  country: "CA" as const, href: "https://www.rbc.com/student/",                highlight: "Only pay interest while in school",                  cta: "Check My Rate" },
 ];
 
-const TAGLINE = "The all-in-one financial ecosystem for the modern student. Build credit, learn to invest, and forge your future.";
+const TAGLINE = "The all-in-one financial ecosystem for the modern student. Build credit, learn to invest, and grow your wealth.";
 
 const SCHOLARSHIP_MAJORS   = ["Any Major","Computer Science / Engineering","Business / Finance","Medicine / Health Sciences","Arts & Humanities","Law / Political Science","Education","Environmental Science","Mathematics / Statistics","Nursing","Social Work","Trades / Vocational"] as const;
 const SCHOLARSHIP_COUNTRIES= ["Canada","USA","Both"] as const;
@@ -84,11 +84,11 @@ const MOCK_LOANS = [
 
 type ScoutResult = typeof MOCK_SCHOLARSHIPS[number] | typeof MOCK_LOANS[number];
 
-const VIRAL_SHARE   = "This free AI tool finds you $100k+ in scholarships and the lowest loan rates in seconds. It's called Forge and it's completely free: https://forgewealth.app";
-const WELCOME_MSG   = "Forge Intelligence Co-Pilot is indexing live financial databases... How can I help you accelerate your wealth today?";
-const AFFIL_NOTE    = "Forge may earn a referral commission if you open an account through our links. This never affects our recommendations.";
-const FOOTER_TEXT   = "Forge provides general financial education only and is not a licensed financial advisor, broker, or lender. Information is for educational purposes and does not constitute personalized financial, legal, or tax advice. Affiliate links may be present — see our disclosure.";
-const SYSTEM_PROMPT = `You are the Forge Intelligence Co-Pilot — a quantitative financial advisor for students in Canada and the USA. You are analytical, concise, and direct.
+const VIRAL_SHARE   = "Stop guessing with your money. I just found this AI tool called WealthNutz that scours the internet for the best deals, credit offers, and high-yield savings in seconds: https://wealthnutz.com";
+const WELCOME_MSG   = "WealthNutz Intelligence Co-Pilot is indexing live financial databases... How can I help you accelerate your wealth today?";
+const AFFIL_NOTE    = "WealthNutz may earn a referral commission if you open an account through our links. This never affects our recommendations.";
+const FOOTER_TEXT   = "WealthNutz provides general financial education only and is not a licensed financial advisor, broker, or lender. Information is for educational purposes and does not constitute personalized financial, legal, or tax advice. Affiliate links may be present — see our disclosure.";
+const SYSTEM_PROMPT = `You are the WealthNutz Intelligence Co-Pilot — a quantitative financial advisor for students in Canada and the USA. You are analytical, concise, and direct.
 
 COMMUNICATION STYLE:
 - No markdown formatting (no **, *, bullet points). Use plain text with numbers and line breaks for clarity.
@@ -264,8 +264,8 @@ function LogoMark({ size = 32 }: { size?: number }) {
   // Gold "F" shield logo - rendered without background
   return (
     <img 
-      src="/images/forge-logo.png" 
-      alt="Forge" 
+src="/images/forge-logo.png"
+            alt="WealthNutz"
       width={size} 
       height={size} 
       style={{ 
@@ -554,7 +554,7 @@ function AuthModal({ onClose }: { onClose: () => void }) {
             {mode === "signin" ? "Welcome Back" : "Create Account"}
           </h2>
           <p style={{ fontSize: 13, color: T.mid, margin: 0 }}>
-            {mode === "signin" ? "Sign in to access your saved items" : "Join Forge for free"}
+            {mode === "signin" ? "Sign in to access your saved items" : "Join WealthNutz for free"}
           </p>
         </div>
         
@@ -987,7 +987,7 @@ function CreditPathModal({ onClose, country }: { onClose: () => void; country: s
         {/* Header */}
         <div style={{ marginBottom: 24 }}>
           <h2 style={{ fontSize: 22, fontWeight: 800, color: T.text, margin: "0 0 6px" }}>
-            Your Forge Credit Path
+            Your WealthNutz Credit Path
           </h2>
           <p style={{ fontSize: 12, color: T.mid, margin: 0, lineHeight: 1.5 }}>
             Follow these 3 steps to build credit from scratch and unlock premium loan rates.
@@ -1284,7 +1284,7 @@ function Footer() {
             margin: 0,
             letterSpacing: ".02em",
           }}>
-            © 2026 Forge Finances. Empowering the next generation of global students.
+            © 2026 WealthNutz. Empowering the next generation of global students.
           </p>
         </div>
       </div>
@@ -1584,7 +1584,7 @@ function LoanTool({ onToggleSave, savedIds }: { onToggleSave: (item: ScoutResult
   );
 }
 
-// ── Scholarship Scout ───────────────────────────────────────────����──────────��─
+// ── Scholarship Scout ───────────────────────────────────────────�����──────────��─
 const SCH_SCAN_MSGS = ["Connecting to scholarship databases...","Scanning national award portals...","Cross-referencing eligibility...","Aggregating live results for you..."];
 
 function ScholarshipScout({ onToggleSave, savedIds }: { onToggleSave: (item: ScoutResult) => void; savedIds: Set<string> }) {
@@ -2059,7 +2059,7 @@ const hBtn = (active = false): CSSProperties => ({
             style={{ display:"flex", alignItems:"center", gap:8, flexShrink:0, background:"none", border:"none", cursor:"pointer", padding:0, outline:"none" }}
           >
             <LogoMark size={24} />
-            <span style={{ fontSize:17, fontWeight:900, letterSpacing:"-.03em", backgroundImage:`linear-gradient(90deg,${T.goldHi},${T.gold},${T.goldDim},${T.goldHi})`, backgroundSize:"200%", WebkitBackgroundClip:"text", WebkitTextFillColor:"transparent", animation:"wf-shimmer 5s linear infinite", textTransform:"uppercase", whiteSpace:"nowrap", lineHeight:1 }} className="forge-logo-text">Forge</span>
+            <span style={{ fontSize:17, fontWeight:900, letterSpacing:"-.03em", backgroundImage:`linear-gradient(90deg,${T.goldHi},${T.gold},${T.goldDim},${T.goldHi})`, backgroundSize:"200%", WebkitBackgroundClip:"text", WebkitTextFillColor:"transparent", animation:"wf-shimmer 5s linear infinite", textTransform:"uppercase", whiteSpace:"nowrap", lineHeight:1 }} className="forge-logo-text">WealthNutz</span>
           </motion.button>
           
           {/* Middle: Country flags + Clear button — tight group */}
@@ -2200,7 +2200,7 @@ const hBtn = (active = false): CSSProperties => ({
           <p style={{ fontSize:11, fontWeight:600, color:T.text, margin:0, overflow:"hidden", textOverflow:"ellipsis", whiteSpace:"nowrap" }}>
             {user.email?.split("@")[0] || "Member"}
           </p>
-          <p style={{ fontSize:9, color:T.mid, margin:0 }}>Forge Member</p>
+          <p style={{ fontSize:9, color:T.mid, margin:0 }}>WealthNutz Member</p>
         </div>
       </div>
       
@@ -2222,7 +2222,7 @@ const hBtn = (active = false): CSSProperties => ({
                   {/* Share button */}
                   <motion.button variants={fadeUp} whileTap={tapAnim.tap} onClick={handleShare}
                     style={{ display:"flex", alignItems:"center", justifyContent:"center", gap:7, padding:"10px 0", borderRadius:T.rsm, cursor:"pointer", fontFamily:"inherit", fontSize:11, fontWeight:600, border:`1px solid ${copied?"rgba(74,222,128,0.4)":T.border}`, background:copied?"rgba(74,222,128,0.08)":T.glass, color:copied?T.green:T.mid, transition:"all .3s" }}>
-                    {copied ? <><Check size={14} /> Copied!</> : <><Share2 size={14} /> Share Forge</>}
+                    {copied ? <><Check size={14} /> Copied!</> : <><Share2 size={14} /> Share WealthNutz</>}
                   </motion.button>
 <p style={{ fontSize:9, color:"#c4b594", textAlign:"center", margin:"4px 0 0", lineHeight:1.5 }}>
   Share with friends — help them find free money
