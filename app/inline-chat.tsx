@@ -1,5 +1,5 @@
 "use client";
-
+// v98 — placeholder uses ASCII-only characters (no Unicode em-dash or curly apostrophe)
 import { useState, useEffect, useRef, type FormEvent, useCallback } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Send, RotateCcw } from "lucide-react";
