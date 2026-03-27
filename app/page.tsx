@@ -140,6 +140,7 @@ const DARK_THEME = {
   gold:    "#C9A84C",
   goldHi:  "#E8C97A",
   goldDim: "#8B6914",
+  goldText: "#07090d", // Dark text on gold buttons
   glow:    "rgba(201,168,76,0.22)",
   text:    "#F0EBE3",
   mid:     "#9A9080",
@@ -154,21 +155,25 @@ const DARK_THEME = {
   blur:    "blur(20px)",
   cardBg:  "rgba(255,255,255,0.1)",
   cardBorder: "rgba(255,255,255,0.2)",
+  cardShadow: "none",
+  badgeBg: "", // Use default in dark mode
+  badgeText: "", // Use default in dark mode
 };
 
 const LIGHT_THEME = {
-  bg:      "#FAFAFA",
-  glass:   "rgba(0,0,0,0.04)",
-  glassHi: "rgba(0,0,0,0.08)",
-  border:  "rgba(0,0,0,0.12)",
-  gold:    "#B8922F",
-  goldHi:  "#C9A84C",
+  bg:      "#F9FAFB",
+  glass:   "rgba(255,255,255,0.9)",
+  glassHi: "rgba(255,255,255,1)",
+  border:  "rgba(0,0,0,0.08)",
+  gold:    "#C9A84C",
+  goldHi:  "#E8C97A",
   goldDim: "#8B6914",
-  glow:    "rgba(184,146,47,0.18)",
-  text:    "#1A1A1A",
-  mid:     "#5A5A5A",
-  dim:     "#8A8A8A",
-  dimmer:  "#E5E5E5",
+  goldText: "#3D2E0A", // Dark brown for text on gold buttons
+  glow:    "rgba(201,168,76,0.15)",
+  text:    "#0F172A", // slate-900
+  mid:     "#475569", // slate-600
+  dim:     "#94A3B8", // slate-400
+  dimmer:  "#E2E8F0", // slate-200
   green:   "#16a34a",
   blue:    "#2563eb",
   red:     "#dc2626",
@@ -176,8 +181,11 @@ const LIGHT_THEME = {
   rsm:     "9px",
   rmd:     "13px",
   blur:    "blur(20px)",
-  cardBg:  "rgba(0,0,0,0.03)",
-  cardBorder: "rgba(0,0,0,0.1)",
+  cardBg:  "#FFFFFF",
+  cardBorder: "#E2E8F0", // slate-200
+  cardShadow: "0 1px 3px rgba(0,0,0,0.08), 0 1px 2px rgba(0,0,0,0.04)",
+  badgeBg: "rgba(201,168,76,0.15)", // Light gold for badges
+  badgeText: "#78350F", // amber-900 for badge text
 };
 
 // Default to dark theme - will be overridden by state
@@ -299,10 +307,11 @@ function Glass({ children, style, glow, onClick }: { children: ReactNode; style?
   return (
   <div onClick={onClick} onMouseEnter={() => setHov(true)} onMouseLeave={() => setHov(false)}
   style={{
-  background: T.cardBg, 
-  backdropFilter: T.blur, 
+  background: T.cardBg,
+  backdropFilter: T.blur,
   WebkitBackdropFilter: T.blur,
   border: `1px solid ${hov && glow ? "rgba(201,168,76,0.38)" : T.cardBorder}`,
+  boxShadow: T.cardShadow || "none",
   borderRadius: T.r,
   boxShadow: hov && glow ? "0 0 0 1px rgba(201,168,76,0.18),0 8px 36px rgba(0,0,0,0.5)" : "0 4px 28px rgba(0,0,0,0.15)",
   transition: "border-color .22s,box-shadow .22s",
@@ -359,8 +368,8 @@ function GoldCTA({ href, label }: { href: string; label: string }) {
   
   const safe = (href?.trim?.() ?? "").length > 0 ? href : "#";
   return (
-    <motion.a href={safe} target="_blank" rel="noopener noreferrer" whileTap={tapAnim.tap}
-      style={{ display:"block", textAlign:"center", padding:"10px 0", borderRadius:T.rsm, textDecoration:"none", fontFamily:"inherit", backgroundImage:`linear-gradient(135deg,${T.gold},${T.goldDim})`, color:"#07090d", fontSize:12, fontWeight:800, letterSpacing:".03em", boxShadow:`0 0 18px ${T.glow}`, transition:"box-shadow .2s" }}
+  <motion.a href={safe} target="_blank" rel="noopener noreferrer" whileTap={tapAnim.tap}
+  style={{ display:"block", textAlign:"center", padding:"10px 0", borderRadius:T.rsm, textDecoration:"none", fontFamily:"inherit", backgroundImage:`linear-gradient(135deg,${T.gold},${T.goldDim})`, color:T.goldText, fontSize:12, fontWeight:800, letterSpacing:".03em", boxShadow:`0 0 18px ${T.glow}`, transition:"box-shadow .2s" }}
       onMouseEnter={e => (e.currentTarget.style.boxShadow = "0 0 32px rgba(201,168,76,0.5)")}
       onMouseLeave={e => (e.currentTarget.style.boxShadow = `0 0 18px ${T.glow}`)}>
       {label} →
@@ -981,37 +990,39 @@ function LoanMarketplaceHero({ country, filterType, onToggleSave, savedIds }: { 
           rel="noopener noreferrer"
           variants={fadeUp}
           layout
-          style={{
-            display: "block",
-            padding: 16,
-            borderRadius: T.rmd,
-            background: i === 0 ? T.glassHi : T.glass,
-            border: `1px solid ${i === 0 ? T.goldDim : T.border}`,
-            textDecoration: "none",
-            transition: "all 0.25s ease",
-            position: "relative",
-            overflow: "hidden",
-          }}
-          whileHover={{ scale: 1.02, borderColor: T.gold }}
-          whileTap={{ scale: 0.98 }}
+  style={{
+  display: "block",
+  padding: 16,
+  borderRadius: T.rmd,
+  background: T.cardBg,
+  border: `1px solid ${i === 0 ? T.gold : T.cardBorder}`,
+  textDecoration: "none",
+  transition: "all 0.25s ease",
+  position: "relative",
+  overflow: "hidden",
+  boxShadow: T.cardShadow || "none",
+  }}
+  whileHover={{ scale: 1.02, borderColor: T.gold }}
+  whileTap={{ scale: 0.98 }}
         >
-            {/* Badge */}
-            {offer.badge && (
-              <span style={{
-                position: "absolute",
-                top: 12,
-                right: onToggleSave ? 44 : 12,
-                fontSize: 9,
-                fontWeight: 800,
-                background: i === 0 ? T.gold : T.glassHi,
-                color: i === 0 ? "#07090d" : T.gold,
-                padding: "3px 8px",
-                borderRadius: 6,
-                letterSpacing: "0.04em",
-              }}>
-                {offer.badge}
-              </span>
-            )}
+          {/* Badge */}
+          {offer.badge && (
+          <span style={{
+          position: "absolute",
+          top: 12,
+          right: onToggleSave ? 44 : 12,
+          fontSize: 9,
+          fontWeight: 800,
+          background: i === 0 ? T.gold : (T.badgeBg || T.glassHi),
+          color: i === 0 ? T.goldText : (T.badgeText || T.gold),
+          padding: "3px 8px",
+          borderRadius: 6,
+          letterSpacing: "0.04em",
+          border: T.badgeBg ? `1px solid ${T.gold}` : "none",
+          }}>
+          {offer.badge}
+          </span>
+          )}
             
             {/* Bookmark Button */}
             {onToggleSave && (
@@ -1423,13 +1434,13 @@ function Footer() {
     { name: "and many more", abbr: "and many more" },
   ];
 
-  return (
-    <footer style={{
-      background: "#0a0a0a",
-      borderTop: `1px solid ${T.border}`,
-      padding: "40px 20px",
-      marginTop: 60,
-    }}>
+return (
+  <footer style={{
+  background: T.bg,
+  borderTop: `1px solid ${T.border}`,
+  padding: "40px 20px",
+  marginTop: 60,
+  }}>
       <div style={{ maxWidth: 1200, margin: "0 auto" }}>
         {/* Four column grid */}
         <div style={{
@@ -2392,15 +2403,15 @@ const hBtn = (active = false): CSSProperties => ({
               whileTap={{ scale: 0.9 }}
               onClick={() => setIsDarkMode(!isDarkMode)}
               style={{ 
-                background: T.glass, 
-                border: `1px solid ${T.border}`, 
+                background: isDarkMode ? T.glass : "rgba(0,0,0,0.05)", 
+                border: `1px solid ${isDarkMode ? T.border : "rgba(0,0,0,0.12)"}`, 
                 borderRadius: 8, 
                 padding: "6px 8px", 
                 cursor: "pointer", 
                 display: "flex", 
                 alignItems: "center", 
                 justifyContent: "center",
-                color: T.gold,
+                color: isDarkMode ? T.gold : "#0F172A",
               }}
               aria-label={isDarkMode ? "Switch to light mode" : "Switch to dark mode"}
             >
@@ -2409,8 +2420,8 @@ const hBtn = (active = false): CSSProperties => ({
             
             {/* MENU button (mobile only) */}
             <motion.button whileTap={{ scale: 0.93 }} onClick={() => sidebarOpen ? closeSidebar() : setSidebarOpen(true)}
-              style={{ background:"rgba(255,255,255,0.1)", border:"1px solid rgba(255,255,255,0.3)", color:"#FFFFFF", cursor:"pointer", padding:"6px 12px", borderRadius:T.rsm, display:"flex", alignItems:"center", gap:6, fontSize:12, fontWeight:700, letterSpacing:".05em", lineHeight:1, whiteSpace:"nowrap", flexShrink:0 }} className="forge-hamburger">
-              <span style={{ fontSize:16, lineHeight:1, color:"#FFFFFF" }}>☰</span> MENU
+              style={{ background: isDarkMode ? "rgba(255,255,255,0.1)" : "rgba(0,0,0,0.05)", border: `1px solid ${isDarkMode ? "rgba(255,255,255,0.3)" : "rgba(0,0,0,0.15)"}`, color: isDarkMode ? "#FFFFFF" : "#0F172A", cursor:"pointer", padding:"6px 12px", borderRadius:T.rsm, display:"flex", alignItems:"center", gap:6, fontSize:12, fontWeight:700, letterSpacing:".05em", lineHeight:1, whiteSpace:"nowrap", flexShrink:0 }} className="forge-hamburger">
+              <span style={{ fontSize:16, lineHeight:1, color: isDarkMode ? "#FFFFFF" : "#0F172A" }}>☰</span> MENU
             </motion.button>
           </div>
         </header>
@@ -2423,7 +2434,7 @@ const hBtn = (active = false): CSSProperties => ({
               animate={{ height: "auto", opacity: 1 }}
               exit={{ height: 0, opacity: 0 }}
               transition={{ duration: 0.2 }}
-              style={{ background: "#1a1a1a", borderBottom: `1px solid ${T.border}`, overflow: "hidden" }}
+              style={{ background: isDarkMode ? "#1a1a1a" : "#F1F5F9", borderBottom: `1px solid ${T.border}`, overflow: "hidden" }}
             >
               <div style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: 12, padding: "10px 14px", flexWrap: "wrap" }}>
                 <span style={{ fontSize: 12, color: T.mid, textAlign: "center" }}>
@@ -2585,7 +2596,7 @@ const hBtn = (active = false): CSSProperties => ({
           </div>
 
           {/* ═══ SIDEBAR ���═════════════��════��══════════════��═════���════════════ */}
-          <aside style={{ width:"100%", maxWidth:224, flexShrink:0, borderLeft:`1px solid ${T.border}`, background:"rgba(255,255,255,0.014)", backdropFilter:"blur(12px)", display:"flex", flexDirection:"column", overflow:"hidden" }} className={`forge-sidebar${sidebarOpen ? ' open' : ''}${sidebarClosing ? ' closing' : ''}`}>
+          <aside style={{ width:"100%", maxWidth:224, flexShrink:0, borderLeft:`1px solid ${T.border}`, background: isDarkMode ? "rgba(10,10,10,0.95)" : "rgba(255,255,255,0.98)", backdropFilter:"blur(12px)", display:"flex", flexDirection:"column", overflow:"hidden" }} className={`forge-sidebar${sidebarOpen ? ' open' : ''}${sidebarClosing ? ' closing' : ''}`}>
             {/* Mobile close button */}
             <div style={{ display:"flex", padding:"10px 12px", justifyContent:"space-between", alignItems:"center", borderBottom:`1px solid ${T.border}`, flexShrink:0 }} className="forge-sidebar-header">
               <span style={{ fontSize:12, fontWeight:700, color:T.gold, letterSpacing:".06em" }}>MENU</span>
