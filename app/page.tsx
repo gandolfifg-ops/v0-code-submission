@@ -1161,14 +1161,14 @@ function CreditPathModal({ onClose, country }: { onClose: () => void; country: s
 function Footer() {
   const footerLinks = {
     Company: [
-      { label: "About", href: "#" },
-      { label: "Careers", href: "#" },
-      { label: "Mission", href: "#" },
+      { label: "About Us", href: "/about" },
+      { label: "Our Mission", href: "/about#mission" },
+      { label: "Security", href: "/about#security" },
     ],
     Support: [
       { label: "Help Center", href: "#" },
       { label: "Contact Us", href: "#" },
-      { label: "Security", href: "#" },
+      { label: "Careers", href: "#" },
     ],
     Legal: [
       { label: "Privacy Policy", href: "/privacy" },
@@ -1584,7 +1584,7 @@ function LoanTool({ onToggleSave, savedIds }: { onToggleSave: (item: ScoutResult
   );
 }
 
-// ── Scholarship Scout ────────────────────────────────────────────��────────────
+// ── Scholarship Scout ────────────────────────────────────────────��──────────��─
 const SCH_SCAN_MSGS = ["Connecting to scholarship databases...","Scanning national award portals...","Cross-referencing eligibility...","Aggregating live results for you..."];
 
 function ScholarshipScout({ onToggleSave, savedIds }: { onToggleSave: (item: ScoutResult) => void; savedIds: Set<string> }) {
@@ -1845,8 +1845,8 @@ const NAV_TOOLS: { id: ToolId; label: string; Icon: React.FC<{size?:number}> }[]
   { id:"saved",   label:"My Saved",     Icon: ({size=15}) => <Bookmark   size={size} /> },
 ];
 
-// v53 — Complete module graph rebuild, layout updated
-export default function ForgePageV53() {
+// v54 — Layout deleted and recreated, forces complete Turbopack restart
+export default function ForgePageV54() {
   const [activeTool, setActiveTool] = useState<ToolId|"">("");
   const [panelView,  setPanelView]  = useState<"chat"|"tool">("chat");
   const [country,    setCountry]    = useState<string>("");
@@ -2143,7 +2143,7 @@ const hBtn = (active = false): CSSProperties => ({
             )}
           </div>
 
-          {/* ═══ SIDEBAR ���═══════════════════════════════════════���════════════ */}
+          {/* ═══ SIDEBAR ���═════════════════════════════════��═════���════════════ */}
           <aside style={{ width:"100%", maxWidth:224, flexShrink:0, borderLeft:`1px solid ${T.border}`, background:"rgba(255,255,255,0.014)", backdropFilter:"blur(12px)", display:"flex", flexDirection:"column", overflow:"hidden" }} className={`forge-sidebar${sidebarOpen ? ' open' : ''}${sidebarClosing ? ' closing' : ''}`}>
             {/* Mobile close button */}
             <div style={{ display:"flex", padding:"10px 12px", justifyContent:"space-between", alignItems:"center", borderBottom:`1px solid ${T.border}`, flexShrink:0 }} className="forge-sidebar-header">
