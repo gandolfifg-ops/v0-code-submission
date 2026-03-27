@@ -156,7 +156,7 @@ const T = {
 
 // ─────────────────────────────────────────────────────────────────────────────
 // SECTION 3 — MOTION VARIANTS
-// ─────────────────────────────────────────────────────────────────────────���───
+// ─────────────────────────────────────────────────────────────────────────����───
 
 const fadeUp  = { hidden:{opacity:0,y:16}, visible:{opacity:1,y:0,transition:{duration:0.36,ease:[0.22,1,0.36,1] as number[]}} };
 const stagger = { visible:{transition:{staggerChildren:0.065}} };
@@ -208,27 +208,44 @@ function toggleSaved(item: ScoutResult): ScoutResult[] {
 // Supabase bookmark functions
 async function fetchBookmarksFromSupabase(userId: string): Promise<ScoutResult[]> {
   try {
+    console.log("[v0] fetchBookmarksFromSupabase called for user:", userId);
     const { createClient } = await import("@/lib/supabase/client");
     const supabase = createClient();
     const { data, error } = await supabase
       .from("bookmarks")
       .select("loan_id, loan_data")
       .eq("user_id", userId);
-    if (error) throw error;
-    return (data ?? []).map(row => row.loan_data as ScoutResult);
-  } catch { return []; }
+    if (error) {
+      console.log("[v0] fetchBookmarksFromSupabase error:", error);
+      throw error;
+    }
+    const bookmarks = (data ?? []).map(row => row.loan_data as ScoutResult);
+    console.log("[v0] fetchBookmarksFromSupabase returned:", bookmarks.length, "items", bookmarks);
+    return bookmarks;
+  } catch (e) { 
+    console.log("[v0] fetchBookmarksFromSupabase catch:", e);
+    return []; 
+  }
 }
 
 async function upsertBookmarkToSupabase(userId: string, item: ScoutResult): Promise<void> {
   try {
+    console.log("[v0] upsertBookmarkToSupabase called:", userId, item.id);
     const { createClient } = await import("@/lib/supabase/client");
     const supabase = createClient();
-    await supabase.from("bookmarks").upsert({
+    const { error } = await supabase.from("bookmarks").upsert({
       user_id: userId,
       loan_id: item.id,
       loan_data: item,
     }, { onConflict: "user_id,loan_id" });
-  } catch {}
+    if (error) {
+      console.log("[v0] upsertBookmarkToSupabase error:", error);
+    } else {
+      console.log("[v0] upsertBookmarkToSupabase success");
+    }
+  } catch (e) {
+    console.log("[v0] upsertBookmarkToSupabase catch:", e);
+  }
 }
 
 async function deleteBookmarkFromSupabase(userId: string, loanId: string): Promise<void> {
@@ -1715,7 +1732,7 @@ function LoanTool({ onToggleSave, savedIds, userCountry }: { onToggleSave: (item
   );
 }
 
-// ── Scholarship Scout ─────────────────────��������────────────────────�����──────────��─
+// ── Scholarship Scout ─────────────────────��������─��──────────────────�����──────────��─
 const SCH_SCAN_MSGS = ["Connecting to scholarship databases...","Scanning national award portals...","Cross-referencing eligibility...","Aggregating live results for you..."];
 
 function ScholarshipScout({ onToggleSave, savedIds }: { onToggleSave: (item: ScoutResult) => void; savedIds: Set<string> }) {
@@ -2008,26 +2025,34 @@ export default function ForgePageV55() {
 
 useEffect(() => {
   // Load from localStorage first (for guests)
-  setSavedItems(readSaved());
+  const localSaved = readSaved();
+  console.log("[v0] Initial localStorage saved items:", localSaved.length, localSaved);
+  setSavedItems(localSaved);
   
   // Supabase auth state listener for persistent sessions
   let subscription: { unsubscribe: () => void } | null = null;
   
   const initAuth = async () => {
     try {
+      console.log("[v0] initAuth starting...");
       const { createClient } = await import("@/lib/supabase/client");
       const supabase = createClient();
       
       // Get initial session
       const { data: { session } } = await supabase.auth.getSession();
+      console.log("[v0] getSession result:", session?.user?.id ?? "no user");
       setUser(session?.user ?? null);
       setAuthLoading(false);
       
       // If user is logged in, fetch their bookmarks from Supabase immediately
       if (session?.user) {
+        console.log("[v0] User logged in, fetching bookmarks...");
         const bookmarks = await fetchBookmarksFromSupabase(session.user.id);
+        console.log("[v0] Setting savedItems from Supabase:", bookmarks.length);
         setSavedItems(bookmarks); // Always update state with DB data
         writeSaved(bookmarks); // Sync to localStorage as backup
+      } else {
+        console.log("[v0] No user session found on mount");
       }
       
       // Listen for auth changes
