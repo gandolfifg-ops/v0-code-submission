@@ -89,27 +89,25 @@ const VIRAL_SHARE   = "This free AI tool finds you $100k+ in scholarships and th
 const WELCOME_MSG   = "Forge Intelligence Co-Pilot is indexing live financial databases... How can I help you accelerate your wealth today?";
 const AFFIL_NOTE    = "Forge may earn a referral commission if you open an account through our links. This never affects our recommendations.";
 const FOOTER_TEXT   = "Forge provides general financial education only and is not a licensed financial advisor, broker, or lender. Information is for educational purposes and does not constitute personalized financial, legal, or tax advice. Affiliate links may be present — see our disclosure.";
-const SYSTEM_PROMPT = `You are the Forge Intelligence Co-Pilot — a world-class Quantitative Financial Advisor and AI Wealth Intelligence Engine for students in Canada and the USA. You are highly analytical, data-driven, and objective. Your mission is to help students optimize for the highest Net Worth through smart financial arbitrage.
+const SYSTEM_PROMPT = `You are the Forge Intelligence Co-Pilot — a quantitative financial advisor for students in Canada and the USA. You are analytical, concise, and direct.
+
+COMMUNICATION STYLE:
+- No markdown formatting (no **, *, bullet points). Use plain text with numbers and line breaks for clarity.
+- Open naturally, skip rigid greetings like "Hello! How can I help?"
+- Keep responses to 2-3 sentences when possible. Be specific with numbers.
+- Examples: "At 3% loan rate vs 5% HISA, you're losing $200/year by paying down debt instead of saving" or "Your TFSA gives you $7K of tax-free growth—prioritize it first."
 
 CORE PHILOSOPHY:
-1. Net Worth Optimization > Debt-Free Mentality. If a student has a 3% loan but can earn 5% in a HISA, explain why saving/investing might be better than aggressive debt payoff.
-2. Arbitrage Thinking: Always compare the COST of debt vs. the RETURN on savings/investments. Guide students to make the mathematically optimal choice.
-3. Tax-Advantaged Accounts First: TFSA/RRSP (Canada), Roth IRA/401k (USA) are wealth accelerators — prioritize them.
-
-CORE RULES:
-1. Personalize first. Ask 2–3 targeted questions about country, income, existing debt rates, and goals before advising.
-2. Be direct and data-driven. Say "At 3% loan rate vs 5% HISA rate, you're losing $200/year by paying down debt instead of saving" — use numbers.
-3. Give numbered action plans with specific dollar amounts and timelines.
-4. Format: **bold** key terms, use tables for rate comparisons, numbered action plans.
+1. Net Worth Optimization > Debt-Free Mentality. If a 3% loan beats 5% HISA returns, explain the math.
+2. Arbitrage Thinking: Compare cost of debt vs. return on savings. Always show the calculation.
+3. Tax-Advantaged Accounts First: TFSA/RRSP (Canada), Roth IRA/401k (USA).
 
 KNOWLEDGE BASE:
-Canada: TFSA ($7,000/yr, tax-free growth — priority #1 for students), RRSP (tax-deductible, employer match), FHSA (first-home, $8,000/yr), HISA rates (EQ Bank 4%+, Wealthsimple 4%+), OSAP (prime +1%), provincial grants, GST/HST credit.
-USA: Roth IRA ($7,000/yr, tax-free growth — priority #1), 529 plans, I-Bonds (inflation-protected), FAFSA, federal loans (5-7%), PSLF, AOTC ($2,500/yr), state grants.
-Arbitrage Examples: 
-- Student loan at 4% vs HISA at 5% = SAVE, don't pay extra on loan
-- Credit card at 20% vs any investment = PAY OFF immediately
-- TFSA/Roth compound growth beats low-rate debt payoff long-term
-Best Platforms: Wealthsimple, EQ Bank, Tangerine (CA); SoFi, Fidelity, Schwab, Betterment (USA); VTI/XEQT for index investing.`;
+Canada: TFSA ($7K/yr, tax-free priority #1), RRSP (tax-deductible, employer match), FHSA ($8K/yr), HISA (EQ, Wealthsimple 4%+), OSAP, GST/HST credit.
+USA: Roth IRA ($7K/yr, priority #1), 529 plans, I-Bonds, FAFSA, federal loans (5-7%), PSLF, AOTC ($2.5K/yr).
+Platforms: Wealthsimple, EQ Bank (CA); SoFi, Fidelity (USA); VTI/XEQT for indexing.
+
+ALWAYS: Personalize first with 2-3 targeted questions before advising. Give numbered action plans with specific dollar amounts.`;
 
 const PARTNERS = [
   { name: "University Partners", desc: "Financial aid offices nationwide" },
@@ -1837,7 +1835,7 @@ function Marketplace({ country }: { country: string }) {
 
 // ─────────────────────────────────────────────────────────────────────────────
 // SECTION 9 — MAIN PAGE
-// ──────────────────────────────────────────────��──────────────────────────────
+// ───────────────────────────��──────────────────��──────────────────────────────
 
 type ToolId = "budget"|"savings"|"loan"|"scholar"|"saved";
 const NAV_TOOLS: { id: ToolId; label: string; Icon: React.FC<{size?:number}> }[] = [
@@ -1906,6 +1904,17 @@ useEffect(() => {
     setSavedItems(updated);
   }, []);
 
+  // Scroll to section by element ID and close sidebar
+  const scrollToSection = useCallback((sectionId: string) => {
+    closeSidebar();
+    setTimeout(() => {
+      const element = document.getElementById(sectionId);
+      if (element) {
+        element.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      }
+    }, 260);
+  }, [closeSidebar]);
+
   const openTool = useCallback((id: ToolId) => { setActiveTool(id); setPanelView("tool"); }, []);
   const clearChat = useCallback(() => setChatKey(k => k + 1), []);
 
@@ -1940,7 +1949,7 @@ const hBtn = (active = false): CSSProperties => ({
 
   return (
     <>
-      <div style={{ minHeight:"100vh", display:"flex", flexDirection:"column", background:T.bg, color:T.text, fontFamily:"Inter,system-ui,-apple-system,sans-serif", transition:"background .3s, color .3s" }}>
+      <div style={{ minHeight:"100vh", display:"flex", flexDirection:"column", background:T.bg, color:T.text, fontFamily:"Inter,system-ui,-apple-system,sans-serif", transition:"background .3s, color .3s", paddingBottom:"24px" }}>
         <style>{`
           @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap');
           *{box-sizing:border-box}
@@ -2046,17 +2055,18 @@ const hBtn = (active = false): CSSProperties => ({
             })}
             {panelView==="chat" && (
               <motion.button whileTap={tapAnim.tap} onClick={clearChat}
-                style={{ ...hBtn(), padding:"5px 8px", fontSize:12, borderRadius:10, display:"flex", alignItems:"center", gap:2, minWidth:32, height:32 }}
+                style={{ ...hBtn(), padding:"5px 8px", fontSize:"clamp(10px, 2vw, 12px)", borderRadius:10, display:"flex", alignItems:"center", gap:2, minWidth:32, height:32 }}
                 onMouseEnter={e => {(e.currentTarget as HTMLElement).style.color=T.red;(e.currentTarget as HTMLElement).style.borderColor="rgba(248,113,113,.35)";}}
                 onMouseLeave={e => {(e.currentTarget as HTMLElement).style.color=T.mid;(e.currentTarget as HTMLElement).style.borderColor=T.border;}}>
                 <Trash2 size={11} />
+                <span style={{display:"none"}}>Clear</span>
               </motion.button>
             )}
           </div>
           
           {/* Right: MENU button (fixed width) */}
           <motion.button whileTap={{ scale: 0.93 }} onClick={() => sidebarOpen ? closeSidebar() : setSidebarOpen(true)}
-            style={{ background:"none", border:`1px solid ${T.border}`, color:"#c4b594", cursor:"pointer", padding:"5px 10px", borderRadius:T.rsm, display:"flex", alignItems:"center", gap:5, fontSize:11, fontWeight:700, letterSpacing:".05em", lineHeight:1, whiteSpace:"nowrap", flexShrink:0 }} className="forge-hamburger">
+            style={{ background:"none", border:`1px solid ${T.border}`, color:"#c4b594", cursor:"pointer", padding:"5px 10px", borderRadius:T.rsm, display:"flex", alignItems:"center", gap:5, fontSize:"clamp(10px, 2vw, 12px)", fontWeight:700, letterSpacing:".05em", lineHeight:1, whiteSpace:"nowrap", flexShrink:0 }} className="forge-hamburger">
             <span style={{ fontSize:14, lineHeight:1 }}>☰</span> MENU
           </motion.button>
         </header>
@@ -2211,5 +2221,5 @@ const hBtn = (active = false): CSSProperties => ({
   );
 }
 
-// Cache invalidation marker — v15 Full recompile, inputVal fixed, no CreditHealthWidget
-export const __CACHE_BUST_V15__ = "full-recompile-v15-" + Date.now();
+// Cache invalidation marker — v16 AI personality improved, scrollToSection added, responsive header text, safe area padding
+export const __CACHE_BUST_V16__ = "ui-personality-scroll-" + Date.now();
