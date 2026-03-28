@@ -449,7 +449,8 @@ const SliderComponent = ({ label, value, min, step = 1, onChange, fmt, maxVal }:
   
   // Dynamic visual max for slider bar (but capped)
   const visualMax = Math.min(hardMax, Math.max(value * 2, min * 10, isPercent ? 100 : 10000));
-  const pct = Math.max(0, Math.min(100, ((value - min) / (visualMax - min)) * 100));
+  // Always calculate position relative to the hard max so handle stays proportional to value
+  const pct = Math.max(0, Math.min(100, ((value - min) / (hardMax - min)) * 100));
   
   useEffect(() => {
     if (!editing) setInputVal(fmt(value));
@@ -1109,11 +1110,11 @@ function SortDropdown({ value, onChange, resultCount }: { value: SortOption; onC
                 top: "calc(100% + 6px)",
                 left: 0,
                 right: 0,
-                background: T.cardBg,
+                background: isDarkMode ? "#1a1a1a" : "#ffffff",
                 border: `1px solid ${T.border}`,
                 borderRadius: T.rsm,
                 overflow: "hidden",
-                zIndex: 100,
+                zIndex: 1000,
                 boxShadow: "0 8px 24px rgba(0,0,0,0.3)",
               }}
             >
@@ -1396,8 +1397,8 @@ function MobileFilterButton({ onClick, hasFilters }: { onClick: () => void; hasF
       onClick={onClick}
       style={{
         position: "fixed",
-        bottom: 80,
-        right: 16,
+        bottom: 20,
+        right: 20,
         display: "flex",
         alignItems: "center",
         gap: 8,
@@ -2528,11 +2529,11 @@ function ScholarshipSelect({ value, options, onChange }: { value: string; option
               minWidth: "100%",
               maxHeight: 220,
               overflowY: "auto",
-              background: T.cardBg,
+              background: isDarkMode ? "#1a1a1a" : "#ffffff",
               border: `1px solid ${T.border}`,
               borderRadius: T.rsm,
               boxShadow: "0 8px 32px rgba(0,0,0,0.22)",
-              zIndex: 999,
+              zIndex: 1000,
               transformOrigin: "top",
             }}
           >
@@ -2547,7 +2548,7 @@ function ScholarshipSelect({ value, options, onChange }: { value: string; option
                   padding: "9px 12px",
                   border: "none",
                   background: opt === value ? (T.gold + "22") : "rgba(0,0,0,0)",
-                  color: opt === value ? T.gold : T.text,
+                  color: opt === value ? T.gold : (isDarkMode ? "#ffffff" : "#000000"),
                   fontSize: 12,
                   fontFamily: "inherit",
                   textAlign: "left",
@@ -3209,7 +3210,7 @@ const hBtn = (active = false): CSSProperties => ({
 
 
         {/* ═══ HEADER ══════════════════════════════════════════════════════════ */}
-        <header style={{ display:"flex", alignItems:"center", justifyContent:"space-between", padding:"10px 14px", borderBottom:`1px solid ${T.border}`, flexShrink:0, zIndex:10, background: isDarkMode ? "rgba(5,5,5,0.97)" : "rgba(250,250,250,0.97)", backdropFilter:"blur(22px)", WebkitBackdropFilter:"blur(22px)", gap:8, minHeight:52 }} className="forge-header">
+        <header style={{ display:"flex", alignItems:"center", justifyContent:"space-between", padding:"10px 14px", borderBottom:`1px solid ${T.border}`, flexShrink:0, zIndex:10, background: isDarkMode ? "#0a0a0a" : "#ffffff", gap:8, minHeight:52 }} className="forge-header">
           
           {/* Left: Country flags */}
           <div style={{ display:"flex", gap:6, alignItems:"center", flexWrap:"nowrap", minWidth: 80 }}>
@@ -3441,7 +3442,7 @@ const hBtn = (active = false): CSSProperties => ({
           </div>
 
           {/* ═══ SIDEBAR ���═════════════��════��══════════════��═════���════════════ */}
-          <aside style={{ width:"100%", maxWidth:224, flexShrink:0, borderLeft:`1px solid ${T.border}`, background: isDarkMode ? "rgba(10,10,10,0.95)" : "rgba(255,255,255,0.98)", backdropFilter:"blur(12px)", display:"flex", flexDirection:"column", overflow:"hidden" }} className={`forge-sidebar${sidebarOpen ? ' open' : ''}${sidebarClosing ? ' closing' : ''}`}>
+          <aside style={{ width:"100%", maxWidth:224, flexShrink:0, borderLeft:`1px solid ${T.border}`, background: isDarkMode ? "#0a0a0a" : "#ffffff", display:"flex", flexDirection:"column", overflow:"hidden" }} className={`forge-sidebar${sidebarOpen ? ' open' : ''}${sidebarClosing ? ' closing' : ''}`}>
             {/* Mobile close button */}
             <div style={{ display:"flex", padding:"10px 12px", justifyContent:"space-between", alignItems:"center", borderBottom:`1px solid ${T.border}`, flexShrink:0 }} className="forge-sidebar-header">
               <span style={{ fontSize:12, fontWeight:700, color:T.gold, letterSpacing:".06em" }}>MENU</span>
@@ -3452,8 +3453,8 @@ const hBtn = (active = false): CSSProperties => ({
             {/* Tabs */}
             <div style={{ display:"flex", padding:"10px 10px 0", gap:4, flexShrink:0, borderBottom:`1px solid ${T.border}` }}>
               {([["tools","Tools"],["market","Marketplace"]] as const).map(([id,lbl]) => (
-                <motion.button key={id} whileTap={tapAnim.tap} onClick={() => { setSideTab(id); if (id === "market") closeSidebar(); }}
-                  style={{ flex:1, padding:"7px 4px", borderRadius:7, border:"none", cursor:"pointer", fontFamily:"inherit", fontSize:10, fontWeight:700, letterSpacing:".04em", marginBottom:8, background:sideTab===id?"rgba(201,168,76,0.14)":"rgba(0,0,0,0)", color:sideTab===id?T.gold:"#c4b594", transition:"all .2s" }}>
+                <motion.button key={id} whileTap={tapAnim.tap} onClick={() => setSideTab(id)}
+                  style={{ flex:1, padding:"8px 4px", borderRadius:8, border:"none", cursor:"pointer", fontFamily:"inherit", fontSize:11, fontWeight:sideTab===id?800:700, letterSpacing:".04em", marginBottom:8, background:sideTab===id?"rgba(201,168,76,0.22)":"rgba(0,0,0,0)", color:sideTab===id?T.gold:"#a89968", transition:"all .2s", boxShadow:sideTab===id?`inset 0 0 12px rgba(201,168,76,0.1)`:"none" }}>
                   {lbl}
                 </motion.button>
               ))}

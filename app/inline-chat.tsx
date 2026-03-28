@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useRef, type FormEvent, useCallback } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Send, RotateCcw, Minus, Plus } from "lucide-react";
+import { Send, RotateCcw } from "lucide-react";
 import ReactMarkdown from "react-markdown";
 
 // ── Dark theme tokens ────────────────────────────────────────────────────────
@@ -235,7 +235,6 @@ export default function InlineChat({ country, isDarkMode = true }: { country: st
   const [msgs, setMsgs] = useState<{ role: "user" | "assistant"; content: string }[]>([]);
   const [input, setInput] = useState("");
   const [loading, setLoading] = useState(false);
-  const [minimized, setMinimized] = useState(false);
   const bottomRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLTextAreaElement>(null);
   
@@ -307,42 +306,6 @@ export default function InlineChat({ country, isDarkMode = true }: { country: st
 
   const countryVal = (country === "Canada" || country === "USA") ? country : "USA";
 
-  // Minimized state - show floating bubble
-  if (minimized) {
-    return (
-      <motion.div 
-        initial={{ opacity: 0, scale: 0.8 }}
-        animate={{ opacity: 1, scale: 1 }}
-        style={{ 
-          position: "fixed", 
-          bottom: 20, 
-          right: 20, 
-          zIndex: 100,
-        }}
-      >
-        <motion.button
-          whileHover={{ scale: 1.05 }}
-          whileTap={{ scale: 0.95 }}
-          onClick={() => setMinimized(false)}
-          style={{
-            width: 56,
-            height: 56,
-            borderRadius: "50%",
-            background: `linear-gradient(135deg, ${T.gold}, ${T.goldDim})`,
-            border: "none",
-            cursor: "pointer",
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "center",
-            boxShadow: "0 4px 20px rgba(201,168,76,0.4)",
-          }}
-        >
-          <Plus size={24} color="#07090d" />
-        </motion.button>
-      </motion.div>
-    );
-  }
-
   return (
     <>
       {/* Chat Controls Bar */}
@@ -352,7 +315,7 @@ export default function InlineChat({ country, isDarkMode = true }: { country: st
         gap: 8, 
         padding: "8px 16px", 
         borderBottom: `1px solid ${T.border}`,
-        background: isDarkMode ? "rgba(0,0,0,0.2)" : "rgba(255,255,255,0.5)",
+        background: isDarkMode ? "#0a0a0a" : "#ffffff",
       }}>
         {msgs.length > 0 && (
           <motion.button
@@ -376,26 +339,6 @@ export default function InlineChat({ country, isDarkMode = true }: { country: st
             <RotateCcw size={12} /> Clear
           </motion.button>
         )}
-        <motion.button
-          whileHover={{ scale: 1.05 }}
-          whileTap={{ scale: 0.95 }}
-          onClick={() => setMinimized(true)}
-          style={{
-            display: "flex",
-            alignItems: "center",
-            gap: 5,
-            padding: "5px 10px",
-            borderRadius: 6,
-            border: `1px solid ${T.border}`,
-            background: T.glass,
-            color: T.mid,
-            fontSize: 11,
-            fontWeight: 600,
-            cursor: "pointer",
-          }}
-        >
-          <Minus size={12} /> Minimize
-        </motion.button>
       </div>
 
       <div style={{ flex: 1, overflowY: "auto", display: "flex", flexDirection: "column" }}>
@@ -423,9 +366,9 @@ export default function InlineChat({ country, isDarkMode = true }: { country: st
                           p: ({ children }) => <p style={{ margin: "0 0 6px", color: T.aiText }}>{children}</p>,
                           strong: ({ children }) => <strong style={{ fontWeight: 700, color: T.text }}>{children}</strong>,
                           em: ({ children }) => <em style={{ fontStyle: "italic" }}>{children}</em>,
-                          ul: ({ children }) => <ul style={{ margin: "4px 0", paddingLeft: 16 }}>{children}</ul>,
-                          ol: ({ children }) => <ol style={{ margin: "4px 0", paddingLeft: 16 }}>{children}</ol>,
-                          li: ({ children }) => <li style={{ margin: "2px 0", color: T.aiText }}>{children}</li>,
+                  ul: ({ children }) => <ul style={{ margin: "8px 0", paddingLeft: "24px", listStyleType: "disc", color: T.aiText }}>{children}</ul>,
+                  ol: ({ children }) => <ol style={{ margin: "8px 0", paddingLeft: "24px", listStyleType: "decimal", color: T.aiText }}>{children}</ol>,
+                  li: ({ children }) => <li style={{ margin: "4px 0", color: T.aiText, display: "list-item" }}>{children}</li>,
                           a: ({ href, children }) => <a href={href} target="_blank" rel="noopener noreferrer" style={{ color: T.goldHi, textDecoration: "underline" }}>{children}</a>,
                         }}
                       >
@@ -472,7 +415,7 @@ export default function InlineChat({ country, isDarkMode = true }: { country: st
                   if ((input?.trim() ?? "").length > 0) e.currentTarget.form?.requestSubmit(); 
                 } 
               }}
-              placeholder="Tell me your situation — I'll tell you exactly what to do..."
+              placeholder="Tell me your situation - I will tell you exactly what to do..."
               rows={1}
               className={isDarkMode ? "chat-input-dark" : "chat-input-light"}
               style={{ 
