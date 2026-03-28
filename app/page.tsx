@@ -1,7 +1,7 @@
 "use client";
 
 /**
- * WealthNutz — Single File, v0-Ready (build:v134 cache-clear)
+ * WealthNutz — Single File, v0-Ready (build:v135 emergency-jsx-fix)
  * ─────────────────────────────────────────────────────────────────────────────
  * Paste this entire file into app/page.tsx in any Next.js project.
  *
@@ -1414,7 +1414,7 @@ function MobileFilterButton({ onClick, hasFilters }: { onClick: () => void; hasF
   );
 }
 
-// ─────────────────────────────────────────────────────────────────�������───────────
+// ───────────────────────────────────────────────────���─────────────�������───────────
 // SECTION 5C-3 — LOAN MARKETPLACE HERO (High Conversion)
 // ─────────────────────────────────────────────────────────────────────────────
 
@@ -3776,7 +3776,7 @@ const hBtn = (active = false): CSSProperties => ({
             )}
           </div>
 
-          {/* ═══ SIDEBAR ���═════════════����═══��══════════════��══��══���════════════ */}
+          {/* ═══ SIDEBAR ���═════════════����═══��══════════════��══��══����════════════ */}
           {/* Tap-outside overlay — mobile only, shown via CSS */}
           {(sidebarOpen || sidebarClosing) && (
             <div
@@ -3967,20 +3967,22 @@ style={{ display:"flex", alignItems:"center", gap:9, padding:"9px 10px", borderR
                 <motion.button
                   whileTap={{ scale: 0.9 }}
                   onClick={() => { setToast(null); setShowAuth(true); }}
-              style={{
-                background: T.gold,
-                border: "none",
-                borderRadius: 6,
-                padding: "6px 12px",
-                fontSize: 11,
-                fontWeight: 700,
-                color: "#07090d",
-                cursor: "pointer",
-                fontFamily: "inherit",
-              }}
-            >
-              Sign In
-            </motion.button>
+                  style={{
+                    background: T.gold,
+                    border: "none",
+                    borderRadius: 6,
+                    padding: "6px 12px",
+                    fontSize: 11,
+                    fontWeight: 700,
+                    color: "#07090d",
+                    cursor: "pointer",
+                    fontFamily: "inherit",
+                  }}
+                >
+                  Sign In
+                </motion.button>
+              </>
+            )}
           </motion.div>
         )}
       </AnimatePresence>
@@ -3988,5 +3990,5 @@ style={{ display:"flex", alignItems:"center", gap:9, padding:"9px 10px", borderR
   );
 }
 
-// Cache invalidation marker — v16 AI personality improved, scrollToSection added, responsive header text, safe area padding
-export const __CACHE_BUST_V16__ = "ui-personality-scroll-" + Date.now();
+// Cache invalidation marker — v135 emergency JSX fix
+export const __CACHE_BUST_V135__ = "emergency-jsx-fix-" + Date.now();
