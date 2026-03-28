@@ -1,7 +1,7 @@
 "use client";
 
 /**
- * WealthNutz — Single File, v0-Ready (build:v106 cache-bust, Link components verified clean)
+ * WealthNutz — Single File, v0-Ready (build:v107 no-nested-anchor final)
  * ─────────────────────────────────────────────────────────────────────────────
  * Paste this entire file into app/page.tsx in any Next.js project.
  *
@@ -166,7 +166,7 @@ const PARTNERS = [
   { name: "EdTech Alliance", desc: "Financial literacy integration" },
 ];
 
-// ─────────────────────────────────────────────────────�����──────���─�����─────────────
+// ─────────────────────────────────────────────────��───�����──────���─�����─────────────
 // SECTION 2 — DESIGN TOKENS (Light/Dark Mode Support)
 // ─────────────────────────────────────────────────────────────────────────────
 
@@ -963,7 +963,7 @@ function ExpandableText({ text, maxLines = 2 }: { text: string; maxLines?: numbe
   );
 }
 
-// ──────────────────────────────────────────────────────��──���────────────�������──────
+// ─────────────────────────────────────────────────��────��──���────────────�������──────
 // SECTION 5C-1 — FILTER SIDEBAR (Desktop) & SORT DROPDOWN
 // ─────────────────────────────────────────────────────────────────────────────
 

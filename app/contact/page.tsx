@@ -1,3 +1,4 @@
+/* build:v106 — no nested <a> in any Link */
 "use client";
 
 import { useState } from "react";
@@ -26,7 +27,7 @@ export default function ContactPage() {
 
   return (
     <main style={{ minHeight: "100vh", background: "white" }} className="dark:bg-slate-950">
-      <div style={{ maxWidth: 600, margin: "0 auto", padding: "60px 20px" }}>
+      <div style={{ maxWidth: 600, margin: "0 auto", padding: "80px 20px 60px" }}>
         {/* Header */}
         <div style={{ marginBottom: 40 }}>
           <Link href="/" style={{ color: "#f59e0b", textDecoration: "none", fontSize: 14, fontWeight: 600, marginBottom: 16, display: "inline-block" }}>
@@ -41,19 +42,34 @@ export default function ContactPage() {
         </div>
 
         {/* Contact Email */}
-        <div style={{ padding: 24, background: "rgba(245,158,11,0.08)", borderRadius: 12, border: "1px solid rgba(245,158,11,0.2)", marginBottom: 40 }} className="dark:bg-slate-900 dark:border-slate-700">
-          <p style={{ fontSize: 14, color: "#666", margin: "0 0 8px", fontWeight: 600 }} className="dark:text-slate-400">
+        <div
+          style={{
+            padding: 28,
+            background: "rgba(245,158,11,0.08)",
+            borderRadius: 12,
+            border: "1px solid rgba(245,158,11,0.2)",
+            marginBottom: 40,
+            display: "flex",
+            flexDirection: "column",
+            alignItems: "center",
+            textAlign: "center",
+          }}
+          className="dark:bg-slate-900 dark:border-slate-700"
+        >
+          <p style={{ fontSize: 12, color: "#888", margin: "0 0 10px", fontWeight: 700, letterSpacing: ".1em" }} className="dark:text-slate-400">
             MAIN CONTACT
           </p>
           <a
             href="mailto:wealthnutz.official@gmail.com"
             style={{
-              fontSize: 18,
+              fontSize: "clamp(14px, 4vw, 18px)",
               fontWeight: 800,
               color: "#f59e0b",
               textDecoration: "none",
-              display: "inline-block",
+              wordBreak: "break-all",
             }}
+            onMouseEnter={e => (e.currentTarget.style.textDecoration = "underline")}
+            onMouseLeave={e => (e.currentTarget.style.textDecoration = "none")}
           >
             wealthnutz.official@gmail.com
           </a>
