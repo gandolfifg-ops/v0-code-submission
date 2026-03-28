@@ -963,7 +963,7 @@ function FilterCheckbox({ label, checked, onChange, count }: { label: string; ch
         padding: "8px 0", 
         cursor: "pointer",
         fontSize: 12,
-        color: checked ? T.text : T.mid,
+        color: checked ? T.text : "#c0c0c0",
         transition: "color 0.2s",
       }}
     >
@@ -1004,7 +1004,7 @@ function FilterRadio({ label, selected, onSelect, count }: { label: string; sele
         padding: "8px 0", 
         cursor: "pointer",
         fontSize: 12,
-        color: selected ? T.text : T.mid,
+        color: selected ? T.text : "#c0c0c0",
         transition: "color 0.2s",
       }}
     >
@@ -1035,7 +1035,7 @@ function FilterRadio({ label, selected, onSelect, count }: { label: string; sele
 function FilterGroup({ title, children }: { title: string; children: ReactNode }) {
   return (
     <div style={{ marginBottom: 20 }}>
-      <h4 style={{ fontSize: 11, fontWeight: 700, color: T.mid, marginBottom: 8, textTransform: "uppercase", letterSpacing: "0.05em" }}>
+      <h4 style={{ fontSize: 11, fontWeight: 700, color: "#d0d0d0", marginBottom: 8, textTransform: "uppercase", letterSpacing: "0.05em" }}>
         {title}
       </h4>
       {children}
@@ -2132,7 +2132,7 @@ return (
 
 // ─────────────────────────────────────────────────────────────────────────────
 // SECTION 6 — FINANCIAL TOOLS
-// ─────────────────────────────────────────────────────────────────────────────
+// ──────────────────────────────────────────────────────────────────────────���──
 
 // ── Budget Tool (Memoized) ────────────────────────────────────────────────────
 const BudgetToolComponent = () => {
@@ -2366,7 +2366,7 @@ const LoanCalculatorComponent = () => {
 // Memoize LoanCalculator to prevent unnecessary re-renders
 const LoanCalculator = React_memo_compat(LoanCalculatorComponent);
 
-// ── Loan Finder ────��───────────�����─────────────────────�������───────────────────────
+// ── Loan Finder ────��───────────�����──────────���──────────�������───────────────────────
 type Phase = "idle"|"scanning"|"results";
 const SCAN_MSGS = ["Connecting to loan databases...","Scanning live lender rates...","Cross-referencing eligibility...","Compiling best rates for you..."];
 
@@ -2891,32 +2891,33 @@ function ScholarshipScout({ onToggleSave, savedIds, isDarkMode }: { onToggleSave
             </motion.div>
           )}
         </AnimatePresence>
-      </Glass>
-      <AnimatePresence>
-        {phase==="scanning" && (
-          <motion.div key="ss" initial={{opacity:0}} animate={{opacity:1}} exit={{opacity:0}}>
-            <Glass style={{ padding:16, display:"flex", flexDirection:"column", gap:9 }}>
-              <div style={{ display:"flex", alignItems:"center", gap:8 }}>
-                <span style={{ width:7, height:7, borderRadius:"50%", background:T.gold, display:"inline-block", animation:"wf-pulse 1s infinite" }} />
-                <span style={{ fontSize:12, color:T.gold }}>{SCH_SCAN_MSGS[scanIdx] ?? SCH_SCAN_MSGS[0]}</span>
-              </div>
-              <Skel h={12} w="90%" /><Skel h={12} w="75%" /><Skel h={12} w="85%" />
-            </Glass>
-          </motion.div>
-        )}
-        {phase==="results" && error && (
-          <motion.div key="error" initial={{opacity:0, y:-8}} animate={{opacity:1, y:0}} exit={{opacity:0, y:-8}}>
-            <div style={{ padding:16, display:"flex", flexDirection:"column", gap:8, background:`rgba(239,68,68,0.08)`, borderRadius:T.rmd, borderWidth:"0 0 0 3px", borderStyle:"solid", borderColor:"#ef4444" }}>
-              <span style={{ fontSize:12, color:"#ef4444", fontWeight:600 }}>⚠ {error}</span>
-              <motion.button whileTap={tapAnim.tap} onClick={handleSearch} disabled={phase==="scanning"}
-                style={{ width:"100%", padding:"9px 0", borderRadius:T.rsm, border:`1px solid #ef4444`, background:"transparent", color:"#ef4444", fontSize:12, fontWeight:700, fontFamily:"inherit", cursor:"pointer", boxSizing:"border-box" }}>
-                Try Again
-              </motion.button>
-            </div>
-          </motion.div>
-        )}
 
-      </AnimatePresence>
+        {/* Scanning & Error states */}
+        <AnimatePresence>
+          {phase==="scanning" && (
+            <motion.div key="ss" initial={{opacity:0}} animate={{opacity:1}} exit={{opacity:0}}>
+              <Glass style={{ padding:16, display:"flex", flexDirection:"column", gap:9 }}>
+                <div style={{ display:"flex", alignItems:"center", gap:8 }}>
+                  <span style={{ width:7, height:7, borderRadius:"50%", background:T.gold, display:"inline-block", animation:"wf-pulse 1s infinite" }} />
+                  <span style={{ fontSize:12, color:T.gold }}>{SCH_SCAN_MSGS[scanIdx] ?? SCH_SCAN_MSGS[0]}</span>
+                </div>
+                <Skel h={12} w="90%" /><Skel h={12} w="75%" /><Skel h={12} w="85%" />
+              </Glass>
+            </motion.div>
+          )}
+          {phase==="results" && error && (
+            <motion.div key="error" initial={{opacity:0, y:-8}} animate={{opacity:1, y:0}} exit={{opacity:0, y:-8}}>
+              <div style={{ padding:16, display:"flex", flexDirection:"column", gap:8, background:`rgba(239,68,68,0.08)`, borderRadius:T.rmd, borderWidth:"0 0 0 3px", borderStyle:"solid", borderColor:"#ef4444" }}>
+                <span style={{ fontSize:12, color:"#ef4444", fontWeight:600 }}>⚠ {error}</span>
+                <motion.button whileTap={tapAnim.tap} onClick={handleSearch} disabled={phase==="scanning"}
+                  style={{ width:"100%", padding:"9px 0", borderRadius:T.rsm, border:`1px solid #ef4444`, background:"transparent", color:"#ef4444", fontSize:12, fontWeight:700, fontFamily:"inherit", cursor:"pointer", boxSizing:"border-box" }}>
+                  Try Again
+                </motion.button>
+              </div>
+            </motion.div>
+          )}
+        </AnimatePresence>
+      </Glass>
       {/* Results section — computed vars hoisted out of IIFE to avoid regex parse errors */}
       <ScholarshipResults
         phase={phase}
