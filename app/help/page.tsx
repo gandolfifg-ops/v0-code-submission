@@ -11,10 +11,8 @@ export default function HelpPage() {
       <div style={{ maxWidth: 800, margin: "0 auto", padding: "60px 20px" }}>
         {/* Header */}
         <div style={{ marginBottom: 40 }}>
-          <Link href="/">
-            <a style={{ color: "#f59e0b", textDecoration: "none", fontSize: 14, fontWeight: 600, marginBottom: 16, display: "inline-block" }}>
-              ← Back to Home
-            </a>
+          <Link href="/" style={{ color: "#f59e0b", textDecoration: "none", fontSize: 14, fontWeight: 600, marginBottom: 16, display: "inline-block" }}>
+            ← Back to Home
           </Link>
           <h1 style={{ fontSize: 40, fontWeight: 900, color: "#1a1a1a", margin: "20px 0 12px" }} className="dark:text-white">
             Help Center
@@ -62,7 +60,7 @@ export default function HelpPage() {
               Do you store my personal information?
             </h2>
             <p style={{ fontSize: 15, color: "#555", lineHeight: 1.6, margin: 0 }} className="dark:text-slate-300">
-              Your privacy is important to us. Please review our <Link href="/privacy"><a style={{ color: "#f59e0b", textDecoration: "underline" }}>Privacy Policy</a></Link> for complete details about data handling and storage.
+              Your privacy is important to us. Please review our <Link href="/privacy" style={{ color: "#f59e0b", textDecoration: "underline" }}>Privacy Policy</Link> for complete details about data handling and storage.
             </p>
           </div>
 
@@ -80,9 +78,7 @@ export default function HelpPage() {
           <div style={{ marginTop: 40, padding: 24, background: "rgba(245,158,11,0.08)", borderRadius: 12, border: "1px solid rgba(245,158,11,0.2)" }} className="dark:bg-slate-900 dark:border-slate-700">
             <p style={{ fontSize: 15, color: "#1a1a1a", margin: 0 }} className="dark:text-white">
               Can't find what you're looking for?{" "}
-              <Link href="/contact">
-                <a style={{ color: "#f59e0b", fontWeight: 600, textDecoration: "none" }}>Contact us</a>
-              </Link>
+              <Link href="/contact" style={{ color: "#f59e0b", fontWeight: 600, textDecoration: "none" }}>Contact us</Link>
             </p>
           </div>
         </div>

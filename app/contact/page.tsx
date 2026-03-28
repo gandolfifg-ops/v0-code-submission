@@ -29,10 +29,8 @@ export default function ContactPage() {
       <div style={{ maxWidth: 600, margin: "0 auto", padding: "60px 20px" }}>
         {/* Header */}
         <div style={{ marginBottom: 40 }}>
-          <Link href="/">
-            <a style={{ color: "#f59e0b", textDecoration: "none", fontSize: 14, fontWeight: 600, marginBottom: 16, display: "inline-block" }}>
-              ← Back to Home
-            </a>
+          <Link href="/" style={{ color: "#f59e0b", textDecoration: "none", fontSize: 14, fontWeight: 600, marginBottom: 16, display: "inline-block" }}>
+            ← Back to Home
           </Link>
           <h1 style={{ fontSize: 40, fontWeight: 900, color: "#1a1a1a", margin: "20px 0 12px" }} className="dark:text-white">
             Contact Us
