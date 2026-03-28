@@ -1,7 +1,7 @@
 "use client";
 
 /**
- * WealthNutz — Single File, v0-Ready
+ * WealthNutz — Single File, v0-Ready (build:v101 isDarkMode prop threading)
  * ─────────────────────────────────────────────────────────────────────────────
  * Paste this entire file into app/page.tsx in any Next.js project.
  *
@@ -1445,6 +1445,7 @@ function LoanMarketplaceHero({
   sortBy = "best-match",
   onFiltersChange,
   onSortChange,
+  isDarkMode,
 }: { 
   country: "Canada" | "USA"; 
   filterType?: LoanType; 
@@ -1454,6 +1455,7 @@ function LoanMarketplaceHero({
   sortBy?: SortOption;
   onFiltersChange?: (f: LoanFilters) => void;
   onSortChange?: (s: SortOption) => void;
+  isDarkMode: boolean;
 }) {
   const countryCode = country === "Canada" ? "CA" : "US";
   const [currentTime, setCurrentTime] = useState(() => new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }));
@@ -2367,7 +2369,7 @@ const LoanCalculator = React_memo_compat(LoanCalculatorComponent);
 type Phase = "idle"|"scanning"|"results";
 const SCAN_MSGS = ["Connecting to loan databases...","Scanning live lender rates...","Cross-referencing eligibility...","Compiling best rates for you..."];
 
-function LoanFinder({ onToggleSave, savedIds, userCountry }: { onToggleSave: (item: ScoutResult) => void; savedIds: Set<string>; userCountry: string }) {
+function LoanFinder({ onToggleSave, savedIds, userCountry, isDarkMode }: { onToggleSave: (item: ScoutResult) => void; savedIds: Set<string>; userCountry: string; isDarkMode: boolean }) {
   
   const [loanType, setLoanType] = useState<LoanType>("Student");
   const [amount,   setAmount]   = useState("");
@@ -2471,10 +2473,11 @@ function LoanFinder({ onToggleSave, savedIds, userCountry }: { onToggleSave: (it
       
       {/* Live Scour Marketplace — filtered by selected loan type and user country */}
       <div style={{ marginTop: 20 }}>
-        <LoanMarketplaceHero 
-          country={userCountry === "Canada" ? "Canada" : "USA"} 
-          filterType={loanType} 
-          onToggleSave={onToggleSave} 
+<LoanMarketplaceHero
+  country={userCountry === "Canada" ? "Canada" : "USA"}
+  filterType={loanType}
+  onToggleSave={onToggleSave}
+  isDarkMode={isDarkMode}
           savedIds={savedIds}
           filters={loanFilters}
           sortBy={loanSort}
@@ -2486,8 +2489,8 @@ function LoanFinder({ onToggleSave, savedIds, userCountry }: { onToggleSave: (it
   );
 }
 
-// ── Loan Tool (tabs) ──────────────────────────────────────────────────────────
-function LoanTool({ onToggleSave, savedIds, userCountry }: { onToggleSave: (item: ScoutResult) => void; savedIds: Set<string>; userCountry: string }) {
+// ── Loan Tool (tabs) ────────────────���─────────────────────────────────────────
+function LoanTool({ onToggleSave, savedIds, userCountry, isDarkMode }: { onToggleSave: (item: ScoutResult) => void; savedIds: Set<string>; userCountry: string; isDarkMode: boolean }) {
   
   const [tab, setTab] = useState<"calc"|"finder">("finder");
   return (
@@ -2500,7 +2503,7 @@ function LoanTool({ onToggleSave, savedIds, userCountry }: { onToggleSave: (item
           </motion.button>
         ))}
       </div>
-      {tab==="finder" ? <LoanFinder onToggleSave={onToggleSave} savedIds={savedIds} userCountry={userCountry} /> : <LoanCalculator />}
+      {tab==="finder" ? <LoanFinder onToggleSave={onToggleSave} savedIds={savedIds} userCountry={userCountry} isDarkMode={isDarkMode} /> : <LoanCalculator />}
     </motion.div>
   );
 }
@@ -2621,7 +2624,7 @@ function ScholarshipSelect({ value, options, onChange, isDarkMode }: { value: st
   );
 }
 
-function ScholarshipScout({ onToggleSave, savedIds }: { onToggleSave: (item: ScoutResult) => void; savedIds: Set<string> }) {
+function ScholarshipScout({ onToggleSave, savedIds, isDarkMode }: { onToggleSave: (item: ScoutResult) => void; savedIds: Set<string>; isDarkMode: boolean }) {
   
   const [query,   setQuery]   = useState("");
   const [major,   setMajor]   = useState<string>(SCHOLARSHIP_MAJORS[0] as string);
@@ -2840,7 +2843,7 @@ function ScholarshipScout({ onToggleSave, savedIds }: { onToggleSave: (item: Sco
   );
 }
 
-// ── Saved Items (My Vault) ─────────────────────────���──────────────────────────
+// ── Saved Items (My Vault) ─────────────────────────���──��───────────────────────
 function SavedItems({ saved, onRemove }: { saved: ScoutResult[]; onRemove: (item: ScoutResult) => void }) {
   
   
@@ -3422,8 +3425,8 @@ const hBtn = (active = false): CSSProperties => ({
                 <div style={{ flex:1, overflowY:"auto", padding:20 }}>
                   {activeTool==="budget"  && <BudgetTool />}
                   {activeTool==="savings" && <SavingsTool />}
-                  {activeTool==="loan"    && <LoanTool onToggleSave={handleToggleSave} savedIds={savedIds} userCountry={country} />}
-                  {activeTool==="scholar" && <ScholarshipScout onToggleSave={handleToggleSave} savedIds={savedIds} />}
+                  {activeTool==="loan"    && <LoanTool onToggleSave={handleToggleSave} savedIds={savedIds} userCountry={country} isDarkMode={isDarkMode} />}
+                  {activeTool==="scholar" && <ScholarshipScout onToggleSave={handleToggleSave} savedIds={savedIds} isDarkMode={isDarkMode} />}
                   {activeTool==="saved"   && <SavedItems saved={savedItems} onRemove={handleToggleSave} />}
                 </div>
               </motion.div>
