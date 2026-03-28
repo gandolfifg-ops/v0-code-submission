@@ -1,7 +1,7 @@
 "use client";
 
 /**
- * WealthNutz — Single File, v0-Ready (build:v122 ai-powered-scholarship-search)
+ * WealthNutz — Single File, v0-Ready (build:v123 curated-scholarships-error-handling)
  * ─────────────────────────────────────────────────────────────────────────────
  * Paste this entire file into app/page.tsx in any Next.js project.
  *
@@ -332,28 +332,6 @@ async function deleteBookmarkFromSupabase(userId: string, loanId: string): Promi
 }
 
 // Real-time AI-powered scholarship search — generates fresh results based on user criteria
-async function fetchScholarships(filters: { country: string; major: string; year: string; query: string }): Promise<ScoutResult[]> {
-  try {
-    const response = await fetch("/api/scholarships", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(filters),
-    });
-    const data = await response.json();
-    if (data.scholarships && data.scholarships.length > 0) {
-      // Map API response to ScoutResult format
-      return data.scholarships.map((s: { id: string; title: string; provider: string; amount: string; deadline: string; eligibility: string; country: string; description: string; url: string }) => ({
-        ...s,
-        type: "scholarship" as const,
-      }));
-    }
-    return [];
-  } catch (error) {
-    console.error("Scholarship fetch error:", error);
-    return [];
-  }
-}
-
 // Loan search — uses mock data for now
 async function fetchLoans(): Promise<ScoutResult[]> {
   return MOCK_LOANS;
@@ -2635,6 +2613,7 @@ function ScholarshipScout({ onToggleSave, savedIds, isDarkMode }: { onToggleSave
   const [year,    setYear]    = useState<string>(SCHOLARSHIP_YEARS[0] as string);
   const [phase,   setPhase]   = useState<Phase>("idle");
   const [results, setResults] = useState<ScoutResult[]>([]);
+  const [error,   setError]   = useState<string>("");
   const [scanIdx, setScanIdx] = useState(0);
   const [schFilters, setSchFilters] = useState<ScholarshipFilters>(DEFAULT_SCHOLARSHIP_FILTERS);
   const [schSort, setSchSort] = useState<SortOption>("best-match");
@@ -2647,11 +2626,28 @@ function ScholarshipScout({ onToggleSave, savedIds, isDarkMode }: { onToggleSave
   }, [phase]);
   const handleSearch = async () => {
     setPhase("scanning");
+    setError("");
+    setResults([]);
     try {
-      const data = await fetchScholarships({ country, major, year, query: query?.trim() ?? "" });
-      setResults(data);
-    } catch (error) {
-      console.error("Scholarship search error:", error);
+      const response = await fetch("/api/scholarships", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ country, major, year, query: query?.trim() ?? "" }),
+      });
+      const data = await response.json();
+      if (!response.ok || !data.scholarships) {
+        setError(data.error || "Failed to fetch scholarships. Please try again.");
+        setResults([]);
+      } else if (data.scholarships.length === 0) {
+        setError(`No scholarships found for ${country}. Try adjusting your filters.`);
+        setResults([]);
+      } else {
+        setResults(data.scholarships);
+        setError("");
+      }
+    } catch (err) {
+      console.error("[v0] Scholarship search error:", err);
+      setError("Network error: Please check your connection and try again.");
       setResults([]);
     }
     setPhase("results");
@@ -2691,6 +2687,25 @@ function ScholarshipScout({ onToggleSave, savedIds, isDarkMode }: { onToggleSave
                 <span style={{ fontSize:12, color:T.gold }}>{SCH_SCAN_MSGS[scanIdx] ?? SCH_SCAN_MSGS[0]}</span>
               </div>
               <Skel h={12} w="90%" /><Skel h={12} w="75%" /><Skel h={12} w="85%" />
+            </Glass>
+          </motion.div>
+        )}
+        {phase==="results" && error && (
+          <motion.div key="error" initial={{opacity:0, y:-8}} animate={{opacity:1, y:0}} exit={{opacity:0, y:-8}}>
+            <Glass style={{ padding:16, display:"flex", flexDirection:"column", gap:8, background:`rgba(239,68,68,0.08)`, borderLeft:`3px solid #ef4444` }}>
+              <span style={{ fontSize:12, color:"#ef4444", fontWeight:600 }}>⚠ {error}</span>
+              <motion.button whileTap={tapAnim.tap} onClick={handleSearch} disabled={phase==="scanning"}
+                style={{ width:"100%", padding:"9px 0", borderRadius:T.rsm, border:`1px solid #ef4444`, background:"transparent", color:"#ef4444", fontSize:12, fontWeight:700, fontFamily:"inherit", cursor:"pointer", boxSizing:"border-box" }}>
+                Try Again
+              </motion.button>
+            </Glass>
+          </motion.div>
+        )}
+        {phase==="results" && results.length > 0 && !error && (
+          <motion.div key="success" initial={{opacity:0}} animate={{opacity:1}} exit={{opacity:0}}>
+            <Glass style={{ padding:12, display:"flex", alignItems:"center", gap:8, background:`rgba(34,197,94,0.08)`, borderLeft:`3px solid #22c55e` }}>
+              <span style={{ width:5, height:5, borderRadius:"50%", background:"#22c55e" }} />
+              <span style={{ fontSize:11, color:"#22c55e", fontWeight:600 }}>{results.length} scholarship{results.length !== 1 ? "s" : ""} found for {country}</span>
             </Glass>
           </motion.div>
         )}
