@@ -1,7 +1,7 @@
 "use client";
 
 /**
- * WealthNutz — Single File, v0-Ready (build:v108 Link components verified clean on disk)
+ * WealthNutz — Single File, v0-Ready (build:v109-cache-bust-links)
  * ─────────────────────────────────────────────────────────────────────────────
  * Paste this entire file into app/page.tsx in any Next.js project.
  *
@@ -3452,8 +3452,8 @@ const hBtn = (active = false): CSSProperties => ({
       {TAGLINE}
     </p>
 
-    {/* ── Centrepiece MENU button ── */}
-    <div style={{ marginTop: 28, display: "flex", justifyContent: "center" }}>
+    {/* ── Centrepiece MENU button (mobile only) ── */}
+    <div style={{ marginTop: 28, display: "flex", justifyContent: "center" }} className="block md:hidden">
       <motion.button
         whileHover={{ scale: 1.03 }}
         whileTap={{ scale: 0.96 }}
