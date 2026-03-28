@@ -1,7 +1,7 @@
 "use client";
 
 /**
- * WealthNutz — Single File, v0-Ready (build:v126 hide-by-default-validation-warning)
+ * WealthNutz — Single File, v0-Ready (build:v128 fix-border-property-conflict)
  * ─────────────────────────────────────────────────────────────────────────────
  * Paste this entire file into app/page.tsx in any Next.js project.
  *
@@ -1414,7 +1414,7 @@ function MobileFilterButton({ onClick, hasFilters }: { onClick: () => void; hasF
   );
 }
 
-// ─────────────────────────────────────────────────────────────────����───────────
+// ─────────────────────────────────────────────────────────────────�����───────────
 // SECTION 5C-3 — LOAN MARKETPLACE HERO (High Conversion)
 // ─────────────────────────────────────────────────────────────────────────────
 
@@ -2366,7 +2366,7 @@ const LoanCalculatorComponent = () => {
 // Memoize LoanCalculator to prevent unnecessary re-renders
 const LoanCalculator = React_memo_compat(LoanCalculatorComponent);
 
-// ── Loan Finder ────��───────────�����─────────────────────��────────────────────────
+// ── Loan Finder ────��───────────�����────────────────────����────────────────────────
 type Phase = "idle"|"scanning"|"results";
 const SCAN_MSGS = ["Connecting to loan databases...","Scanning live lender rates...","Cross-referencing eligibility...","Compiling best rates for you..."];
 
@@ -2376,42 +2376,111 @@ function LoanFinder({ onToggleSave, savedIds, userCountry, isDarkMode }: { onTog
   const [amount,   setAmount]   = useState("");
   const [phase,    setPhase]    = useState<Phase>("idle");
   const [results,  setResults]  = useState<ScoutResult[]>([]);
+  const [error,    setError]    = useState<string>("");
+  const [validationError, setValidationError] = useState<string>("");
   const [scanIdx,  setScanIdx]  = useState(0);
   const [loanFilters, setLoanFilters] = useState<LoanFilters>(DEFAULT_LOAN_FILTERS);
   const [loanSort, setLoanSort] = useState<SortOption>("best-match");
+  // Pagination state
+  const [totalCount, setTotalCount] = useState(0);
+  const [hasMore, setHasMore] = useState(false);
+  const [nextOffset, setNextOffset] = useState<number | null>(null);
+  const [loadingMore, setLoadingMore] = useState(false);
+
+  // Clear results when user changes selections
+  const handleLoanTypeChange = (t: LoanType) => { setLoanType(t); setResults([]); setPhase("idle"); setValidationError(""); };
+  const handleAmountChange = (val: string) => { setAmount(val); setResults([]); setPhase("idle"); setValidationError(""); };
+
   useEffect(() => {
     if (phase !== "scanning") return;
     setScanIdx(0);
     const iv = setInterval(() => setScanIdx(p => Math.min(p+1, SCAN_MSGS.length-1)), 520);
     return () => clearInterval(iv);
   }, [phase]);
+
   const handleSearch = async () => {
+    // Input validation — require both loanType and amount
+    if (!amount || !amount.trim()) {
+      setValidationError("Action Required: Please fill out all fields above so we can provide your personalized matches.");
+      return;
+    }
+    setValidationError("");
     setPhase("scanning");
+    setError("");
+    setResults([]);
+    setHasMore(false);
+    setNextOffset(null);
+    setTotalCount(0);
     try {
       const data = await fetchResults("loan", { loanType, amount: amount?.trim() ?? "" });
       const final = (data?.length ?? 0) > 0 ? data : MOCK_LOANS;
       setResults(final);
-    } catch { setResults(MOCK_LOANS); }
+      setTotalCount(final.length);
+    } catch { 
+      setError("Failed to fetch loans. Please try again.");
+      setResults([]);
+    }
     setPhase("results");
+  };
+
+  const handleLoadMore = async () => {
+    if (!hasMore || loadingMore) return;
+    setLoadingMore(true);
+    try {
+      const data = await fetchResults("loan", { loanType, amount: amount?.trim() ?? "" });
+      if (data && data.length > 0) {
+        setResults(prev => [...prev, ...data.slice(0, 20)]);
+      }
+    } catch (err) {
+      console.error("[v0] Load more error:", err);
+    }
+    setLoadingMore(false);
   };
   return (
     <div style={{ display:"flex", flexDirection:"column", gap:14 }}>
       <p style={{ fontSize:10, color:T.mid, margin:0, letterSpacing:".08em" }}>AI LOAN MATCHER</p>
       <div style={{ display:"flex", gap:7 }}>
         {LOAN_TYPES.map(t => (
-          <motion.button key={t} whileTap={tapAnim.tap} onClick={() => setLoanType(t)}
+          <motion.button key={t} whileTap={tapAnim.tap} onClick={() => handleLoanTypeChange(t)}
             style={{ flex:1, padding:"8px 4px", borderRadius:T.rsm, cursor:"pointer", fontFamily:"inherit", fontSize:12, fontWeight:600, border:`1px solid ${loanType===t?T.gold:T.border}`, background:loanType===t?"rgba(201,168,76,0.16)":T.glass, color:loanType===t?T.gold:T.mid }}>
             {t}
           </motion.button>
         ))}
       </div>
-      <input value={amount} onChange={e => setAmount(e.target.value ?? "")} onKeyDown={e => e.key==="Enter" && handleSearch()}
+      <input value={amount} onChange={e => handleAmountChange(e.target.value ?? "")} onKeyDown={e => e.key==="Enter" && handleSearch()}
         placeholder="Amount needed (e.g. $20,000)"
         style={{ padding:"10px 13px", background:T.glassHi, border:`1px solid ${T.border}`, borderRadius:T.rsm, color:T.text, fontSize:13, outline:"none", fontFamily:"inherit" }} />
       <motion.button whileTap={tapAnim.tap} onClick={handleSearch} disabled={phase==="scanning"}
         style={{ padding:"11px 0", borderRadius:T.rsm, border:"none", cursor:"pointer", background:`linear-gradient(135deg,${T.gold},${T.goldDim})`, color:"#07090d", fontSize:13, fontWeight:800, fontFamily:"inherit", opacity:phase==="scanning"?.65:1, boxShadow:`0 0 18px ${T.glow}` }}>
         {phase==="scanning" ? "Scanning lenders..." : "Find Best Rates"}
       </motion.button>
+
+      {/* Validation warning — shown when user tries to search without entering amount */}
+      <AnimatePresence>
+        {validationError && (
+          <motion.div
+            key="loan-val-warn"
+            initial={{ opacity: 0, y: -6 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -6 }}
+            style={{
+              padding: "12px 14px",
+              borderRadius: T.rsm,
+              background: "rgba(239,68,68,0.1)",
+              border: "1px solid rgba(239,68,68,0.4)",
+              display: "flex",
+              alignItems: "flex-start",
+              gap: 10,
+            }}
+          >
+            <span style={{ fontSize: 14, lineHeight: 1, flexShrink: 0, marginTop: 1 }}>!</span>
+            <p style={{ fontSize: 12, color: "#ef4444", fontWeight: 600, margin: 0, lineHeight: 1.5, textAlign: "left" }}>
+              {validationError}
+            </p>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
       <AnimatePresence>
         {phase==="scanning" && (
           <motion.div key="ls" initial={{opacity:0}} animate={{opacity:1}} exit={{opacity:0}}>
@@ -2426,8 +2495,19 @@ function LoanFinder({ onToggleSave, savedIds, userCountry, isDarkMode }: { onTog
         )}
       </AnimatePresence>
       <AnimatePresence>
-        {phase==="results" && results.length>0 && (
-          <motion.div key="lr" variants={stagger} initial="hidden" animate="visible" style={{ display:"flex", flexDirection:"column", gap:10 }}>
+        {phase==="results" && error && (
+          <motion.div key="loan-error" initial={{opacity:0, y:-8}} animate={{opacity:1, y:0}} exit={{opacity:0, y:-8}}>
+            <div style={{ padding:16, display:"flex", flexDirection:"column", gap:8, background:`rgba(239,68,68,0.08)`, borderRadius:T.rmd, borderWidth:"0 0 0 3px", borderStyle:"solid", borderColor:"#ef4444" }}>
+              <span style={{ fontSize:12, color:"#ef4444", fontWeight:600 }}>⚠ {error}</span>
+              <motion.button whileTap={tapAnim.tap} onClick={handleSearch} disabled={phase==="scanning"}
+                style={{ width:"100%", padding:"9px 0", borderRadius:T.rsm, border:`1px solid #ef4444`, background:"transparent", color:"#ef4444", fontSize:12, fontWeight:700, fontFamily:"inherit", cursor:"pointer", boxSizing:"border-box" }}>
+                Try Again
+              </motion.button>
+            </div>
+          </motion.div>
+        )}
+        {phase==="results" && results.length>0 && !error && (
+          <motion.div key="lr" initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} style={{ marginTop: 16, display:"flex", flexDirection:"column", gap:10 }}>
             {results.map(r => (
               <motion.div key={r.id} variants={fadeUp}>
                 <Glass glow style={{ padding:14 }}>
@@ -2449,6 +2529,38 @@ function LoanFinder({ onToggleSave, savedIds, userCountry, isDarkMode }: { onTog
                 </Glass>
               </motion.div>
             ))}
+            
+            {/* Show More Button */}
+            {hasMore && (
+              <motion.div style={{ marginTop: 8 }}>
+                <motion.button
+                  whileTap={{ scale: 0.98 }}
+                  onClick={handleLoadMore}
+                  disabled={loadingMore}
+                  style={{
+                    width: "100%",
+                    padding: "16px 0",
+                    borderRadius: T.rmd,
+                    border: `2px solid ${T.gold}`,
+                    background: "transparent",
+                    color: T.gold,
+                    fontSize: 14,
+                    fontWeight: 700,
+                    fontFamily: "inherit",
+                    cursor: loadingMore ? "wait" : "pointer",
+                    opacity: loadingMore ? 0.7 : 1,
+                    transition: "all 0.2s",
+                  }}
+                >
+                  {loadingMore ? "Loading more loans..." : "Show More Loans"}
+                </motion.button>
+              </motion.div>
+            )}
+
+            {/* Results count footer */}
+            <p style={{ fontSize: 10, color: T.dim, textAlign: "center", margin: "12px 0 0" }}>
+              Showing {results.length} of {totalCount} loans
+            </p>
             <AffNote />
           </motion.div>
         )}
@@ -2725,34 +2837,35 @@ function ScholarshipScout({ onToggleSave, savedIds, isDarkMode }: { onToggleSave
           style={{ width:"100%", padding:"11px 0", borderRadius:T.rsm, border:"none", cursor:"pointer", background:`linear-gradient(135deg,${T.gold},${T.goldDim})`, color:"#07090d", fontSize:13, fontWeight:800, fontFamily:"inherit", opacity:phase==="scanning"?.65:1, boxShadow:`0 0 18px ${T.glow}`, boxSizing:"border-box" }}>
           {phase==="scanning" ? "Scanning databases..." : "Find Scholarships"}
         </motion.button>
-
-        {/* Validation warning — shown when user tries to search without selecting options */}
-        <AnimatePresence>
-          {validationError && (
-            <motion.div
-              key="val-warn"
-              initial={{ opacity: 0, y: -6 }}
-              animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: -6 }}
-              style={{
-                marginTop: 4,
-                padding: "12px 14px",
-                borderRadius: T.rsm,
-                background: "rgba(239,68,68,0.1)",
-                border: "1px solid rgba(239,68,68,0.4)",
-                display: "flex",
-                alignItems: "flex-start",
-                gap: 10,
-              }}
-            >
-              <span style={{ fontSize: 14, lineHeight: 1, flexShrink: 0, marginTop: 1 }}>!</span>
-              <p style={{ fontSize: 12, color: "#ef4444", fontWeight: 600, margin: 0, lineHeight: 1.5, textAlign: "left" }}>
-                {validationError}
-              </p>
-            </motion.div>
-          )}
-        </AnimatePresence>
       </Glass>
+
+      {/* Validation warning — shown when user tries to search without selecting options */}
+      <AnimatePresence>
+        {validationError && (
+          <motion.div
+            key="val-warn"
+            initial={{ opacity: 0, y: -6 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -6 }}
+            style={{
+              padding: "12px 14px",
+              borderRadius: T.rsm,
+              background: "rgba(239,68,68,0.1)",
+              border: "1px solid rgba(239,68,68,0.4)",
+              display: "flex",
+              alignItems: "flex-start",
+              gap: 10,
+            }}
+          >
+            <span style={{ fontSize: 14, lineHeight: 1, flexShrink: 0, marginTop: 1 }}>!</span>
+            <p style={{ fontSize: 12, color: "#ef4444", fontWeight: 600, margin: 0, lineHeight: 1.5, textAlign: "left" }}>
+              {validationError}
+            </p>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      <Glass glow style={{ padding:18, display:"flex", flexDirection:"column", gap:11, width:"100%", boxSizing:"border-box" }}
       <AnimatePresence>
         {phase==="scanning" && (
           <motion.div key="ss" initial={{opacity:0}} animate={{opacity:1}} exit={{opacity:0}}>
