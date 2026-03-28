@@ -1,7 +1,7 @@
 "use client";
 
 /**
- * WealthNutz — Single File, v0-Ready (build:v125 ui-cleanup-deadline-filter-spacing)
+ * WealthNutz — Single File, v0-Ready (build:v126 hide-by-default-validation-warning)
  * ─────────────────────────────────────────────────────────────────────────────
  * Paste this entire file into app/page.tsx in any Next.js project.
  *
@@ -1414,7 +1414,7 @@ function MobileFilterButton({ onClick, hasFilters }: { onClick: () => void; hasF
   );
 }
 
-// ─────────────────────────────────────────────────────────────────���───────────
+// ─────────────────────────────────────────────────────────────────����───────────
 // SECTION 5C-3 — LOAN MARKETPLACE HERO (High Conversion)
 // ─────────────────────────────────────────────────────────────────────────────
 
@@ -2366,7 +2366,7 @@ const LoanCalculatorComponent = () => {
 // Memoize LoanCalculator to prevent unnecessary re-renders
 const LoanCalculator = React_memo_compat(LoanCalculatorComponent);
 
-// ── Loan Finder ────��───────────�����──────────────────────────────────────────────
+// ── Loan Finder ────��───────────�����─────────────────────��────────────────────────
 type Phase = "idle"|"scanning"|"results";
 const SCAN_MSGS = ["Connecting to loan databases...","Scanning live lender rates...","Cross-referencing eligibility...","Compiling best rates for you..."];
 
@@ -2614,6 +2614,7 @@ function ScholarshipScout({ onToggleSave, savedIds, isDarkMode }: { onToggleSave
   const [phase,   setPhase]   = useState<Phase>("idle");
   const [results, setResults] = useState<ScoutResult[]>([]);
   const [error,   setError]   = useState<string>("");
+  const [validationError, setValidationError] = useState<string>("");
   const [scanIdx, setScanIdx] = useState(0);
   const [schFilters, setSchFilters] = useState<ScholarshipFilters>(DEFAULT_SCHOLARSHIP_FILTERS);
   const [schSort, setSchSort] = useState<SortOption>("best-match");
@@ -2623,6 +2624,11 @@ function ScholarshipScout({ onToggleSave, savedIds, isDarkMode }: { onToggleSave
   const [hasMore, setHasMore] = useState(false);
   const [nextOffset, setNextOffset] = useState<number | null>(null);
   const [loadingMore, setLoadingMore] = useState(false);
+
+  // Clear results whenever the user changes their selections
+  const handleMajorChange = (v: string) => { setMajor(v); setResults([]); setPhase("idle"); setValidationError(""); };
+  const handleYearChange  = (v: string) => { setYear(v);  setResults([]); setPhase("idle"); setValidationError(""); };
+  const handleCountryChange = (v: string) => { setCountry(v); setResults([]); setPhase("idle"); setValidationError(""); };
   
   useEffect(() => {
     if (phase !== "scanning") return;
@@ -2632,6 +2638,14 @@ function ScholarshipScout({ onToggleSave, savedIds, isDarkMode }: { onToggleSave
   }, [phase]);
   
   const handleSearch = async () => {
+    // Input validation — require a specific major and year
+    const missingMajor   = major   === "Any Major";
+    const missingYear    = year    === "Any Year";
+    if (missingMajor || missingYear) {
+      setValidationError("Action Required: Please tell us a bit about yourself first so we can find the most relevant scholarships for you.");
+      return;
+    }
+    setValidationError("");
     setPhase("scanning");
     setError("");
     setResults([]);
@@ -2696,21 +2710,48 @@ function ScholarshipScout({ onToggleSave, savedIds, isDarkMode }: { onToggleSave
         <div style={{ display:"flex", flexWrap:"wrap", gap:8, width:"100%", boxSizing:"border-box" }}>
           {/* Major — takes full row width until there is enough space to share */}
           <div style={{ flex:"1 1 180px", minWidth:140 }}>
-            <ScholarshipSelect value={major} options={SCHOLARSHIP_MAJORS as readonly string[]} onChange={setMajor} />
+            <ScholarshipSelect value={major} options={SCHOLARSHIP_MAJORS as readonly string[]} onChange={handleMajorChange} />
           </div>
           {/* Year — always visible, fixed minimum */}
           <div style={{ flex:"1 1 110px", minWidth:100 }}>
-            <ScholarshipSelect value={year} options={SCHOLARSHIP_YEARS as readonly string[]} onChange={setYear} />
+            <ScholarshipSelect value={year} options={SCHOLARSHIP_YEARS as readonly string[]} onChange={handleYearChange} />
           </div>
           {/* Country — always visible, fixed minimum */}
           <div style={{ flex:"1 1 90px", minWidth:84 }}>
-            <ScholarshipSelect value={country} options={SCHOLARSHIP_COUNTRIES as readonly string[]} onChange={setCountry} />
+            <ScholarshipSelect value={country} options={SCHOLARSHIP_COUNTRIES as readonly string[]} onChange={handleCountryChange} />
           </div>
         </div>
         <motion.button whileTap={tapAnim.tap} onClick={handleSearch} disabled={phase==="scanning"}
           style={{ width:"100%", padding:"11px 0", borderRadius:T.rsm, border:"none", cursor:"pointer", background:`linear-gradient(135deg,${T.gold},${T.goldDim})`, color:"#07090d", fontSize:13, fontWeight:800, fontFamily:"inherit", opacity:phase==="scanning"?.65:1, boxShadow:`0 0 18px ${T.glow}`, boxSizing:"border-box" }}>
           {phase==="scanning" ? "Scanning databases..." : "Find Scholarships"}
         </motion.button>
+
+        {/* Validation warning — shown when user tries to search without selecting options */}
+        <AnimatePresence>
+          {validationError && (
+            <motion.div
+              key="val-warn"
+              initial={{ opacity: 0, y: -6 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -6 }}
+              style={{
+                marginTop: 4,
+                padding: "12px 14px",
+                borderRadius: T.rsm,
+                background: "rgba(239,68,68,0.1)",
+                border: "1px solid rgba(239,68,68,0.4)",
+                display: "flex",
+                alignItems: "flex-start",
+                gap: 10,
+              }}
+            >
+              <span style={{ fontSize: 14, lineHeight: 1, flexShrink: 0, marginTop: 1 }}>!</span>
+              <p style={{ fontSize: 12, color: "#ef4444", fontWeight: 600, margin: 0, lineHeight: 1.5, textAlign: "left" }}>
+                {validationError}
+              </p>
+            </motion.div>
+          )}
+        </AnimatePresence>
       </Glass>
       <AnimatePresence>
         {phase==="scanning" && (
@@ -2726,7 +2767,7 @@ function ScholarshipScout({ onToggleSave, savedIds, isDarkMode }: { onToggleSave
         )}
         {phase==="results" && error && (
           <motion.div key="error" initial={{opacity:0, y:-8}} animate={{opacity:1, y:0}} exit={{opacity:0, y:-8}}>
-            <div style={{ padding:16, display:"flex", flexDirection:"column", gap:8, background:`rgba(239,68,68,0.08)`, borderRadius:T.rmd, borderLeft:"3px solid #ef4444" }}>
+            <div style={{ padding:16, display:"flex", flexDirection:"column", gap:8, background:`rgba(239,68,68,0.08)`, borderRadius:T.rmd, borderWidth:"0 0 0 3px", borderStyle:"solid", borderColor:"#ef4444" }}>
               <span style={{ fontSize:12, color:"#ef4444", fontWeight:600 }}>⚠ {error}</span>
               <motion.button whileTap={tapAnim.tap} onClick={handleSearch} disabled={phase==="scanning"}
                 style={{ width:"100%", padding:"9px 0", borderRadius:T.rsm, border:`1px solid #ef4444`, background:"transparent", color:"#ef4444", fontSize:12, fontWeight:700, fontFamily:"inherit", cursor:"pointer", boxSizing:"border-box" }}>
@@ -3613,7 +3654,7 @@ const hBtn = (active = false): CSSProperties => ({
             />
           )}
 
-          <aside style={{ width:"100%", maxWidth:224, flexShrink:0, borderLeft:`1px solid ${T.border}`, background: isDarkMode ? "#0a0a0a" : "#ffffff", display:"flex", flexDirection:"column", overflow:"hidden" }} className={`forge-sidebar${sidebarOpen ? ' open' : ''}${sidebarClosing ? ' closing' : ''}`}>
+          <aside style={{ width:"100%", maxWidth:224, flexShrink:0, borderWidth:"0 0 0 1px", borderStyle:"solid", borderColor:T.border, background: isDarkMode ? "#0a0a0a" : "#ffffff", display:"flex", flexDirection:"column", overflow:"hidden" }} className={`forge-sidebar${sidebarOpen ? ' open' : ''}${sidebarClosing ? ' closing' : ''}`}>
             {/* Mobile close button */}
             <div style={{ display:"flex", padding:"14px 16px", justifyContent:"space-between", alignItems:"center", borderBottom:`1px solid ${T.border}`, flexShrink:0 }} className="forge-sidebar-header">
               <span style={{ fontSize:14, fontWeight:800, color:T.gold, letterSpacing:".08em" }}>MENU</span>
