@@ -41,10 +41,10 @@ export default function ContactPage() {
           </p>
         </div>
 
-        {/* Contact Email */}
+        {/* Contact Email — plain text to avoid browser blocking issues */}
         <div
           style={{
-            padding: 28,
+            padding: "24px 16px",
             background: "rgba(245,158,11,0.08)",
             borderRadius: 12,
             border: "1px solid rgba(245,158,11,0.2)",
@@ -52,27 +52,31 @@ export default function ContactPage() {
             display: "flex",
             flexDirection: "column",
             alignItems: "center",
+            justifyContent: "center",
             textAlign: "center",
+            minHeight: 100,
+            width: "100%",
+            boxSizing: "border-box",
           }}
           className="dark:bg-slate-900 dark:border-slate-700"
         >
-          <p style={{ fontSize: 12, color: "#888", margin: "0 0 10px", fontWeight: 700, letterSpacing: ".1em" }} className="dark:text-slate-400">
+          <p style={{ fontSize: 11, color: "#666", margin: "0 0 10px", fontWeight: 700, letterSpacing: ".12em" }} className="dark:text-slate-400">
             MAIN CONTACT
           </p>
-          <a
-            href="mailto:wealthnutz.official@gmail.com"
+          <span
             style={{
-              fontSize: "clamp(14px, 4vw, 18px)",
+              fontSize: 14,
               fontWeight: 800,
               color: "#f59e0b",
-              textDecoration: "none",
-              wordBreak: "break-all",
+              whiteSpace: "nowrap",
+              userSelect: "all",
             }}
-            onMouseEnter={e => (e.currentTarget.style.textDecoration = "underline")}
-            onMouseLeave={e => (e.currentTarget.style.textDecoration = "none")}
           >
             wealthnutz.official@gmail.com
-          </a>
+          </span>
+          <p style={{ fontSize: 11, color: "#888", margin: "10px 0 0", fontStyle: "italic" }} className="dark:text-slate-500">
+            (Copy and paste to your email app)
+          </p>
         </div>
 
         {/* Contact Form */}

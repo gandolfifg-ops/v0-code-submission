@@ -1,4 +1,4 @@
-/* build:v106 — no nested <a> in any Link */
+/* build:v108 — Link components verified clean */
 import Link from "next/link";
 
 export const metadata = {
