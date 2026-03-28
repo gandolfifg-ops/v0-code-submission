@@ -1,7 +1,7 @@
 "use client";
 
 /**
- * WealthNutz — Single File, v0-Ready (build:v102 isDarkMode removed from SortDropdown+ScholarshipSelect)
+ * WealthNutz — Single File, v0-Ready (build:v103 hist+isDarkMode fully purged)
  * ─────────────────────────────────────────────────────────────────────────────
  * Paste this entire file into app/page.tsx in any Next.js project.
  *
@@ -165,7 +165,7 @@ const PARTNERS = [
   { name: "EdTech Alliance", desc: "Financial literacy integration" },
 ];
 
-// ─────────────────────────────────────────────────────────────────────────────
+// ─────────────────────────────────────────────────────────────���───────────────
 // SECTION 2 — DESIGN TOKENS (Light/Dark Mode Support)
 // ─────────────────────────────────────────────────────────────────────────────
 
@@ -962,7 +962,7 @@ function ExpandableText({ text, maxLines = 2 }: { text: string; maxLines?: numbe
   );
 }
 
-// ─────────────────────────────────────────────────────────────────────────────
+// ──────────────────────────────────────────────────────────────────────���──────
 // SECTION 5C-1 — FILTER SIDEBAR (Desktop) & SORT DROPDOWN
 // ─────────────────────────────────────────────────────────────────────────────
 
@@ -1441,7 +1441,6 @@ function LoanMarketplaceHero({
   sortBy = "best-match",
   onFiltersChange,
   onSortChange,
-  isDarkMode,
 }: { 
   country: "Canada" | "USA"; 
   filterType?: LoanType; 
@@ -1451,7 +1450,6 @@ function LoanMarketplaceHero({
   sortBy?: SortOption;
   onFiltersChange?: (f: LoanFilters) => void;
   onSortChange?: (s: SortOption) => void;
-  isDarkMode: boolean;
 }) {
   const countryCode = country === "Canada" ? "CA" : "US";
   const [currentTime, setCurrentTime] = useState(() => new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }));
@@ -1758,7 +1756,7 @@ function TopPicksSection({ country }: { country: "Canada" | "USA" }) {
   );
 }
 
-// ─────��───────────────────────────────────────────────────────────────────────
+// ─────��────────���──────────────────────────────────────────────────────────────
 // SECTION 5E — CREDIT PATH MODAL
 // ─────────────────────────────────────────────────────────────────────────────
 
@@ -2466,33 +2464,18 @@ function LoanFinder({ onToggleSave, savedIds, userCountry, isDarkMode }: { onTog
           </motion.div>
         )}
       </AnimatePresence>
-      {hist.length > 0 && (
-        <div>
-          <p style={{ fontSize:10, color:T.dim, letterSpacing:".08em", margin:"4px 2px 8px" }}>RECENT SEARCHES</p>
-          {hist.slice(0,3).map(h => (
-            <Glass key={h.id} style={{ padding:"9px 12px", marginBottom:6, cursor:"pointer" }} onClick={() => { setResults(h.results ?? []); setPhase("results"); }}>
-              <div style={{ display:"flex", justifyContent:"space-between" }}>
-                <span style={{ fontSize:12, color:T.text }}>{h.label}</span>
-                <span style={{ fontSize:10, color:T.dim }}>{new Date(h.ts).toLocaleDateString()}</span>
-              </div>
-            </Glass>
-          ))}
-        </div>
-      )}
-      
       {/* Live Scour Marketplace — filtered by selected loan type and user country */}
       <div style={{ marginTop: 20 }}>
 <LoanMarketplaceHero
   country={userCountry === "Canada" ? "Canada" : "USA"}
   filterType={loanType}
   onToggleSave={onToggleSave}
-  isDarkMode={isDarkMode}
-          savedIds={savedIds}
-          filters={loanFilters}
-          sortBy={loanSort}
-          onFiltersChange={setLoanFilters}
-          onSortChange={setLoanSort}
-        />
+  savedIds={savedIds}
+  filters={loanFilters}
+  sortBy={loanSort}
+  onFiltersChange={setLoanFilters}
+  onSortChange={setLoanSort}
+/>
       </div>
     </div>
   );
@@ -2831,19 +2814,6 @@ function ScholarshipScout({ onToggleSave, savedIds, isDarkMode }: { onToggleSave
           </AnimatePresence>
         );
       })()}
-      {hist.length > 0 && (
-        <div>
-          <p style={{ fontSize:10, color:T.dim, letterSpacing:".08em", margin:"4px 2px 8px" }}>RECENT SEARCHES</p>
-          {hist.slice(0,3).map(h => (
-            <Glass key={h.id} style={{ padding:"9px 12px", marginBottom:6, cursor:"pointer" }} onClick={() => { setResults(h.results ?? []); setPhase("results"); }}>
-              <div style={{ display:"flex", justifyContent:"space-between" }}>
-                <span style={{ fontSize:12, color:T.text }}>{h.label}</span>
-                <span style={{ fontSize:10, color:T.dim }}>{new Date(h.ts).toLocaleDateString()}</span>
-              </div>
-            </Glass>
-          ))}
-        </div>
-      )}
     </motion.div>
   );
 }
@@ -2987,7 +2957,7 @@ function Marketplace({ country }: { country: string }) {
 // SECTION 8 — INLINE CHAT (moved to app/inline-chat.tsx, imported as InlineChatComponent)
 // ─────────────────────────────────────────────────────────────────────────────
 
-// ─────────────────────────────────────��────��──────────────────────────────────
+// ────────���────────────────────────────��────��──────────────────────────────────
 // SECTION 9 — MAIN PAGE
 // ───────────────────────────��──────���───────────��──────────────────────────────
 
@@ -3501,7 +3471,7 @@ const hBtn = (active = false): CSSProperties => ({
             )}
           </div>
 
-          {/* ═══ SIDEBAR ���═════════════��════��══════════════��═════���════════════ */}
+          {/* ═══ SIDEBAR ���═════════════��════��══════════════��══��══���════════════ */}
           <aside style={{ width:"100%", maxWidth:224, flexShrink:0, borderLeft:`1px solid ${T.border}`, background: isDarkMode ? "#0a0a0a" : "#ffffff", display:"flex", flexDirection:"column", overflow:"hidden" }} className={`forge-sidebar${sidebarOpen ? ' open' : ''}${sidebarClosing ? ' closing' : ''}`}>
             {/* Mobile close button */}
             <div style={{ display:"flex", padding:"10px 12px", justifyContent:"space-between", alignItems:"center", borderBottom:`1px solid ${T.border}`, flexShrink:0 }} className="forge-sidebar-header">
