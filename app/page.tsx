@@ -1061,7 +1061,7 @@ function FilterGroup({ title, children }: { title: string; children: ReactNode }
   );
 }
 
-function SortDropdown({ value, onChange, resultCount }: { value: SortOption; onChange: (v: SortOption) => void; resultCount: number }) {
+function SortDropdown({ value, onChange, resultCount, isDarkMode }: { value: SortOption; onChange: (v: SortOption) => void; resultCount: number; isDarkMode: boolean }) {
   const [open, setOpen] = useState(false);
   const currentLabel = SORT_OPTIONS.find(o => o.value === value)?.label || "Best Match";
   
@@ -1530,7 +1530,7 @@ function LoanMarketplaceHero({
       {/* Sort & Filter Controls */}
       {onSortChange && (
         <motion.div variants={fadeUp} style={{ marginBottom: 16, display: "flex", alignItems: "center", justifyContent: "space-between", flexWrap: "wrap", gap: 12 }}>
-          <SortDropdown value={sortBy} onChange={onSortChange} resultCount={offers.length} />
+          <SortDropdown value={sortBy} onChange={onSortChange} resultCount={offers.length} isDarkMode={isDarkMode} />
           {hasActiveFilters && (
             <motion.button
               whileTap={{ scale: 0.95 }}
@@ -2509,7 +2509,7 @@ function LoanTool({ onToggleSave, savedIds, userCountry }: { onToggleSave: (item
 const SCH_SCAN_MSGS = ["Connecting to scholarship databases...","Scanning national award portals...","Cross-referencing eligibility...","Aggregating live results for you..."];
 
 // Custom themed dropdown — replaces native <select> so colors work in both themes
-function ScholarshipSelect({ value, options, onChange }: { value: string; options: readonly string[]; onChange: (v: string) => void }) {
+function ScholarshipSelect({ value, options, onChange, isDarkMode }: { value: string; options: readonly string[]; onChange: (v: string) => void; isDarkMode: boolean }) {
   const [open, setOpen] = useState(false);
   const ref = useRef<HTMLDivElement>(null);
 
@@ -2663,15 +2663,15 @@ function ScholarshipScout({ onToggleSave, savedIds }: { onToggleSave: (item: Sco
         <div style={{ display:"flex", flexWrap:"wrap", gap:8, width:"100%", boxSizing:"border-box" }}>
           {/* Major — takes full row width until there is enough space to share */}
           <div style={{ flex:"1 1 180px", minWidth:140 }}>
-            <ScholarshipSelect value={major} options={SCHOLARSHIP_MAJORS as readonly string[]} onChange={setMajor} />
+            <ScholarshipSelect value={major} options={SCHOLARSHIP_MAJORS as readonly string[]} onChange={setMajor} isDarkMode={isDarkMode} />
           </div>
           {/* Year — always visible, fixed minimum */}
           <div style={{ flex:"1 1 110px", minWidth:100 }}>
-            <ScholarshipSelect value={year} options={SCHOLARSHIP_YEARS as readonly string[]} onChange={setYear} />
+            <ScholarshipSelect value={year} options={SCHOLARSHIP_YEARS as readonly string[]} onChange={setYear} isDarkMode={isDarkMode} />
           </div>
           {/* Country — always visible, fixed minimum */}
           <div style={{ flex:"1 1 90px", minWidth:84 }}>
-            <ScholarshipSelect value={country} options={SCHOLARSHIP_COUNTRIES as readonly string[]} onChange={setCountry} />
+            <ScholarshipSelect value={country} options={SCHOLARSHIP_COUNTRIES as readonly string[]} onChange={setCountry} isDarkMode={isDarkMode} />
           </div>
         </div>
         <motion.button whileTap={tapAnim.tap} onClick={handleSearch} disabled={phase==="scanning"}
@@ -2743,7 +2743,7 @@ function ScholarshipScout({ onToggleSave, savedIds }: { onToggleSave: (item: Sco
               <>
                 {/* Sort & Filter Controls */}
                 <motion.div variants={fadeUp} style={{ marginBottom: 16, display: "flex", alignItems: "center", justifyContent: "space-between", flexWrap: "wrap", gap: 12 }}>
-                  <SortDropdown value={schSort} onChange={setSchSort} resultCount={sortedResults.length} />
+                  <SortDropdown value={schSort} onChange={setSchSort} resultCount={sortedResults.length} isDarkMode={isDarkMode} />
                   {hasActiveFilters && (
                     <motion.button
                       whileTap={{ scale: 0.95 }}
@@ -2979,7 +2979,7 @@ function Marketplace({ country }: { country: string }) {
 // SECTION 8 — INLINE CHAT (moved to app/inline-chat.tsx, imported as InlineChatComponent)
 // ─────────────────────────────────────────────────────────────────────────────
 
-// ──────────────────────────────────────────��──────────────────────────────────
+// ─────────────────────────────────────��────��──────────────────────────────────
 // SECTION 9 — MAIN PAGE
 // ───────────────────────────��──────���───────────��──────────────────────────────
 
