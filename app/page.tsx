@@ -1,7 +1,7 @@
 "use client";
 
 /**
- * WealthNutz — Single File, v0-Ready (build:v126 hide-by-default-validation-warning)
+ * WealthNutz — Single File, v0-Ready (build:v129 fix-iife-regex-parse-error)
  * ─────────────────────────────────────────────────────────────────────────────
  * Paste this entire file into app/page.tsx in any Next.js project.
  *
@@ -1414,7 +1414,7 @@ function MobileFilterButton({ onClick, hasFilters }: { onClick: () => void; hasF
   );
 }
 
-// ─────────────────────────────────────────────────────────────────����───────────
+// ─────────────────────────────────────────────────────────────────�����───────────
 // SECTION 5C-3 — LOAN MARKETPLACE HERO (High Conversion)
 // ─────────────────────────────────────────────────────────────────────────────
 
@@ -2366,7 +2366,7 @@ const LoanCalculatorComponent = () => {
 // Memoize LoanCalculator to prevent unnecessary re-renders
 const LoanCalculator = React_memo_compat(LoanCalculatorComponent);
 
-// ── Loan Finder ────��───────────�����─────────────────────��────────────────────────
+// ── Loan Finder ────��───────────�����─────────────────────�����───────────────────────
 type Phase = "idle"|"scanning"|"results";
 const SCAN_MSGS = ["Connecting to loan databases...","Scanning live lender rates...","Cross-referencing eligibility...","Compiling best rates for you..."];
 
@@ -2386,6 +2386,8 @@ function LoanFinder({ onToggleSave, savedIds, userCountry, isDarkMode }: { onTog
     return () => clearInterval(iv);
   }, [phase]);
   const handleSearch = async () => {
+    // Always reset results first so every click triggers a visible fresh search
+    setResults([]);
     setPhase("scanning");
     try {
       const data = await fetchResults("loan", { loanType, amount: amount?.trim() ?? "" });
@@ -2605,6 +2607,143 @@ function ScholarshipSelect({ value, options, onChange }: { value: string; option
   );
 }
 
+// Pulled out of ScholarshipScout's IIFE to avoid Turbopack regex parse errors
+function parseScholarshipAmount(amt: string): number {
+  const m = amt.match(/[\d,]+/);
+  return m ? parseInt(m[0].replace(/,/g, ""), 10) : 0;
+}
+
+type ScholarshipResultsProps = {
+  phase: Phase;
+  results: ScoutResult[];
+  country: string;
+  schSort: SortOption;
+  setSchSort: (v: SortOption) => void;
+  schFilters: ScholarshipFilters;
+  setSchFilters: (f: ScholarshipFilters) => void;
+  hasMore: boolean;
+  loadingMore: boolean;
+  totalCount: number;
+  handleLoadMore: () => void;
+  onToggleSave: (item: ScoutResult) => void;
+  savedIds: Set<string>;
+  mobileFilterOpen: boolean;
+  setMobileFilterOpen: (v: boolean) => void;
+};
+
+function ScholarshipResults({ phase, results, country, schSort, setSchSort, schFilters, setSchFilters, hasMore, loadingMore, totalCount, handleLoadMore, onToggleSave, savedIds, mobileFilterOpen, setMobileFilterOpen }: ScholarshipResultsProps) {
+  const filterCounts = {
+    under1k:  results.filter(r => parseScholarshipAmount(r.amount ?? "0") < 1000).length,
+    k1to5:    results.filter(r => { const a = parseScholarshipAmount(r.amount ?? "0"); return a >= 1000 && a <= 5000; }).length,
+    k5to10:   results.filter(r => { const a = parseScholarshipAmount(r.amount ?? "0"); return a > 5000 && a <= 10000; }).length,
+    k10plus:  results.filter(r => parseScholarshipAmount(r.amount ?? "0") > 10000).length,
+    undergrad: results.filter(r => (r.eligibility ?? "").toLowerCase().includes("undergrad") || !(r.eligibility ?? "").toLowerCase().includes("graduate")).length,
+    graduate:  results.filter(r => (r.eligibility ?? "").toLowerCase().includes("graduate")).length,
+    noEssay:   results.filter(r => (r.eligibility ?? "").toLowerCase().includes("no essay")).length,
+    noGpa:     results.filter(r => !(r.eligibility ?? "").toLowerCase().includes("gpa")).length,
+  };
+
+  const filteredResults = results.filter(r => {
+    const itemCountry = (r as { country?: string }).country;
+    if (country !== "Any" && itemCountry) {
+      if (country === "Canada" && itemCountry !== "Canada") return false;
+      if (country === "USA" && itemCountry !== "USA") return false;
+    }
+    const amt = parseScholarshipAmount(r.amount ?? "0");
+    if (schFilters.awardAmount === "under-1k" && amt >= 1000) return false;
+    if (schFilters.awardAmount === "1k-5k" && (amt < 1000 || amt > 5000)) return false;
+    if (schFilters.awardAmount === "5k-10k" && (amt <= 5000 || amt > 10000)) return false;
+    if (schFilters.awardAmount === "10k-plus" && amt <= 10000) return false;
+    if (schFilters.noEssay && !(r.eligibility ?? "").toLowerCase().includes("no essay")) return false;
+    if (schFilters.noGpaReq && (r.eligibility ?? "").toLowerCase().includes("gpa")) return false;
+    return true;
+  });
+
+  const sortedResults = [...filteredResults].sort((a, b) => {
+    if (schSort === "highest-award") return parseScholarshipAmount(b.amount ?? "0") - parseScholarshipAmount(a.amount ?? "0");
+    if (schSort === "deadline-soonest") return (a.deadline ?? "").localeCompare(b.deadline ?? "");
+    return 0;
+  });
+
+  const hasActiveFilters = schFilters.awardAmount !== "any" || schFilters.educationLevel !== "any" || schFilters.noEssay || schFilters.noGpaReq;
+
+  if (phase !== "results" || results.length === 0) return null;
+
+  return (
+    <AnimatePresence>
+      <motion.div key="sch-results" initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} style={{ marginTop: 24 }}>
+        {/* Sort & Filter Controls */}
+        <motion.div variants={fadeUp} style={{ marginBottom: 16, display: "flex", alignItems: "center", justifyContent: "space-between", flexWrap: "wrap", gap: 12 }}>
+          <SortDropdown value={schSort} onChange={setSchSort} resultCount={sortedResults.length} />
+          {hasActiveFilters && (
+            <motion.button whileTap={{ scale: 0.95 }} onClick={() => setSchFilters(DEFAULT_SCHOLARSHIP_FILTERS)}
+              style={{ display:"flex", alignItems:"center", gap:4, padding:"6px 12px", borderRadius:6, border:"none", background:"rgba(248,113,113,0.15)", color:"#f87171", fontSize:11, fontWeight:600, cursor:"pointer" }}>
+              <RotateCcw size={12} /> Clear Filters
+            </motion.button>
+          )}
+        </motion.div>
+
+        {/* Main Content with Sidebar */}
+        <div style={{ display:"flex", gap:16 }}>
+          {/* Desktop Filter Sidebar */}
+          <div className="desktop-filter-sidebar" style={{ width:220, flexShrink:0 }}>
+            <Glass style={{ position:"sticky", top:70 }}>
+              <ScholarshipFilterSidebar filters={schFilters} onChange={setSchFilters} onClear={() => setSchFilters(DEFAULT_SCHOLARSHIP_FILTERS)} counts={filterCounts} />
+            </Glass>
+          </div>
+
+          {/* Results */}
+          <motion.div key="sr" variants={stagger} initial="hidden" animate="visible" style={{ flex:1, display:"flex", flexDirection:"column", gap:10 }}>
+            {sortedResults.map(r => (
+              <motion.div key={r.id} variants={fadeUp}>
+                <Glass glow style={{ padding:14 }}>
+                  <div style={{ display:"flex", justifyContent:"space-between", alignItems:"flex-start", marginBottom:7, gap:10 }}>
+                    <div style={{ flex:1 }}>
+                      <p style={{ fontSize:13, fontWeight:700, color:T.text, margin:"0 0 2px" }}>{r.title}</p>
+                      <p style={{ fontSize:11, color:T.mid, margin:0 }}>{r.provider}</p>
+                    </div>
+                    <div style={{ display:"flex", alignItems:"center", gap:6, flexShrink:0 }}>
+                      <Chip label={r.amount} color={T.gold} />
+                      <motion.button whileTap={{ scale:0.9 }} onClick={() => onToggleSave(r)}
+                        style={{ background:"none", border:"none", cursor:"pointer", padding:2, color:savedIds.has(r.id) ? "#f59e0b" : T.mid }}>
+                        <Bookmark size={16} fill={savedIds.has(r.id) ? "#f59e0b" : "none"} />
+                      </motion.button>
+                    </div>
+                  </div>
+                  <ExpandableText text={(r as { description?: string }).description || r.eligibility} maxLines={3} />
+                  <p style={{ fontSize:10, color:T.dim, margin:"8px 0 10px" }}>Deadline: {r.deadline}</p>
+                  <GoldCTA href={r.url} label="Apply Now" />
+                </Glass>
+              </motion.div>
+            ))}
+
+            {/* Show More Button */}
+            {hasMore && (
+              <motion.div variants={fadeUp} style={{ marginTop:8 }}>
+                <motion.button whileTap={{ scale:0.98 }} onClick={handleLoadMore} disabled={loadingMore}
+                  style={{ width:"100%", padding:"16px 0", borderRadius:T.rmd, border:`2px solid ${T.gold}`, background:"transparent", color:T.gold, fontSize:14, fontWeight:700, fontFamily:"inherit", cursor:loadingMore ? "wait" : "pointer", opacity:loadingMore ? 0.7 : 1, transition:"all 0.2s" }}>
+                  {loadingMore ? "Loading more scholarships..." : `Show More Scholarships (${totalCount - results.length} remaining)`}
+                </motion.button>
+              </motion.div>
+            )}
+
+            {/* Results count footer */}
+            <p style={{ fontSize:10, color:T.dim, textAlign:"center", margin:"12px 0 0" }}>
+              Showing {results.length} of {totalCount} scholarships for {country}
+            </p>
+          </motion.div>
+        </div>
+
+        {/* Mobile Filter */}
+        <MobileFilterButton onClick={() => setMobileFilterOpen(true)} hasFilters={hasActiveFilters} />
+        <FilterBottomSheet isOpen={mobileFilterOpen} onClose={() => setMobileFilterOpen(false)} title="Filter Scholarships">
+          <ScholarshipFilterSidebar filters={schFilters} onChange={setSchFilters} onClear={() => setSchFilters(DEFAULT_SCHOLARSHIP_FILTERS)} counts={filterCounts} />
+        </FilterBottomSheet>
+      </motion.div>
+    </AnimatePresence>
+  );
+}
+
 function ScholarshipScout({ onToggleSave, savedIds, isDarkMode }: { onToggleSave: (item: ScoutResult) => void; savedIds: Set<string>; isDarkMode: boolean }) {
   
   const [query,   setQuery]   = useState("");
@@ -2778,176 +2917,24 @@ function ScholarshipScout({ onToggleSave, savedIds, isDarkMode }: { onToggleSave
         )}
 
       </AnimatePresence>
-      {/* Filter counts calculation */}
-      {(() => {
-        // Parse amount from string like "$5,000" or "$2,500-$6,000"
-        const parseAmount = (amt: string) => {
-          const match = amt.match(/\$?([\d,]+)/);
-          return match ? parseInt(match[1].replace(/,/g, ""), 10) : 0;
-        };
-        
-        const filterCounts = {
-          under1k: results.filter(r => parseAmount(r.amount ?? "0") < 1000).length,
-          k1to5: results.filter(r => { const a = parseAmount(r.amount ?? "0"); return a >= 1000 && a <= 5000; }).length,
-          k5to10: results.filter(r => { const a = parseAmount(r.amount ?? "0"); return a > 5000 && a <= 10000; }).length,
-          k10plus: results.filter(r => parseAmount(r.amount ?? "0") > 10000).length,
-          undergrad: results.filter(r => (r.eligibility ?? "").toLowerCase().includes("undergrad") || !(r.eligibility ?? "").toLowerCase().includes("graduate")).length,
-          graduate: results.filter(r => (r.eligibility ?? "").toLowerCase().includes("graduate")).length,
-          noEssay: results.filter(r => (r.eligibility ?? "").toLowerCase().includes("no essay")).length,
-          noGpa: results.filter(r => !(r.eligibility ?? "").toLowerCase().includes("gpa")).length,
-        };
-        
-        // Apply filters including strict country matching
-        const filteredResults = results.filter(r => {
-          // Strict country filtering — must match exactly
-          const itemCountry = (r as { country?: string }).country;
-          if (country !== "Any" && itemCountry) {
-            if (country === "Canada" && itemCountry !== "Canada") return false;
-            if (country === "USA" && itemCountry !== "USA") return false;
-          }
-          
-          const amt = parseAmount(r.amount ?? "0");
-          if (schFilters.awardAmount === "under-1k" && amt >= 1000) return false;
-          if (schFilters.awardAmount === "1k-5k" && (amt < 1000 || amt > 5000)) return false;
-          if (schFilters.awardAmount === "5k-10k" && (amt <= 5000 || amt > 10000)) return false;
-          if (schFilters.awardAmount === "10k-plus" && amt <= 10000) return false;
-          if (schFilters.noEssay && !(r.eligibility ?? "").toLowerCase().includes("no essay")) return false;
-          if (schFilters.noGpaReq && (r.eligibility ?? "").toLowerCase().includes("gpa")) return false;
-          return true;
-        });
-        
-        // Apply sorting
-        const sortedResults = [...filteredResults].sort((a, b) => {
-          if (schSort === "highest-award") {
-            return parseAmount(b.amount ?? "0") - parseAmount(a.amount ?? "0");
-          }
-          if (schSort === "deadline-soonest") {
-            // Simple sort - real implementation would parse dates
-            return (a.deadline ?? "").localeCompare(b.deadline ?? "");
-          }
-          return 0;
-        });
-        
-        const hasActiveFilters = schFilters.awardAmount !== "any" || schFilters.educationLevel !== "any" || schFilters.noEssay || schFilters.noGpaReq;
-        
-        return (
-          <AnimatePresence>
-            {phase==="results" && results.length>0 && (
-              <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} style={{ marginTop: 24 }}>
-                {/* Sort & Filter Controls */}
-                <motion.div variants={fadeUp} style={{ marginBottom: 16, display: "flex", alignItems: "center", justifyContent: "space-between", flexWrap: "wrap", gap: 12 }}>
-                  <SortDropdown value={schSort} onChange={setSchSort} resultCount={sortedResults.length} />
-                  {hasActiveFilters && (
-                    <motion.button
-                      whileTap={{ scale: 0.95 }}
-                      onClick={() => setSchFilters(DEFAULT_SCHOLARSHIP_FILTERS)}
-                      style={{
-                        display: "flex",
-                        alignItems: "center",
-                        gap: 4,
-                        padding: "6px 12px",
-                        borderRadius: 6,
-                        border: "none",
-                        background: "rgba(248,113,113,0.15)",
-                        color: "#f87171",
-                        fontSize: 11,
-                        fontWeight: 600,
-                        cursor: "pointer",
-                      }}
-                    >
-                      <RotateCcw size={12} /> Clear Filters
-                    </motion.button>
-                  )}
-                </motion.div>
-                
-                {/* Main Content with Sidebar */}
-                <div style={{ display: "flex", gap: 16 }}>
-                  {/* Desktop Filter Sidebar */}
-                  <div className="desktop-filter-sidebar" style={{ width: 220, flexShrink: 0 }}>
-                    <Glass style={{ position: "sticky", top: 70 }}>
-                      <ScholarshipFilterSidebar 
-                        filters={schFilters}
-                        onChange={setSchFilters}
-                        onClear={() => setSchFilters(DEFAULT_SCHOLARSHIP_FILTERS)}
-                        counts={filterCounts}
-                      />
-                    </Glass>
-                  </div>
-                  
-                  {/* Results */}
-                  <motion.div key="sr" variants={stagger} initial="hidden" animate="visible" style={{ flex: 1, display:"flex", flexDirection:"column", gap:10 }}>
-                    {sortedResults.map(r => (
-              <motion.div key={r.id} variants={fadeUp}>
-                <Glass glow style={{ padding:14 }}>
-                  <div style={{ display:"flex", justifyContent:"space-between", alignItems:"flex-start", marginBottom:7, gap:10 }}>
-                    <div style={{ flex: 1 }}><p style={{ fontSize:13, fontWeight:700, color:T.text, margin:"0 0 2px" }}>{r.title}</p><p style={{ fontSize:11, color:T.mid, margin:0 }}>{r.provider}</p></div>
-                    <div style={{ display:"flex", alignItems:"center", gap:6, flexShrink: 0 }}>
-                      <Chip label={r.amount} color={T.gold} />
-                      <motion.button
-                        whileTap={{ scale: 0.9 }}
-                        onClick={() => onToggleSave(r)}
-                        style={{ background:"none", border:"none", cursor:"pointer", padding:2, color:savedIds.has(r.id) ? "#f59e0b" : T.mid }}
-                      >
-                        <Bookmark size={16} fill={savedIds.has(r.id) ? "#f59e0b" : "none"} />
-                      </motion.button>
-                    </div>
-                  </div>
-                  <ExpandableText text={(r as { description?: string }).description || r.eligibility} maxLines={3} />
-                  <p style={{ fontSize:10, color:T.dim, margin:"0 0 10px", marginTop: 8 }}>Deadline: {r.deadline}</p>
-                  <GoldCTA href={r.url} label="Apply Now" />
-                </Glass>
-              </motion.div>
-                    ))}
-                    
-                    {/* Show More Button */}
-                    {hasMore && (
-                      <motion.div variants={fadeUp} style={{ marginTop: 8 }}>
-                        <motion.button
-                          whileTap={{ scale: 0.98 }}
-                          onClick={handleLoadMore}
-                          disabled={loadingMore}
-                          style={{
-                            width: "100%",
-                            padding: "16px 0",
-                            borderRadius: T.rmd,
-                            border: `2px solid ${T.gold}`,
-                            background: "transparent",
-                            color: T.gold,
-                            fontSize: 14,
-                            fontWeight: 700,
-                            fontFamily: "inherit",
-                            cursor: loadingMore ? "wait" : "pointer",
-                            opacity: loadingMore ? 0.7 : 1,
-                            transition: "all 0.2s",
-                          }}
-                        >
-                          {loadingMore ? "Loading more scholarships..." : `Show More Scholarships (${totalCount - results.length} remaining)`}
-                        </motion.button>
-                      </motion.div>
-                    )}
-                    
-                    {/* Results count footer */}
-                    <p style={{ fontSize: 10, color: T.dim, textAlign: "center", margin: "12px 0 0" }}>
-                      Showing {results.length} of {totalCount} scholarships for {country}
-                    </p>
-                  </motion.div>
-                </div>
-                
-                {/* Mobile Filter Button & Bottom Sheet */}
-                <MobileFilterButton onClick={() => setMobileFilterOpen(true)} hasFilters={hasActiveFilters} />
-                <FilterBottomSheet isOpen={mobileFilterOpen} onClose={() => setMobileFilterOpen(false)} title="Filter Scholarships">
-                  <ScholarshipFilterSidebar 
-                    filters={schFilters}
-                    onChange={setSchFilters}
-                    onClear={() => setSchFilters(DEFAULT_SCHOLARSHIP_FILTERS)}
-                    counts={filterCounts}
-                  />
-                </FilterBottomSheet>
-              </motion.div>
-            )}
-          </AnimatePresence>
-        );
-      })()}
+      {/* Results section — computed vars hoisted out of IIFE to avoid regex parse errors */}
+      <ScholarshipResults
+        phase={phase}
+        results={results}
+        country={country}
+        schSort={schSort}
+        setSchSort={setSchSort}
+        schFilters={schFilters}
+        setSchFilters={setSchFilters}
+        hasMore={hasMore}
+        loadingMore={loadingMore}
+        totalCount={totalCount}
+        handleLoadMore={handleLoadMore}
+        onToggleSave={onToggleSave}
+        savedIds={savedIds}
+        mobileFilterOpen={mobileFilterOpen}
+        setMobileFilterOpen={setMobileFilterOpen}
+      />
     </motion.div>
   );
 }
