@@ -24,7 +24,7 @@ import { useState, useEffect, useRef, useCallback, useMemo, memo as React_memo, 
 import { motion, AnimatePresence } from "framer-motion";
 import {
   TrendingUp, Clock, DollarSign, GraduationCap, ShoppingBag,
-  Send, Share2, Check, ChevronLeft, User, Search,
+  Send, Share2, Check, ChevronLeft, ChevronRight, User, Search,
   BarChart2, PiggyBank, BookOpen, ExternalLink, Bookmark, X, LogIn, LogOut,
   Sun, Moon, SlidersHorizontal, ChevronDown, RotateCcw,
 } from "lucide-react";
@@ -3181,18 +3181,11 @@ const hBtn = (active = false): CSSProperties => ({
     .forge-sidebar-header { display: none !important; }
   }
 
-  /* MENU button hidden on desktop, visible only on mobile */
-  .forge-hamburger { display: none !important; }
   .forge-sidebar-header { display: none !important; }
-  
-  @media (max-width: 768px) {
-    .forge-hamburger { display: flex !important; }
-  }
 
   @media (max-width: 640px) {
   .forge-header { padding: 5px 10px !important; gap: 5px !important; }
   .wealthnutz-logo-text { font-size: 14px !important; }
-  .forge-hamburger { display: flex !important; }
     .forge-body { flex-direction: column !important; }
     .forge-main { overflow-x: hidden !important; }
     .forge-sidebar {
@@ -3294,11 +3287,7 @@ const hBtn = (active = false): CSSProperties => ({
               {isDarkMode ? <Sun size={16} /> : <Moon size={16} />}
             </motion.button>
             
-            {/* MENU button (mobile only) */}
-            <motion.button whileTap={{ scale: 0.93 }} onClick={() => sidebarOpen ? closeSidebar() : setSidebarOpen(true)}
-              style={{ background: isDarkMode ? "rgba(255,255,255,0.1)" : "rgba(0,0,0,0.05)", border: `1px solid ${isDarkMode ? "rgba(255,255,255,0.3)" : "rgba(0,0,0,0.15)"}`, color: isDarkMode ? "#FFFFFF" : "#0F172A", cursor:"pointer", padding:"6px 12px", borderRadius:T.rsm, display:"flex", alignItems:"center", gap:6, fontSize:12, fontWeight:700, letterSpacing:".05em", lineHeight:1, whiteSpace:"nowrap", flexShrink:0 }} className="forge-hamburger">
-              <span style={{ fontSize:16, lineHeight:1, color: isDarkMode ? "#FFFFFF" : "#0F172A" }}>☰</span> MENU
-            </motion.button>
+
           </div>
         </header>
 
@@ -3384,7 +3373,7 @@ const hBtn = (active = false): CSSProperties => ({
         {/* ═══ BODY ════════════════════════════════════════════════════════════ */}
         <div style={{ flex:1, display:"flex", overflow:"auto" }} className="forge-body">
 
-          {/* ── Main panel ─────────────────────────────────────────────────────── */}
+          {/* ── Main panel ──────────────────────────────────────────────��──────── */}
           <div style={{ flex:1, display:"flex", flexDirection:"column", overflow:"hidden", minHeight:0 }} className="forge-main">
 
             {/* Tool view */}
@@ -3443,6 +3432,41 @@ const hBtn = (active = false): CSSProperties => ({
     }}>
       {TAGLINE}
     </p>
+
+    {/* ── Centrepiece MENU button ── */}
+    <div style={{ marginTop: 28, display: "flex", justifyContent: "center" }}>
+      <motion.button
+        whileHover={{ scale: 1.03 }}
+        whileTap={{ scale: 0.96 }}
+        onClick={() => sidebarOpen ? closeSidebar() : setSidebarOpen(true)}
+        aria-label="Open menu"
+        style={{
+          display: "flex",
+          alignItems: "center",
+          gap: 10,
+          padding: "14px 36px",
+          borderRadius: 999,
+          border: `2.5px solid ${T.gold}`,
+          background: isDarkMode ? "rgba(201,168,76,0.10)" : "rgba(201,168,76,0.08)",
+          color: T.gold,
+          fontSize: "clamp(14px, 3vw, 16px)",
+          fontWeight: 800,
+          letterSpacing: ".12em",
+          cursor: "pointer",
+          fontFamily: "inherit",
+          boxShadow: isDarkMode
+            ? "0 0 24px rgba(201,168,76,0.18), inset 0 1px 0 rgba(255,255,255,0.06)"
+            : "0 2px 16px rgba(201,168,76,0.22)",
+          transition: "box-shadow .2s",
+          minWidth: "clamp(180px, 40vw, 260px)",
+          justifyContent: "center",
+          whiteSpace: "nowrap",
+        }}
+      >
+        <span style={{ fontWeight: 800, letterSpacing: ".14em" }}>MENU</span>
+        <ChevronRight size={18} strokeWidth={2.5} />
+      </motion.button>
+    </div>
   </motion.div>
   <div style={{ flex:1 }}>
   <InlineChatComponent key={chatKey} country={country} isDarkMode={isDarkMode} />
