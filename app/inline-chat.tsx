@@ -1,5 +1,5 @@
 "use client";
-
+/* build:v99 — ASCII-only placeholder, no em-dash or curly apostrophe */
 import { useState, useEffect, useRef, type FormEvent, useCallback } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Send, RotateCcw } from "lucide-react";
@@ -420,7 +420,7 @@ export default function InlineChat({ country, isDarkMode = true }: { country: st
               className={isDarkMode ? "chat-input-dark" : "chat-input-light"}
               style={{ 
                 flex: 1, 
-                background: "transparent", 
+                background: "rgba(0,0,0,0)", 
                 border: "none", 
                 outline: "none", 
                 color: T.text, 

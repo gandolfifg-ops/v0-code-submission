@@ -2175,7 +2175,59 @@ const BudgetToolComponent = () => {
   
   return (
     <motion.div variants={fadeUp} initial="hidden" animate="visible" style={{ display:"flex", flexDirection:"column", gap:16 }}>
-      <Slider label="Monthly Income" value={income} min={100} step={50} onChange={setIncome} fmt={v=>"$"+v.toLocaleString()} maxVal={1_000_000_000} />
+      {/* Monthly Income — large numeric input, always high-contrast */}
+      <div style={{ display:"flex", flexDirection:"column", gap:6 }}>
+        <label style={{ fontSize:13, fontWeight:800, color:"#000000", letterSpacing:".01em" }}>
+          Monthly Income
+        </label>
+        <div style={{
+          display: "flex",
+          alignItems: "center",
+          border: "2.5px solid #000000",
+          borderRadius: 10,
+          background: "#ffffff",
+          overflow: "hidden",
+          boxShadow: "0 2px 8px rgba(0,0,0,0.10)",
+        }}>
+          <span style={{
+            padding: "14px 14px 14px 16px",
+            fontSize: 20,
+            fontWeight: 800,
+            color: "#000000",
+            background: "#f3f3f3",
+            borderRight: "2px solid #000000",
+            lineHeight: 1,
+            userSelect: "none",
+          }}>$</span>
+          <input
+            type="number"
+            min={0}
+            step={50}
+            value={income === 0 ? "" : income}
+            placeholder="e.g. 3000"
+            onChange={e => {
+              const v = parseFloat(e.target.value);
+              setIncome(isNaN(v) || v < 0 ? 0 : v);
+            }}
+            style={{
+              flex: 1,
+              border: "none",
+              outline: "none",
+              padding: "14px 16px",
+              fontSize: 20,
+              fontWeight: 700,
+              color: "#000000",
+              background: "#ffffff",
+              fontFamily: "inherit",
+              width: "100%",
+              boxSizing: "border-box",
+              appearance: "none",
+              MozAppearance: "textfield",
+            } as React.CSSProperties}
+          />
+        </div>
+        <p style={{ fontSize:11, color:"#555555", margin:0 }}>Enter your take-home pay per month.</p>
+      </div>
       <Slider label="Needs %"        value={needs}  min={0}  step={1}  onChange={handleNeedsChange}  fmt={v=>v+"%"} maxVal={100} />
       <Slider label="Wants %"        value={wants}  min={0}  step={1}  onChange={handleWantsChange}  fmt={v=>v+"%"} maxVal={100} />
       <div style={{ display:"flex", height:10, borderRadius:5, overflow:"hidden", gap:2 }}>
