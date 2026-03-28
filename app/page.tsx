@@ -1,7 +1,7 @@
 "use client";
 
 /**
- * WealthNutz — Single File, v0-Ready (build:v124 dropdown-solid-bg-show-more-pagination)
+ * WealthNutz — Single File, v0-Ready (build:v125 ui-cleanup-deadline-filter-spacing)
  * ─────────────────────────────────────────────────────────────────────────────
  * Paste this entire file into app/page.tsx in any Next.js project.
  *
@@ -1414,7 +1414,7 @@ function MobileFilterButton({ onClick, hasFilters }: { onClick: () => void; hasF
   );
 }
 
-// ─────────────────────────────────────────────────────────────────────────────
+// ─────────────────────────────────────────────────────────────────���───────────
 // SECTION 5C-3 — LOAN MARKETPLACE HERO (High Conversion)
 // ─────────────────────────────────────────────────────────────────────────────
 
@@ -2726,23 +2726,16 @@ function ScholarshipScout({ onToggleSave, savedIds, isDarkMode }: { onToggleSave
         )}
         {phase==="results" && error && (
           <motion.div key="error" initial={{opacity:0, y:-8}} animate={{opacity:1, y:0}} exit={{opacity:0, y:-8}}>
-            <Glass style={{ padding:16, display:"flex", flexDirection:"column", gap:8, background:`rgba(239,68,68,0.08)`, borderTop:"none", borderRight:"none", borderBottom:"none", borderLeftWidth:3, borderLeftStyle:"solid", borderLeftColor:"#ef4444" }}>
+            <div style={{ padding:16, display:"flex", flexDirection:"column", gap:8, background:`rgba(239,68,68,0.08)`, borderRadius:T.rmd, borderLeft:"3px solid #ef4444" }}>
               <span style={{ fontSize:12, color:"#ef4444", fontWeight:600 }}>⚠ {error}</span>
               <motion.button whileTap={tapAnim.tap} onClick={handleSearch} disabled={phase==="scanning"}
                 style={{ width:"100%", padding:"9px 0", borderRadius:T.rsm, border:`1px solid #ef4444`, background:"transparent", color:"#ef4444", fontSize:12, fontWeight:700, fontFamily:"inherit", cursor:"pointer", boxSizing:"border-box" }}>
                 Try Again
               </motion.button>
-            </Glass>
+            </div>
           </motion.div>
         )}
-        {phase==="results" && results.length > 0 && !error && (
-          <motion.div key="success" initial={{opacity:0}} animate={{opacity:1}} exit={{opacity:0}}>
-            <Glass style={{ padding:12, display:"flex", alignItems:"center", gap:8, background:`rgba(34,197,94,0.08)`, borderTop:"none", borderRight:"none", borderBottom:"none", borderLeftWidth:3, borderLeftStyle:"solid", borderLeftColor:"#22c55e" }}>
-              <span style={{ width:5, height:5, borderRadius:"50%", background:"#22c55e" }} />
-              <span style={{ fontSize:11, color:"#22c55e", fontWeight:600 }}>{results.length} scholarship{results.length !== 1 ? "s" : ""} found for {country}</span>
-            </Glass>
-          </motion.div>
-        )}
+
       </AnimatePresence>
       {/* Filter counts calculation */}
       {(() => {
@@ -2799,7 +2792,7 @@ function ScholarshipScout({ onToggleSave, savedIds, isDarkMode }: { onToggleSave
         return (
           <AnimatePresence>
             {phase==="results" && results.length>0 && (
-              <>
+              <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} style={{ marginTop: 24 }}>
                 {/* Sort & Filter Controls */}
                 <motion.div variants={fadeUp} style={{ marginBottom: 16, display: "flex", alignItems: "center", justifyContent: "space-between", flexWrap: "wrap", gap: 12 }}>
                   <SortDropdown value={schSort} onChange={setSchSort} resultCount={sortedResults.length} />
@@ -2909,7 +2902,7 @@ function ScholarshipScout({ onToggleSave, savedIds, isDarkMode }: { onToggleSave
                     counts={filterCounts}
                   />
                 </FilterBottomSheet>
-              </>
+              </motion.div>
             )}
           </AnimatePresence>
         );
@@ -3406,7 +3399,7 @@ const hBtn = (active = false): CSSProperties => ({
           </div>
         </header>
 
-        {/* ═══ LOCATION BAR ════════════════════════════════════════════════════ */}
+        {/* ═══ LOCATION BAR ═════════════════════���══════════════════════════════ */}
         <AnimatePresence>
           {!locationBarDismissed && !country && (
             <motion.div

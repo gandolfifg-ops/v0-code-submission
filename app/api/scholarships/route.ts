@@ -28,7 +28,7 @@ export async function POST(req: Request) {
         title: "STEM Advancement Grant",
         provider: "Tech Industry Foundation",
         amount: "$4,500–$8,000",
-        deadline: "February 15, 2026",
+        deadline: "May 15, 2026",
         eligibility: "STEM major, 2nd year or above, GPA 3.2+",
         country: "USA",
         field: "stem",
@@ -54,7 +54,7 @@ export async function POST(req: Request) {
         title: "Women in Technology Leadership Scholarship",
         provider: "National Center for Women & Information Technology",
         amount: "$5,000–$10,000",
-        deadline: "March 1, 2026",
+        deadline: "July 1, 2026",
         eligibility: "Female students, computer science/IT major, any year",
         country: "USA",
         field: "stem",
@@ -67,7 +67,7 @@ export async function POST(req: Request) {
         title: "Mathematics Excellence Award",
         provider: "American Mathematical Society",
         amount: "$3,500–$7,000",
-        deadline: "February 28, 2026",
+        deadline: "June 28, 2026",
         eligibility: "Mathematics major, GPA 3.5+, undergraduate",
         country: "USA",
         field: "stem",
@@ -82,7 +82,7 @@ export async function POST(req: Request) {
         title: "Engineering Excellence Award",
         provider: "American Society of Civil Engineers",
         amount: "$7,500",
-        deadline: "March 1, 2026",
+        deadline: "July 1, 2026",
         eligibility: "Engineering major, GPA 3.5+, junior or senior",
         country: "USA",
         field: "engineering",
@@ -108,7 +108,7 @@ export async function POST(req: Request) {
         title: "Electrical Engineering Future Leaders Award",
         provider: "Institute of Electrical and Electronics Engineers",
         amount: "$4,000–$9,000",
-        deadline: "March 15, 2026",
+        deadline: "July 15, 2026",
         eligibility: "Electrical/computer engineering major, any year",
         country: "USA",
         field: "engineering",
@@ -121,7 +121,7 @@ export async function POST(req: Request) {
         title: "Aerospace Engineering Excellence Scholarship",
         provider: "American Institute of Aeronautics and Astronautics",
         amount: "$6,000–$12,000",
-        deadline: "February 1, 2026",
+        deadline: "June 1, 2026",
         eligibility: "Aerospace engineering major, GPA 3.4+, undergraduate or graduate",
         country: "USA",
         field: "engineering",
@@ -162,7 +162,7 @@ export async function POST(req: Request) {
         title: "Finance Leaders of Tomorrow Scholarship",
         provider: "CFA Institute",
         amount: "$4,000–$8,000",
-        deadline: "March 15, 2026",
+        deadline: "July 15, 2026",
         eligibility: "Finance/accounting major, GPA 3.3+, junior or senior",
         country: "USA",
         field: "business",
@@ -190,7 +190,7 @@ export async function POST(req: Request) {
         title: "Pre-Medical Excellence Award",
         provider: "American Medical Association Foundation",
         amount: "$8,000–$15,000",
-        deadline: "March 1, 2026",
+        deadline: "July 1, 2026",
         eligibility: "Pre-med student, GPA 3.6+, MCAT score 510+",
         country: "USA",
         field: "healthcare",
@@ -203,7 +203,7 @@ export async function POST(req: Request) {
         title: "Public Health Leadership Scholarship",
         provider: "American Public Health Association",
         amount: "$3,500–$7,000",
-        deadline: "February 28, 2026",
+        deadline: "June 28, 2026",
         eligibility: "Public health major, any year, undergraduate or graduate",
         country: "USA",
         field: "healthcare",
@@ -244,7 +244,7 @@ export async function POST(req: Request) {
         title: "Climate Action Leadership Award",
         provider: "Environmental Defense Fund",
         amount: "$5,000–$10,000",
-        deadline: "March 15, 2026",
+        deadline: "July 15, 2026",
         eligibility: "Environmental/sustainability major, demonstrated climate activism",
         country: "USA",
         field: "environmental",
@@ -272,7 +272,7 @@ export async function POST(req: Request) {
         title: "Humanities Research Fellowship",
         provider: "National Endowment for the Humanities",
         amount: "$4,000–$8,000",
-        deadline: "February 15, 2026",
+        deadline: "May 15, 2026",
         eligibility: "Humanities major, GPA 3.4+, research project required",
         country: "USA",
         field: "humanities",
@@ -399,7 +399,7 @@ export async function POST(req: Request) {
         title: "Nursing Future Leaders Award",
         provider: "Canadian Nurses Foundation",
         amount: "$3,000–$6,000",
-        deadline: "March 15, 2026",
+        deadline: "July 15, 2026",
         eligibility: "Nursing student, any year, Canadian citizen or permanent resident",
         country: "Canada",
         field: "healthcare",
@@ -412,7 +412,7 @@ export async function POST(req: Request) {
         title: "Canadian Medical Foundation Bursary",
         provider: "Canadian Medical Foundation",
         amount: "$8,000–$12,000",
-        deadline: "February 1, 2026",
+        deadline: "June 1, 2026",
         eligibility: "Medical student, Canadian medical school, financial need demonstrated",
         country: "Canada",
         field: "healthcare",
@@ -427,7 +427,7 @@ export async function POST(req: Request) {
         title: "NSERC Undergraduate Research Award",
         provider: "Natural Sciences and Engineering Research Council",
         amount: "$6,250 (16 weeks)",
-        deadline: "February 28, 2026",
+        deadline: "June 28, 2026",
         eligibility: "STEM major, undergraduate, research project with faculty supervisor",
         country: "Canada",
         field: "stem",
@@ -468,7 +468,7 @@ export async function POST(req: Request) {
         title: "Engineers Canada Scholarship",
         provider: "Engineers Canada",
         amount: "$5,000–$10,000",
-        deadline: "March 1, 2026",
+        deadline: "July 1, 2026",
         eligibility: "Engineering major, GPA 3.4+, Canadian institution",
         country: "Canada",
         field: "engineering",
@@ -481,7 +481,7 @@ export async function POST(req: Request) {
         title: "Civil Engineering Leadership Award",
         provider: "Canadian Society for Civil Engineering",
         amount: "$4,000–$6,000",
-        deadline: "February 15, 2026",
+        deadline: "May 15, 2026",
         eligibility: "Civil engineering major, junior or senior, Canadian resident",
         country: "Canada",
         field: "engineering",
@@ -522,7 +522,7 @@ export async function POST(req: Request) {
         title: "Finance Leadership Scholarship",
         provider: "CFA Society Canada",
         amount: "$4,000–$8,000",
-        deadline: "February 28, 2026",
+        deadline: "June 28, 2026",
         eligibility: "Finance/accounting major, GPA 3.4+, junior or senior",
         country: "Canada",
         field: "business",
@@ -550,7 +550,7 @@ export async function POST(req: Request) {
         title: "Social Sciences and Humanities Research Award",
         provider: "Social Sciences and Humanities Research Council",
         amount: "$6,000 (16 weeks)",
-        deadline: "February 15, 2026",
+        deadline: "May 15, 2026",
         eligibility: "Humanities/social sciences major, research project required",
         country: "Canada",
         field: "humanities",
@@ -578,7 +578,7 @@ export async function POST(req: Request) {
         title: "Sustainable Development Scholarship",
         provider: "Sustainable Development Technology Canada",
         amount: "$5,000–$8,000",
-        deadline: "March 15, 2026",
+        deadline: "July 15, 2026",
         eligibility: "Environmental engineering/sustainability major, research project required",
         country: "Canada",
         field: "environmental",
@@ -589,6 +589,18 @@ export async function POST(req: Request) {
 
     // Filter by country (strict)
     let filtered = allScholarships.filter(s => s.country === country);
+    
+    // Filter out expired deadlines (only show future deadlines)
+    const today = new Date();
+    filtered = filtered.filter(s => {
+      if (s.deadline === "Rolling") return true; // Rolling deadlines are always valid
+      try {
+        const deadlineDate = new Date(s.deadline);
+        return deadlineDate >= today;
+      } catch {
+        return true; // If date can't be parsed, keep it
+      }
+    });
 
     // Filter by field/major if specified
     if (major && major !== "Any") {
