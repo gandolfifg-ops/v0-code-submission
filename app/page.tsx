@@ -1,7 +1,7 @@
 "use client";
 
 /**
- * WealthNutz — Single File, v0-Ready (build:v103 hist+isDarkMode fully purged)
+ * WealthNutz — Single File, v0-Ready (build:v104 footer Link fixed, no nested a)
  * ─────────────────────────────────────────────────────────────────────────────
  * Paste this entire file into app/page.tsx in any Next.js project.
  *
@@ -166,7 +166,7 @@ const PARTNERS = [
   { name: "EdTech Alliance", desc: "Financial literacy integration" },
 ];
 
-// ─────────────────────────────────────────────────────────────���─�����─────────────
+// ──────────────────────────────────────────────────────���──────���─�����─────────────
 // SECTION 2 — DESIGN TOKENS (Light/Dark Mode Support)
 // ─────────────────────────────────────────────────────────────────────────────
 
@@ -963,7 +963,7 @@ function ExpandableText({ text, maxLines = 2 }: { text: string; maxLines?: numbe
   );
 }
 
-// ──────────────────────────────────────────────────────────────────────�������──────
+// ─────────────────────────────────────────────────────────���────────────�������──────
 // SECTION 5C-1 — FILTER SIDEBAR (Desktop) & SORT DROPDOWN
 // ─────────────────────────────────────────────────────────────────────────────
 
@@ -1271,7 +1271,7 @@ function ScholarshipFilterSidebar({
 
 // ─────────────────────────────────────────────────────────────────────────────
 // SECTION 5C-2 — FILTER BOTTOM SHEET (Mobile)
-// ─────────────────────────────────────────────────────────────────────────────
+// ──────────────────────────────────────────────────────────────────���──────────
 
 function FilterBottomSheet({ 
   isOpen, 
@@ -1757,7 +1757,7 @@ function TopPicksSection({ country }: { country: "Canada" | "USA" }) {
   );
 }
 
-// ─────��────────���──────���───���───────────────────────────────────────────────────
+// ─────��──���─────���──────���───���───────────────────────────────────────────────────
 // SECTION 5E — CREDIT PATH MODAL
 // ─────────────────────────────────────────────────────────────────────────────
 
@@ -2069,19 +2069,20 @@ return (
               <ul style={{ listStyle: "none", padding: 0, margin: 0 }}>
                 {links.map(link => (
                   <li key={link.label} style={{ marginBottom: 8 }}>
-                    <Link href={link.href}>
-                      <a style={{
+                    <Link
+                      href={link.href}
+                      style={{
                         fontSize: 11,
                         color: T.mid,
                         textDecoration: "none",
                         transition: "color 0.2s",
                         cursor: "pointer",
+                        display: "inline-block",
                       }}
                       onMouseEnter={e => (e.currentTarget.style.color = T.gold)}
                       onMouseLeave={e => (e.currentTarget.style.color = T.mid)}
-                      >
-                        {link.label}
-                      </a>
+                    >
+                      {link.label}
                     </Link>
                   </li>
                 ))}
