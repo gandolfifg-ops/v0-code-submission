@@ -1,7 +1,7 @@
 "use client";
 
 /**
- * WealthNutz — Single File, v0-Ready (build:v123 curated-scholarships-error-handling)
+ * WealthNutz — Single File, v0-Ready (build:v124 dropdown-solid-bg-show-more-pagination)
  * ─────────────────────────────────────────────────────────────────────────────
  * Paste this entire file into app/page.tsx in any Next.js project.
  *
@@ -1092,12 +1092,12 @@ function SortDropdown({ value, onChange, resultCount }: { value: SortOption; onC
                 top: "calc(100% + 6px)",
                 left: 0,
                 right: 0,
-                background: T.cardBg,
+                background: "#0a0a0a",
                 border: `1px solid ${T.border}`,
                 borderRadius: T.rsm,
                 overflow: "hidden",
                 zIndex: 1000,
-                boxShadow: "0 8px 24px rgba(0,0,0,0.3)",
+                boxShadow: "0 12px 32px rgba(0,0,0,0.5), 0 4px 12px rgba(0,0,0,0.3)",
               }}
             >
               {SORT_OPTIONS.map(opt => (
@@ -1109,15 +1109,15 @@ function SortDropdown({ value, onChange, resultCount }: { value: SortOption; onC
                     width: "100%",
                     padding: "10px 14px",
                     border: "none",
-                    background: value === opt.value ? T.glassHi : "rgba(0,0,0,0)",
+                    background: value === opt.value ? "rgba(245,158,11,0.15)" : "#0a0a0a",
                     color: value === opt.value ? T.gold : T.text,
                     fontSize: 12,
                     textAlign: "left",
                     cursor: "pointer",
                     transition: "background .15s",
                   }}
-                  onMouseEnter={e => { (e.currentTarget as HTMLElement).style.background = T.glassHi; }}
-                  onMouseLeave={e => { (e.currentTarget as HTMLElement).style.background = value === opt.value ? T.glassHi : "rgba(0,0,0,0)"; }}
+                  onMouseEnter={e => { (e.currentTarget as HTMLElement).style.background = "rgba(245,158,11,0.1)"; }}
+                  onMouseLeave={e => { (e.currentTarget as HTMLElement).style.background = value === opt.value ? "rgba(245,158,11,0.15)" : "#0a0a0a"; }}
                 >
                   {opt.label}
                 </button>
@@ -2618,21 +2618,31 @@ function ScholarshipScout({ onToggleSave, savedIds, isDarkMode }: { onToggleSave
   const [schFilters, setSchFilters] = useState<ScholarshipFilters>(DEFAULT_SCHOLARSHIP_FILTERS);
   const [schSort, setSchSort] = useState<SortOption>("best-match");
   const [mobileFilterOpen, setMobileFilterOpen] = useState(false);
+  // Pagination state
+  const [totalCount, setTotalCount] = useState(0);
+  const [hasMore, setHasMore] = useState(false);
+  const [nextOffset, setNextOffset] = useState<number | null>(null);
+  const [loadingMore, setLoadingMore] = useState(false);
+  
   useEffect(() => {
     if (phase !== "scanning") return;
     setScanIdx(0);
     const iv = setInterval(() => setScanIdx(p => Math.min(p+1, SCH_SCAN_MSGS.length-1)), 530);
     return () => clearInterval(iv);
   }, [phase]);
+  
   const handleSearch = async () => {
     setPhase("scanning");
     setError("");
     setResults([]);
+    setHasMore(false);
+    setNextOffset(null);
+    setTotalCount(0);
     try {
       const response = await fetch("/api/scholarships", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ country, major, year, query: query?.trim() ?? "" }),
+        body: JSON.stringify({ country, major, year, query: query?.trim() ?? "", offset: 0, limit: 10 }),
       });
       const data = await response.json();
       if (!response.ok || !data.scholarships) {
@@ -2643,6 +2653,9 @@ function ScholarshipScout({ onToggleSave, savedIds, isDarkMode }: { onToggleSave
         setResults([]);
       } else {
         setResults(data.scholarships);
+        setTotalCount(data.total || data.scholarships.length);
+        setHasMore(data.hasMore || false);
+        setNextOffset(data.nextOffset || null);
         setError("");
       }
     } catch (err) {
@@ -2651,6 +2664,27 @@ function ScholarshipScout({ onToggleSave, savedIds, isDarkMode }: { onToggleSave
       setResults([]);
     }
     setPhase("results");
+  };
+  
+  const handleLoadMore = async () => {
+    if (!hasMore || nextOffset === null || loadingMore) return;
+    setLoadingMore(true);
+    try {
+      const response = await fetch("/api/scholarships", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ country, major, year, query: query?.trim() ?? "", offset: nextOffset, limit: 20 }),
+      });
+      const data = await response.json();
+      if (response.ok && data.scholarships) {
+        setResults(prev => [...prev, ...data.scholarships]);
+        setHasMore(data.hasMore || false);
+        setNextOffset(data.nextOffset || null);
+      }
+    } catch (err) {
+      console.error("[v0] Load more error:", err);
+    }
+    setLoadingMore(false);
   };
   return (
     <motion.div variants={fadeUp} initial="hidden" animate="visible" style={{ display:"flex", flexDirection:"column", gap:14, width:"100%", maxWidth:"90vw", boxSizing:"border-box" }}>
@@ -2692,7 +2726,7 @@ function ScholarshipScout({ onToggleSave, savedIds, isDarkMode }: { onToggleSave
         )}
         {phase==="results" && error && (
           <motion.div key="error" initial={{opacity:0, y:-8}} animate={{opacity:1, y:0}} exit={{opacity:0, y:-8}}>
-            <Glass style={{ padding:16, display:"flex", flexDirection:"column", gap:8, background:`rgba(239,68,68,0.08)`, borderLeft:`3px solid #ef4444` }}>
+            <Glass style={{ padding:16, display:"flex", flexDirection:"column", gap:8, background:`rgba(239,68,68,0.08)`, borderTop:"none", borderRight:"none", borderBottom:"none", borderLeftWidth:3, borderLeftStyle:"solid", borderLeftColor:"#ef4444" }}>
               <span style={{ fontSize:12, color:"#ef4444", fontWeight:600 }}>⚠ {error}</span>
               <motion.button whileTap={tapAnim.tap} onClick={handleSearch} disabled={phase==="scanning"}
                 style={{ width:"100%", padding:"9px 0", borderRadius:T.rsm, border:`1px solid #ef4444`, background:"transparent", color:"#ef4444", fontSize:12, fontWeight:700, fontFamily:"inherit", cursor:"pointer", boxSizing:"border-box" }}>
@@ -2703,7 +2737,7 @@ function ScholarshipScout({ onToggleSave, savedIds, isDarkMode }: { onToggleSave
         )}
         {phase==="results" && results.length > 0 && !error && (
           <motion.div key="success" initial={{opacity:0}} animate={{opacity:1}} exit={{opacity:0}}>
-            <Glass style={{ padding:12, display:"flex", alignItems:"center", gap:8, background:`rgba(34,197,94,0.08)`, borderLeft:`3px solid #22c55e` }}>
+            <Glass style={{ padding:12, display:"flex", alignItems:"center", gap:8, background:`rgba(34,197,94,0.08)`, borderTop:"none", borderRight:"none", borderBottom:"none", borderLeftWidth:3, borderLeftStyle:"solid", borderLeftColor:"#22c55e" }}>
               <span style={{ width:5, height:5, borderRadius:"50%", background:"#22c55e" }} />
               <span style={{ fontSize:11, color:"#22c55e", fontWeight:600 }}>{results.length} scholarship{results.length !== 1 ? "s" : ""} found for {country}</span>
             </Glass>
@@ -2824,12 +2858,44 @@ function ScholarshipScout({ onToggleSave, savedIds, isDarkMode }: { onToggleSave
                       </motion.button>
                     </div>
                   </div>
-                  <ExpandableText text={r.eligibility} maxLines={3} />
+                  <ExpandableText text={(r as { description?: string }).description || r.eligibility} maxLines={3} />
                   <p style={{ fontSize:10, color:T.dim, margin:"0 0 10px", marginTop: 8 }}>Deadline: {r.deadline}</p>
                   <GoldCTA href={r.url} label="Apply Now" />
                 </Glass>
               </motion.div>
                     ))}
+                    
+                    {/* Show More Button */}
+                    {hasMore && (
+                      <motion.div variants={fadeUp} style={{ marginTop: 8 }}>
+                        <motion.button
+                          whileTap={{ scale: 0.98 }}
+                          onClick={handleLoadMore}
+                          disabled={loadingMore}
+                          style={{
+                            width: "100%",
+                            padding: "16px 0",
+                            borderRadius: T.rmd,
+                            border: `2px solid ${T.gold}`,
+                            background: "transparent",
+                            color: T.gold,
+                            fontSize: 14,
+                            fontWeight: 700,
+                            fontFamily: "inherit",
+                            cursor: loadingMore ? "wait" : "pointer",
+                            opacity: loadingMore ? 0.7 : 1,
+                            transition: "all 0.2s",
+                          }}
+                        >
+                          {loadingMore ? "Loading more scholarships..." : `Show More Scholarships (${totalCount - results.length} remaining)`}
+                        </motion.button>
+                      </motion.div>
+                    )}
+                    
+                    {/* Results count footer */}
+                    <p style={{ fontSize: 10, color: T.dim, textAlign: "center", margin: "12px 0 0" }}>
+                      Showing {results.length} of {totalCount} scholarships for {country}
+                    </p>
                   </motion.div>
                 </div>
                 
@@ -3544,7 +3610,7 @@ const hBtn = (active = false): CSSProperties => ({
             )}
           </div>
 
-          {/* ═══ SIDEBAR ���═════════════��════��══════════════��══��══���════════════ */}
+          {/* ═══ SIDEBAR ���═════════════����═══��══════════════��══��══���════════════ */}
           {/* Tap-outside overlay — mobile only, shown via CSS */}
           {(sidebarOpen || sidebarClosing) && (
             <div
