@@ -1,7 +1,7 @@
 "use client";
 
 /**
- * WealthNutz — Single File, v0-Ready (build:v132 negative-keyword-exclusion-filtering-fixed)
+ * WealthNutz — Single File, v0-Ready (build:v134 cache-clear)
  * ─────────────────────────────────────────────────────────────────────────────
  * Paste this entire file into app/page.tsx in any Next.js project.
  *
@@ -1298,7 +1298,7 @@ function FilterBottomSheet({
               left: 0,
               right: 0,
               maxHeight: "80vh",
-              background: T.cardBg,
+              background: isDarkMode ? "#000000" : "#FFFFFF",
               borderRadius: "20px 20px 0 0",
               zIndex: 201,
               overflow: "hidden",
@@ -2366,7 +2366,7 @@ const LoanCalculatorComponent = () => {
 // Memoize LoanCalculator to prevent unnecessary re-renders
 const LoanCalculator = React_memo_compat(LoanCalculatorComponent);
 
-// ── Loan Finder ────��───────────�����──────────���──────────�������───────────────────────
+// ── Loan Finder ────��───────────�����──────���───���──────────�������───────────────────────
 type Phase = "idle"|"scanning"|"results";
 const SCAN_MSGS = ["Connecting to loan databases...","Scanning live lender rates...","Cross-referencing eligibility...","Compiling best rates for you..."];
 
@@ -2430,9 +2430,36 @@ function LoanFinder({ onToggleSave, savedIds, userCountry, isDarkMode }: { onTog
       <AnimatePresence>
         {phase==="results" && results.length>0 && (
           <motion.div key="lr" variants={stagger} initial="hidden" animate="visible" style={{ display:"flex", flexDirection:"column", gap:10 }}>
-            {results.map(r => (
-              <motion.div key={r.id} variants={fadeUp}>
+            {results.filter(r => !discardedItems.has(r.id)).map(r => (
+              <motion.div key={r.id} variants={fadeUp} style={{ position: "relative" }}>
                 <Glass glow style={{ padding:14 }}>
+                  {/* Discard button */}
+                  <motion.button
+                    whileTap={{ scale: 0.9 }}
+                    onClick={() => handleDiscardItem(r)}
+                    style={{
+                      position: "absolute",
+                      top: 8,
+                      right: 8,
+                      background: "transparent",
+                      border: "none",
+                      cursor: "pointer",
+                      padding: 4,
+                      color: T.mid,
+                      borderRadius: 4,
+                      transition: "all 0.2s",
+                    }}
+                    onMouseEnter={(e) => {
+                      (e.currentTarget as HTMLButtonElement).style.background = "rgba(239,68,68,0.2)";
+                      (e.currentTarget as HTMLButtonElement).style.color = "#ef4444";
+                    }}
+                    onMouseLeave={(e) => {
+                      (e.currentTarget as HTMLButtonElement).style.background = "transparent";
+                      (e.currentTarget as HTMLButtonElement).style.color = T.mid;
+                    }}
+                  >
+                    <X size={16} />
+                  </motion.button>
                   <div style={{ display:"flex", justifyContent:"space-between", alignItems:"flex-start", marginBottom:7, gap:10 }}>
                     <div><p style={{ fontSize:13, fontWeight:700, color:T.text, margin:"0 0 2px" }}>{r.title}</p><p style={{ fontSize:11, color:T.mid, margin:0 }}>{r.provider}</p></div>
                     <div style={{ display:"flex", alignItems:"center", gap:6 }}>
@@ -2761,9 +2788,36 @@ function ScholarshipResults({ phase, results, country, userQuery, schSort, setSc
 
           {/* Results */}
           <motion.div key="sr" variants={stagger} initial="hidden" animate="visible" style={{ flex:1, display:"flex", flexDirection:"column", gap:10 }}>
-            {sortedResults.map(r => (
-              <motion.div key={r.id} variants={fadeUp}>
+            {sortedResults.filter(r => !discardedItems.has(r.id)).map(r => (
+              <motion.div key={r.id} variants={fadeUp} style={{ position: "relative" }}>
                 <Glass glow style={{ padding:14 }}>
+                  {/* Discard button */}
+                  <motion.button
+                    whileTap={{ scale: 0.9 }}
+                    onClick={() => handleDiscardItem(r)}
+                    style={{
+                      position: "absolute",
+                      top: 8,
+                      right: 8,
+                      background: "transparent",
+                      border: "none",
+                      cursor: "pointer",
+                      padding: 4,
+                      color: T.mid,
+                      borderRadius: 4,
+                      transition: "all 0.2s",
+                    }}
+                    onMouseEnter={(e) => {
+                      (e.currentTarget as HTMLButtonElement).style.background = "rgba(239,68,68,0.2)";
+                      (e.currentTarget as HTMLButtonElement).style.color = "#ef4444";
+                    }}
+                    onMouseLeave={(e) => {
+                      (e.currentTarget as HTMLButtonElement).style.background = "transparent";
+                      (e.currentTarget as HTMLButtonElement).style.color = T.mid;
+                    }}
+                  >
+                    <X size={16} />
+                  </motion.button>
                   <div style={{ display:"flex", justifyContent:"space-between", alignItems:"flex-start", marginBottom:7, gap:10 }}>
                     <div style={{ flex:1 }}>
                       <p style={{ fontSize:13, fontWeight:700, color:T.text, margin:"0 0 2px" }}>{r.title}</p>
@@ -3186,14 +3240,36 @@ export default function WealthNutzPage() {
   const savedIds = useMemo(() => new Set(savedItems.map(x => x.id)), [savedItems]);
   const [locationBarDismissed, setLocationBarDismissed] = useState(false);
   const [toast, setToast] = useState<string | null>(null);
+  const [discardedItems, setDiscardedItems] = useState<Map<string, ScoutResult>>(new Map());
+  const [lastDiscardedId, setLastDiscardedId] = useState<string | null>(null);
   
   // Auto-dismiss toast
   useEffect(() => {
     if (toast) {
-      const t = setTimeout(() => setToast(null), 3000);
+      const t = setTimeout(() => setToast(null), 5000);
       return () => clearTimeout(t);
     }
   }, [toast]);
+
+  // Handle discarding a scholarship/loan and showing undo toast
+  const handleDiscardItem = (item: ScoutResult) => {
+    setDiscardedItems(prev => new Map(prev).set(item.id, item));
+    setLastDiscardedId(item.id);
+    setToast(`Discarded: ${item.title}`);
+  };
+
+  // Handle undoing a discard
+  const handleUndoDiscard = () => {
+    if (lastDiscardedId) {
+      setDiscardedItems(prev => {
+        const next = new Map(prev);
+        next.delete(lastDiscardedId);
+        return next;
+      });
+      setLastDiscardedId(null);
+      setToast(null);
+    }
+  };
 
 useEffect(() => {
   // Load from localStorage first (for guests)
@@ -3863,11 +3939,34 @@ style={{ display:"flex", alignItems:"center", gap:9, padding:"9px 10px", borderR
               zIndex: 9999,
             }}
           >
-            <LogIn size={16} color={T.gold} />
-            <span style={{ fontSize: 13, color: T.text, fontWeight: 500 }}>{toast}</span>
-            <motion.button
-              whileTap={{ scale: 0.9 }}
-              onClick={() => { setToast(null); setShowAuth(true); }}
+            {lastDiscardedId ? (
+              <>
+                <span style={{ fontSize: 13, color: T.text, fontWeight: 500 }}>{toast}</span>
+                <motion.button
+                  whileTap={{ scale: 0.9 }}
+                  onClick={handleUndoDiscard}
+                  style={{
+                    padding: "6px 14px",
+                    borderRadius: 6,
+                    background: T.gold,
+                    border: "none",
+                    color: "#07090d",
+                    fontSize: 12,
+                    fontWeight: 700,
+                    cursor: "pointer",
+                    marginLeft: "auto",
+                  }}
+                >
+                  Undo
+                </motion.button>
+              </>
+            ) : (
+              <>
+                <LogIn size={16} color={T.gold} />
+                <span style={{ fontSize: 13, color: T.text, fontWeight: 500 }}>{toast}</span>
+                <motion.button
+                  whileTap={{ scale: 0.9 }}
+                  onClick={() => { setToast(null); setShowAuth(true); }}
               style={{
                 background: T.gold,
                 border: "none",
