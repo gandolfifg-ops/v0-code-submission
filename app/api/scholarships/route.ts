@@ -647,6 +647,80 @@ export async function POST(req: Request) {
       if (queryFiltered.length > 0) filtered = queryFiltered;
     }
 
+    // ═══════════════════════════════════════════════════════════════════════
+    // NEGATIVE KEYWORD FILTERING — Extract and apply exclusion constraints
+    // Recognizes patterns: "not X", "non-X", "no X", "never X", "I am not X"
+    // ═══════════════════════════════════════════════════════════════════════
+    if (query && query.trim()) {
+      const queryLower = query.toLowerCase();
+      
+      // Extract negative constraints from user input
+      const negationPatterns = [
+        /\b(?:i am |i'm |i )not\s+(?:a |an )?(\w+)/gi,  // "I am not indigenous", "I'm not international"
+        /\bnot\s+(?:a |an )?(\w+)/gi,                    // "not indigenous", "not a citizen"
+        /\bnon[- ]?(\w+)/gi,                             // "non-indigenous", "non-citizen"
+        /\bno\s+(\w+)/gi,                                // "no GPA requirement" (keep for filtering logic)
+        /\bnever\s+(\w+)/gi,                             // "never lived abroad"
+        /\bwithout\s+(?:being |having )?(?:a |an )?(\w+)/gi, // "without being indigenous"
+        /\bexclude\s+(\w+)/gi,                           // "exclude indigenous"
+        /\bexcluding\s+(\w+)/gi,                         // "excluding international"
+      ];
+      
+      const excludeTerms: string[] = [];
+      
+      for (const pattern of negationPatterns) {
+        let match;
+        while ((match = pattern.exec(queryLower)) !== null) {
+          const term = match[1]?.trim().toLowerCase();
+          if (term && term.length > 2) {
+            excludeTerms.push(term);
+          }
+        }
+      }
+      
+      // Common identity/demographic terms that indicate scholarship targeting
+      const demographicTerms = [
+        "indigenous", "aboriginal", "native", "first nations", "metis", "inuit",
+        "international", "foreign", "immigrant", "refugee",
+        "female", "women", "woman", "male", "men", "man",
+        "black", "african", "hispanic", "latino", "latina", "asian", "minority",
+        "lgbtq", "lgbt", "queer", "transgender",
+        "veteran", "military", "disabled", "disability",
+        "citizen", "resident", "permanent"
+      ];
+      
+      // Filter out scholarships that match excluded terms
+      if (excludeTerms.length > 0) {
+        filtered = filtered.filter(scholarship => {
+          const searchableText = (
+            scholarship.title + " " +
+            scholarship.description + " " +
+            scholarship.eligibility + " " +
+            scholarship.provider
+          ).toLowerCase();
+          
+          // Check if any excluded term appears in the scholarship
+          for (const term of excludeTerms) {
+            // Only exclude if the term is a demographic/identity indicator
+            const isDemographic = demographicTerms.some(d => 
+              term.includes(d) || d.includes(term)
+            );
+            
+            if (isDemographic && searchableText.includes(term)) {
+              return false; // Exclude this scholarship
+            }
+            
+            // Also check for direct term match in eligibility/title
+            if (scholarship.eligibility.toLowerCase().includes(term) ||
+                scholarship.title.toLowerCase().includes(term)) {
+              return false;
+            }
+          }
+          return true; // Keep this scholarship
+        });
+      }
+    }
+
     // Apply pagination
     const total = filtered.length;
     const paginated = filtered.slice(offset, offset + limit);

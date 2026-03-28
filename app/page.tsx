@@ -1,7 +1,7 @@
 "use client";
 
 /**
- * WealthNutz — Single File, v0-Ready (build:v130 academic-level-update-solid-dropdowns-validation)
+ * WealthNutz — Single File, v0-Ready (build:v132 negative-keyword-exclusion-filtering-fixed)
  * ─────────────────────────────────────────────────────────────────────────────
  * Paste this entire file into app/page.tsx in any Next.js project.
  *
@@ -2613,10 +2613,71 @@ function parseScholarshipAmount(amt: string): number {
   return m ? parseInt(m[0].replace(/,/g, ""), 10) : 0;
 }
 
+// Extract negative/exclusion terms from user query for client-side double-check filtering
+function extractExcludeTerms(query: string): string[] {
+  if (!query) return [];
+  const queryLower = query.toLowerCase();
+  const excludeTerms: string[] = [];
+  
+  // Patterns to detect negation
+  const patterns = [
+    /\b(?:i am |i'm |i )not\s+(?:a |an )?(\w+)/gi,
+    /\bnot\s+(?:a |an )?(\w+)/gi,
+    /\bnon[- ]?(\w+)/gi,
+    /\bwithout\s+(?:being |having )?(?:a |an )?(\w+)/gi,
+    /\bexclude\s+(\w+)/gi,
+    /\bexcluding\s+(\w+)/gi,
+  ];
+  
+  for (const pattern of patterns) {
+    let match;
+    while ((match = pattern.exec(queryLower)) !== null) {
+      const term = match[1]?.trim().toLowerCase();
+      if (term && term.length > 2) {
+        excludeTerms.push(term);
+      }
+    }
+  }
+  return excludeTerms;
+}
+
+// Check if a scholarship should be excluded based on negative keywords
+function shouldExcludeScholarship(scholarship: ScoutResult, excludeTerms: string[]): boolean {
+  if (excludeTerms.length === 0) return false;
+  
+  const searchableText = (
+    scholarship.title + " " +
+    ((scholarship as { description?: string }).description || "") + " " +
+    (scholarship.eligibility || "")
+  ).toLowerCase();
+  
+  const demographicTerms = [
+    "indigenous", "aboriginal", "native", "first nations", "metis", "inuit",
+    "international", "foreign", "immigrant", "refugee",
+    "female", "women", "woman", "male", "men",
+    "black", "african", "hispanic", "latino", "latina", "asian", "minority",
+    "lgbtq", "lgbt", "veteran", "military", "disabled", "disability",
+    "citizen", "resident"
+  ];
+  
+  for (const term of excludeTerms) {
+    const isDemographic = demographicTerms.some(d => term.includes(d) || d.includes(term));
+    if (isDemographic && searchableText.includes(term)) {
+      return true; // Exclude
+    }
+    if (scholarship.eligibility?.toLowerCase().includes(term) ||
+        scholarship.title.toLowerCase().includes(term)) {
+      return true; // Exclude
+    }
+  }
+  return false;
+}
+
 type ScholarshipResultsProps = {
   phase: Phase;
   results: ScoutResult[];
   country: string;
+  userQuery: string;
   schSort: SortOption;
   setSchSort: (v: SortOption) => void;
   schFilters: ScholarshipFilters;
@@ -2631,19 +2692,25 @@ type ScholarshipResultsProps = {
   setMobileFilterOpen: (v: boolean) => void;
 };
 
-function ScholarshipResults({ phase, results, country, schSort, setSchSort, schFilters, setSchFilters, hasMore, loadingMore, totalCount, handleLoadMore, onToggleSave, savedIds, mobileFilterOpen, setMobileFilterOpen }: ScholarshipResultsProps) {
+function ScholarshipResults({ phase, results, country, userQuery, schSort, setSchSort, schFilters, setSchFilters, hasMore, loadingMore, totalCount, handleLoadMore, onToggleSave, savedIds, mobileFilterOpen, setMobileFilterOpen }: ScholarshipResultsProps) {
+  // Extract exclusion terms from user query for client-side double-check
+  const excludeTerms = extractExcludeTerms(userQuery);
+  
+  // Apply exclusion filter first — this is the double-check before display
+  const excludeFiltered = results.filter(r => !shouldExcludeScholarship(r, excludeTerms));
+  
   const filterCounts = {
-    under1k:  results.filter(r => parseScholarshipAmount(r.amount ?? "0") < 1000).length,
-    k1to5:    results.filter(r => { const a = parseScholarshipAmount(r.amount ?? "0"); return a >= 1000 && a <= 5000; }).length,
-    k5to10:   results.filter(r => { const a = parseScholarshipAmount(r.amount ?? "0"); return a > 5000 && a <= 10000; }).length,
-    k10plus:  results.filter(r => parseScholarshipAmount(r.amount ?? "0") > 10000).length,
-    undergrad: results.filter(r => (r.eligibility ?? "").toLowerCase().includes("undergrad") || !(r.eligibility ?? "").toLowerCase().includes("graduate")).length,
-    graduate:  results.filter(r => (r.eligibility ?? "").toLowerCase().includes("graduate")).length,
-    noEssay:   results.filter(r => (r.eligibility ?? "").toLowerCase().includes("no essay")).length,
-    noGpa:     results.filter(r => !(r.eligibility ?? "").toLowerCase().includes("gpa")).length,
+    under1k:  excludeFiltered.filter(r => parseScholarshipAmount(r.amount ?? "0") < 1000).length,
+    k1to5:    excludeFiltered.filter(r => { const a = parseScholarshipAmount(r.amount ?? "0"); return a >= 1000 && a <= 5000; }).length,
+    k5to10:   excludeFiltered.filter(r => { const a = parseScholarshipAmount(r.amount ?? "0"); return a > 5000 && a <= 10000; }).length,
+    k10plus:  excludeFiltered.filter(r => parseScholarshipAmount(r.amount ?? "0") > 10000).length,
+    undergrad: excludeFiltered.filter(r => (r.eligibility ?? "").toLowerCase().includes("undergrad") || !(r.eligibility ?? "").toLowerCase().includes("graduate")).length,
+    graduate:  excludeFiltered.filter(r => (r.eligibility ?? "").toLowerCase().includes("graduate")).length,
+    noEssay:   excludeFiltered.filter(r => (r.eligibility ?? "").toLowerCase().includes("no essay")).length,
+    noGpa:     excludeFiltered.filter(r => !(r.eligibility ?? "").toLowerCase().includes("gpa")).length,
   };
 
-  const filteredResults = results.filter(r => {
+  const filteredResults = excludeFiltered.filter(r => {
     const itemCountry = (r as { country?: string }).country;
     if (country !== "Any" && itemCountry) {
       if (country === "Canada" && itemCountry !== "Canada") return false;
@@ -2923,6 +2990,7 @@ function ScholarshipScout({ onToggleSave, savedIds, isDarkMode }: { onToggleSave
         phase={phase}
         results={results}
         country={country}
+        userQuery={query}
         schSort={schSort}
         setSchSort={setSchSort}
         schFilters={schFilters}
