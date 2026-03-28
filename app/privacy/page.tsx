@@ -19,7 +19,7 @@ export default function PrivacyPage() {
         {/* Back link */}
         <Link href="/" style={{ display: "inline-flex", alignItems: "center", gap: 8, color: T.gold, textDecoration: "none", marginBottom: 32, fontSize: 14 }}>
           <ArrowLeft size={16} />
-          Back to Forge
+          Back to WealthNutz
         </Link>
 
         {/* Header */}
@@ -33,7 +33,7 @@ export default function PrivacyPage() {
         {/* Content */}
         <div style={{ lineHeight: 1.8, fontSize: 16, color: T.text }}>
           <p style={{ marginBottom: 24 }}>
-            Forge Finances respects your privacy. We collect minimal data necessary to provide AI-driven financial insights. We do not sell your personal data to third parties.
+            WealthNutz respects your privacy. We collect minimal data necessary to provide AI-driven financial insights. We do not sell your personal data to third parties.
           </p>
           
           <p style={{ marginBottom: 24 }}>

@@ -1,7 +1,7 @@
 "use client";
 
 /**
- * Forge — Single File, v0-Ready
+ * WealthNutz — Single File, v0-Ready (build:v137 final-stability-fix)
  * ─────────────────────────────────────────────────────────────────────────────
  * Paste this entire file into app/page.tsx in any Next.js project.
  *
@@ -24,8 +24,9 @@ import { useState, useEffect, useRef, useCallback, useMemo, memo as React_memo, 
 import { motion, AnimatePresence } from "framer-motion";
 import {
   TrendingUp, Clock, DollarSign, GraduationCap, ShoppingBag,
-  Send, Share2, Check, ChevronLeft, Trash2, User, Search,
+  Send, Share2, Check, ChevronLeft, ChevronRight, User, Search,
   BarChart2, PiggyBank, BookOpen, ExternalLink, Bookmark, X, LogIn, LogOut,
+  Sun, Moon, SlidersHorizontal, ChevronDown, RotateCcw,
 } from "lucide-react";
 import type { User as SupabaseUser } from "@supabase/supabase-js";
 import InlineChatComponent from "@/app/inline-chat";
@@ -52,43 +53,113 @@ const AFFILIATE_PRODUCTS = [
 
 // ── LOAN MARKETPLACE — High Conversion Affiliate Offers ─────────────────────
 const LOAN_MARKETPLACE = [
-  { id: "sofi-refi",   name: "SoFi Student Loan Refinance", rate: "From 4.49% APR", bonus: "$300 Welcome Bonus", badge: "Best Rate", country: "US" as const, href: "https://www.sofi.com/refinance-student-loans/", highlight: "No fees · Unemployment protection · Member benefits", cta: "Check My Rate" },
-  { id: "earnest",     name: "Earnest Student Loans",       rate: "From 4.25% APR", bonus: "$200 Bonus",         badge: "Flexible",  country: "US" as const, href: "https://www.earnest.com/",                     highlight: "Skip a payment option · Precision pricing",          cta: "Check My Rate" },
-  { id: "credible",    name: "Credible Marketplace",        rate: "Compare 8+ Lenders", bonus: "Free Comparison",badge: "Compare",   country: "US" as const, href: "https://www.credible.com/",                   highlight: "One form · Multiple offers · No impact on credit",   cta: "Compare Rates" },
-  { id: "sallie-mae",  name: "Sallie Mae Loans",            rate: "From 5.24% APR", bonus: "Multi-Year Approval", badge: "",         country: "US" as const, href: "https://www.salliemae.com/",                  highlight: "Cover up to 100% of school costs",                   cta: "Apply Now"     },
-  { id: "nslsc",       name: "Federal Student Loans (NSLSC)", rate: "Prime +1%",    bonus: "Grants Available",  badge: "Gov't",     country: "CA" as const, href: "https://www.csnpe-nslsc.canada.ca/",          highlight: "Repayment assistance · No credit check",             cta: "Apply Now"     },
-  { id: "rbc-student", name: "RBC Student Line of Credit",  rate: "Prime +0%",      bonus: "$0 Annual Fee",     badge: "Low Rate",  country: "CA" as const, href: "https://www.rbc.com/student/",                highlight: "Only pay interest while in school",                  cta: "Check My Rate" },
+  { id: "sofi-refi",   name: "SoFi Student Loan Refinance", rate: "From 4.49% APR", bonus: "$300 Welcome Bonus", badge: "Best Rate", country: "US" as const, loanType: "Student" as const, href: "https://www.sofi.com/refinance-student-loans/", highlight: "No fees · Unemployment protection · Member benefits", cta: "Check My Rate" },
+  { id: "earnest",     name: "Earnest Student Loans",       rate: "From 4.25% APR", bonus: "$200 Bonus",         badge: "Flexible",  country: "US" as const, loanType: "Student" as const, href: "https://www.earnest.com/",                     highlight: "Skip a payment option · Precision pricing",          cta: "Check My Rate" },
+  { id: "credible",    name: "Credible Marketplace",        rate: "Compare 8+ Lenders", bonus: "Free Comparison",badge: "Compare",   country: "US" as const, loanType: "Student" as const, href: "https://www.credible.com/",                   highlight: "One form · Multiple offers · No impact on credit",   cta: "Compare Rates" },
+  { id: "sallie-mae",  name: "Sallie Mae Loans",            rate: "From 5.24% APR", bonus: "Multi-Year Approval", badge: "",         country: "US" as const, loanType: "Student" as const, href: "https://www.salliemae.com/",                  highlight: "Cover up to 100% of school costs",                   cta: "Apply Now"     },
+  { id: "lightstream", name: "LightStream Personal Loans",  rate: "From 7.49% APR", bonus: "Rate Beat Program",  badge: "Low APR",   country: "US" as const, loanType: "Personal" as const, href: "https://www.lightstream.com/",               highlight: "No fees · Same-day funding · Flexible terms",        cta: "Check My Rate" },
+  { id: "upstart",     name: "Upstart Personal Loans",      rate: "From 6.70% APR", bonus: "AI-Powered Rates",   badge: "Fast",      country: "US" as const, loanType: "Personal" as const, href: "https://www.upstart.com/",                   highlight: "Beyond credit score · Quick approval",               cta: "Check My Rate" },
+  { id: "capitalOne",  name: "Capital One Auto Finance",    rate: "From 5.99% APR", bonus: "Pre-Qualify Now",    badge: "Top Pick",  country: "US" as const, loanType: "Auto" as const,     href: "https://www.capitalone.com/cars/",            highlight: "No impact on credit · 30 days to shop",              cta: "Get Pre-Qualified" },
+  { id: "carvana",     name: "Carvana Auto Financing",      rate: "From 6.89% APR", bonus: "7-Day Return",       badge: "",          country: "US" as const, loanType: "Auto" as const,     href: "https://www.carvana.com/",                    highlight: "Shop & finance in one · Delivered to you",           cta: "Get Started"   },
+  { id: "nslsc",       name: "Federal Student Loans (NSLSC)", rate: "Prime +1%",    bonus: "Grants Available",  badge: "Gov't",     country: "CA" as const, loanType: "Student" as const, href: "https://www.csnpe-nslsc.canada.ca/",          highlight: "Repayment assistance · No credit check",             cta: "Apply Now"     },
+  { id: "rbc-student", name: "RBC Student Line of Credit",  rate: "Prime +0%",      bonus: "$0 Annual Fee",     badge: "Low Rate",  country: "CA" as const, loanType: "Student" as const, href: "https://www.rbc.com/student/",                highlight: "Only pay interest while in school",                  cta: "Check My Rate" },
+  { id: "td-personal", name: "TD Personal Line of Credit",  rate: "Prime +2%",      bonus: "Flexible Access",   badge: "",          country: "CA" as const, loanType: "Personal" as const, href: "https://www.td.com/ca/en/personal-banking/",  highlight: "Only pay interest on what you use",                  cta: "Apply Now"     },
+  { id: "rbc-auto",    name: "RBC Auto Loan",               rate: "From 6.49%",     bonus: "No Dealer Markup",  badge: "Trusted",   country: "CA" as const, loanType: "Auto" as const,     href: "https://www.rbc.com/personal-lending/",       highlight: "Pre-approval in minutes · Shop with confidence",     cta: "Get Pre-Approved" },
 ];
 
-const TAGLINE = "The all-in-one financial ecosystem for the modern student. Build credit, learn to invest, and forge your future.";
+const TAGLINE = "The all-in-one financial ecosystem for the modern student. Build credit, learn to invest, and grow your wealth.";
 
-const SCHOLARSHIP_MAJORS   = ["Any Major","Computer Science / Engineering","Business / Finance","Medicine / Health Sciences","Arts & Humanities","Law / Political Science","Education","Environmental Science","Mathematics / Statistics","Nursing","Social Work","Trades / Vocational"] as const;
-const SCHOLARSHIP_COUNTRIES= ["Canada","USA","Both"] as const;
-const SCHOLARSHIP_YEARS    = ["Any Year","1st Year","2nd Year","3rd Year","4th Year","Graduate"] as const;
+const SCHOLARSHIP_MAJORS    = ["Any Major","STEM","Engineering","Business","Finance","Healthcare","Nursing","Computer Science","Data Science","Mathematics","Physics","Chemistry","Biology","Psychology","Education","Arts","Design","Music","Writing","History","Political Science","Environmental Science"] as const;
+const SCHOLARSHIP_COUNTRIES = ["Canada","USA"] as const;
+const SCHOLARSHIP_LEVELS    = ["Any Level","Undergraduate","Graduate","Masters","PhD"] as const;
 const LOAN_TYPES           = ["Student","Personal","Auto"] as const;
 type  LoanType             = typeof LOAN_TYPES[number];
 
+// ── FILTER & SORT OPTIONS ───────────────────────────────────────────────────
+type SortOption = "best-match" | "highest-award" | "lowest-rate" | "newest" | "deadline-soonest";
+const SORT_OPTIONS: { value: SortOption; label: string }[] = [
+  { value: "best-match", label: "Best Match" },
+  { value: "highest-award", label: "Highest Award / Lowest Rate" },
+  { value: "newest", label: "Newly Added" },
+  { value: "deadline-soonest", label: "Deadline Soonest" },
+];
+
+// Scholarship filters
+type ScholarshipFilters = {
+  awardAmount: "any" | "under-1k" | "1k-5k" | "5k-10k" | "10k-plus";
+  educationLevel: "any" | "undergrad" | "graduate" | "any-level";
+  noEssay: boolean;
+  noGpaReq: boolean;
+};
+
+// Loan filters  
+type LoanFilters = {
+  interestType: "any" | "fixed" | "variable";
+  noCoSigner: boolean;
+  defermentAvailable: boolean;
+};
+
+const DEFAULT_SCHOLARSHIP_FILTERS: ScholarshipFilters = {
+  awardAmount: "any",
+  educationLevel: "any",
+  noEssay: false,
+  noGpaReq: false,
+};
+
+const DEFAULT_LOAN_FILTERS: LoanFilters = {
+  interestType: "any",
+  noCoSigner: false,
+  defermentAvailable: false,
+};
+
 // Mock data — shown instantly while DB / search API is connecting
-const MOCK_SCHOLARSHIPS = [
-  { id:"ms1", type:"scholarship" as const, title:"National Merit Excellence Award",    provider:"National Foundation",       amount:"$5,000–$10,000", deadline:"March 31",   eligibility:"GPA 3.0+, any major, CA or USA",            url:"#" },
-  { id:"ms2", type:"scholarship" as const, title:"Future Leaders Bursary",             provider:"Community Foundation",      amount:"$2,500",         deadline:"January 31", eligibility:"First-generation student, any year",         url:"#" },
-  { id:"ms3", type:"scholarship" as const, title:"STEM Advancement Grant",             provider:"Tech Industry Fund",        amount:"$4,500–$8,000",  deadline:"February 15",eligibility:"STEM major, 2nd year or above",               url:"#" },
-  { id:"ms4", type:"scholarship" as const, title:"Community Impact Scholarship",       provider:"Provincial / State Gov't",  amount:"$3,000",         deadline:"Rolling",    eligibility:"Demonstrated community service, any major",  url:"#" },
-  { id:"ms5", type:"scholarship" as const, title:"Women in Business Award",            provider:"Business Leadership Council",amount:"$2,000–$6,000", deadline:"April 1",    eligibility:"Business / Finance major, undergrad",        url:"#" },
-];
-const MOCK_LOANS = [
-  { id:"ml1", type:"loan" as const, title:"Federal Student Loan (Direct)",    provider:"U.S. Dept. of Education / NSLSC",amount:"From 5.50% APR", deadline:"Apply via FAFSA / NSLSC", eligibility:"Enrolled student, US or Canada",           url:"#" },
-  { id:"ml2", type:"loan" as const, title:"SoFi Student Loan Refinance",      provider:"SoFi",                          amount:"From 4.49% APR", deadline:"Open — instant pre-qual", eligibility:"Good credit, employed or graduating",       url:"https://www.sofi.com" },
-  { id:"ml3", type:"loan" as const, title:"Wealthsimple Personal Loan",       provider:"Wealthsimple",                  amount:"From 9.99% APR", deadline:"Open — apply in minutes", eligibility:"Canadian resident, 18+, income verified",  url:"https://www.wealthsimple.com" },
+// Scholarship type for AI-generated results
+type Scholarship = {
+  id: string;
+  type: "scholarship";
+  title: string;
+  provider: string;
+  amount: string;
+  deadline: string;
+  eligibility: string;
+  country: "USA" | "Canada";
+  description: string;
+  url: string;
+};
+
+// Loan type for mock/API results
+type Loan = {
+  id: string;
+  type: "loan";
+  title: string;
+  provider: string;
+  amount: string;
+  deadline: string;
+  eligibility: string;
+  url: string;
+};
+
+const MOCK_LOANS: Loan[] = [
+  { id:"ml1", type:"loan", title:"Federal Student Loan (Direct)",    provider:"U.S. Dept. of Education / NSLSC",amount:"From 5.50% APR", deadline:"Apply via FAFSA / NSLSC", eligibility:"Enrolled student, US or Canada",           url:"#" },
+  { id:"ml2", type:"loan", title:"SoFi Student Loan Refinance",      provider:"SoFi",                          amount:"From 4.49% APR", deadline:"Open — instant pre-qual", eligibility:"Good credit, employed or graduating",       url:"https://www.sofi.com" },
+  { id:"ml3", type:"loan", title:"Wealthsimple Personal Loan",       provider:"Wealthsimple",                  amount:"From 9.99% APR", deadline:"Open — apply in minutes", eligibility:"Canadian resident, 18+, income verified",  url:"https://www.wealthsimple.com" },
 ];
 
-type ScoutResult = typeof MOCK_SCHOLARSHIPS[number] | typeof MOCK_LOANS[number];
+type ScoutResult = (Scholarship | Loan) & {
+  // Additional fields for marketplace loan cards
+  name?: string;
+  rate?: string;
+  highlight?: string;
+  href?: string;
+  cta?: string;
+  description?: string;
+};
 
-const VIRAL_SHARE   = "This free AI tool finds you $100k+ in scholarships and the lowest loan rates in seconds. It's called Forge and it's completely free: https://forgewealth.app";
-const WELCOME_MSG   = "Forge Intelligence Co-Pilot is indexing live financial databases... How can I help you accelerate your wealth today?";
-const AFFIL_NOTE    = "Forge may earn a referral commission if you open an account through our links. This never affects our recommendations.";
-const FOOTER_TEXT   = "Forge provides general financial education only and is not a licensed financial advisor, broker, or lender. Information is for educational purposes and does not constitute personalized financial, legal, or tax advice. Affiliate links may be present — see our disclosure.";
-const SYSTEM_PROMPT = `You are the Forge Intelligence Co-Pilot — a quantitative financial advisor for students in Canada and the USA. You are analytical, concise, and direct.
+const VIRAL_SHARE   = "Stop guessing with your money. I just found this AI tool called WealthNutz that scours the internet for the best deals, credit offers, and high-yield savings in seconds: https://wealthnutz.com";
+const WELCOME_MSG   = "WealthNutz Intelligence Co-Pilot is indexing live financial databases... How can I help you accelerate your wealth today?";
+const AFFIL_NOTE    = "WealthNutz may earn a referral commission if you open an account through our links. This never affects our recommendations.";
+const FOOTER_TEXT   = "WealthNutz provides general financial education only and is not a licensed financial advisor, broker, or lender. Information is for educational purposes and does not constitute personalized financial, legal, or tax advice. Affiliate links may be present — see our disclosure.";
+const SYSTEM_PROMPT = `You are the WealthNutz Intelligence Co-Pilot — a quantitative financial advisor for students in Canada and the USA. You are analytical, concise, and direct.
 
 COMMUNICATION STYLE:
 - No markdown formatting (no **, *, bullet points). Use plain text with numbers and line breaks for clarity.
@@ -114,11 +185,11 @@ const PARTNERS = [
   { name: "EdTech Alliance", desc: "Financial literacy integration" },
 ];
 
-// ─────────────────────────────────────────────────────────────────────────────
-// SECTION 2 — DESIGN TOKENS (Dark Mode Only)
+// ─────────────────────────────────────────────────��───���������──��───���─�����─────────────
+// SECTION 2 — DESIGN TOKENS (Light/Dark Mode Support)
 // ─────────────────────────────────────────────────────────────────────────────
 
-const T = {
+const DARK_THEME = {
   bg:      "#050505",
   glass:   "rgba(255,255,255,0.044)",
   glassHi: "rgba(255,255,255,0.085)",
@@ -126,6 +197,7 @@ const T = {
   gold:    "#C9A84C",
   goldHi:  "#E8C97A",
   goldDim: "#8B6914",
+  goldText: "#07090d", // Dark text on gold buttons
   glow:    "rgba(201,168,76,0.22)",
   text:    "#F0EBE3",
   mid:     "#9A9080",
@@ -136,14 +208,49 @@ const T = {
   red:     "#f87171",
   r:       "13px",
   rsm:     "9px",
+  rmd:     "13px",
   blur:    "blur(20px)",
   cardBg:  "rgba(255,255,255,0.1)",
   cardBorder: "rgba(255,255,255,0.2)",
+  cardShadow: "none",
+  badgeBg: "", // Use default in dark mode
+  badgeText: "", // Use default in dark mode
 };
+
+const LIGHT_THEME = {
+  bg:      "#F9FAFB",
+  glass:   "rgba(255,255,255,0.9)",
+  glassHi: "rgba(255,255,255,1)",
+  border:  "rgba(0,0,0,0.08)",
+  gold:    "#C9A84C",
+  goldHi:  "#E8C97A",
+  goldDim: "#8B6914",
+  goldText: "#3D2E0A", // Dark brown for text on gold buttons
+  glow:    "rgba(201,168,76,0.15)",
+  text:    "#0F172A", // slate-900
+  mid:     "#475569", // slate-600
+  dim:     "#94A3B8", // slate-400
+  dimmer:  "#E2E8F0", // slate-200
+  green:   "#16a34a",
+  blue:    "#2563eb",
+  red:     "#dc2626",
+  r:       "13px",
+  rsm:     "9px",
+  rmd:     "13px",
+  blur:    "blur(20px)",
+  cardBg:  "#FFFFFF",
+  cardBorder: "#E2E8F0", // slate-200
+  cardShadow: "0 1px 3px rgba(0,0,0,0.08), 0 1px 2px rgba(0,0,0,0.04)",
+  badgeBg: "rgba(201,168,76,0.15)", // Light gold for badges
+  badgeText: "#78350F", // amber-900 for badge text
+};
+
+// Default to dark theme - will be overridden by state
+let T = DARK_THEME;
 
 // ─────────────────────────────────────────────────────────────────────────────
 // SECTION 3 — MOTION VARIANTS
-// ─────────────────────────────────────────────────────────────────────────────
+// ─────────────────────────────────────────────────────────────────────────������───
 
 const fadeUp  = { hidden:{opacity:0,y:16}, visible:{opacity:1,y:0,transition:{duration:0.36,ease:[0.22,1,0.36,1] as number[]}} };
 const stagger = { visible:{transition:{staggerChildren:0.065}} };
@@ -176,11 +283,7 @@ function useTypewriter(text: string, speed = 26) {
   return { out, done };
 }
 
-const HIST_KEY = "wf_hist_v3";
-const SAVED_KEY = "wf_saved_v1";
-type HistRec = { id: string; label: string; type: "scholarship"|"loan"; results: ScoutResult[]; ts: number };
-function readHist(): HistRec[] { try { return JSON.parse(typeof window !== "undefined" ? localStorage.getItem(HIST_KEY) ?? "[]" : "[]"); } catch { return []; } }
-function pushHist(r: HistRec) { try { const n = [r, ...readHist().filter(x => x.id !== r.id)].slice(0,10); localStorage.setItem(HIST_KEY, JSON.stringify(n)); } catch {} }
+
 
 function readSaved(): ScoutResult[] { try { return JSON.parse(typeof window !== "undefined" ? localStorage.getItem(SAVED_KEY) ?? "[]" : "[]"); } catch { return []; } }
 function writeSaved(items: ScoutResult[]) { try { localStorage.setItem(SAVED_KEY, JSON.stringify(items)); } catch {} }
@@ -192,37 +295,59 @@ function toggleSaved(item: ScoutResult): ScoutResult[] {
   return updated;
 }
 
-// Real-time search via Tavily API — falls back to mock data if API unavailable
-async function fetchResults(type: "scholarship"|"loan", filters: Record<string,string>): Promise<ScoutResult[]> {
+// Supabase bookmark functions
+async function fetchBookmarksFromSupabase(userId: string): Promise<ScoutResult[]> {
   try {
-    const response = await fetch("/api/search", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ type, filters }),
-    });
-    const data = await response.json();
-    if (data.results && data.results.length > 0) {
-      return data.results;
-    }
-    // Fall back to mock data if no results
-    return type === "scholarship" ? MOCK_SCHOLARSHIPS : MOCK_LOANS;
-  } catch {
-    // Fall back to mock data on error
-    return type === "scholarship" ? MOCK_SCHOLARSHIPS : MOCK_LOANS;
+    const { createClient } = await import("@/lib/supabase/client");
+    const supabase = createClient();
+    const { data, error } = await supabase
+      .from("bookmarks")
+      .select("loan_id, loan_data")
+      .eq("user_id", userId);
+    if (error) throw error;
+    return (data ?? []).map(row => row.loan_data as ScoutResult);
+  } catch { 
+    return []; 
   }
 }
 
-// ────────────────────────────────────────────────────────────────────────────��
+async function upsertBookmarkToSupabase(userId: string, item: ScoutResult): Promise<void> {
+  try {
+    const { createClient } = await import("@/lib/supabase/client");
+    const supabase = createClient();
+    await supabase.from("bookmarks").upsert({
+      user_id: userId,
+      loan_id: item.id,
+      loan_data: item,
+    }, { onConflict: "user_id,loan_id" });
+  } catch {}
+}
+
+async function deleteBookmarkFromSupabase(userId: string, loanId: string): Promise<void> {
+  try {
+    const { createClient } = await import("@/lib/supabase/client");
+    const supabase = createClient();
+    await supabase.from("bookmarks").delete().eq("user_id", userId).eq("loan_id", loanId);
+  } catch {}
+}
+
+// Real-time AI-powered scholarship search — generates fresh results based on user criteria
+// Loan search — uses mock data for now
+async function fetchLoans(): Promise<ScoutResult[]> {
+  return MOCK_LOANS;
+}
+
+// ────────────────────────────────────────────────────��───────────────────────��
 // SECTION 5 — PRIMITIVE UI COMPONENTS
-// ─────────────────────────────────────────────────────────────────────────────
+// ─────────────────────────────────────────────────────────────────────────��───
 
 function Glass({ children, style, glow, onClick }: { children: ReactNode; style?: CSSProperties; glow?: boolean; onClick?: () => void }) {
   const [hov, setHov] = useState(false);
   return (
   <div onClick={onClick} onMouseEnter={() => setHov(true)} onMouseLeave={() => setHov(false)}
   style={{
-  background: T.cardBg, 
-  backdropFilter: T.blur, 
+  background: T.cardBg,
+  backdropFilter: T.blur,
   WebkitBackdropFilter: T.blur,
   border: `1px solid ${hov && glow ? "rgba(201,168,76,0.38)" : T.cardBorder}`,
   borderRadius: T.r,
@@ -236,7 +361,7 @@ function Glass({ children, style, glow, onClick }: { children: ReactNode; style?
 }
 
 function Skel({ w = "100%", h = 14 }: { w?: string|number; h?: number }) {
-  return <div style={{ width:w, height:h, borderRadius:7, backgroundImage: "linear-gradient(90deg,rgba(255,255,255,0.04) 25%,rgba(255,255,255,0.09) 50%,rgba(255,255,255,0.04) 75%)", backgroundSize:"200% 100%", animation:"wf-skel 1.6s ease infinite" }} />;
+  return <div className="wf-skel-bar" style={{ width:w, height:h, borderRadius:7 }} />;
 }
 
 function Chip({ label, color }: { label: string; color?: string }) {
@@ -264,8 +389,8 @@ function LogoMark({ size = 32 }: { size?: number }) {
   // Gold "F" shield logo - rendered without background
   return (
     <img 
-      src="/images/forge-logo.png" 
-      alt="Forge" 
+    src="/images/wealthnutz-logo.png"
+            alt="WealthNutz"
       width={size} 
       height={size} 
       style={{ 
@@ -281,8 +406,8 @@ function GoldCTA({ href, label }: { href: string; label: string }) {
   
   const safe = (href?.trim?.() ?? "").length > 0 ? href : "#";
   return (
-    <motion.a href={safe} target="_blank" rel="noopener noreferrer" whileTap={tapAnim.tap}
-      style={{ display:"block", textAlign:"center", padding:"10px 0", borderRadius:T.rsm, textDecoration:"none", fontFamily:"inherit", backgroundImage:`linear-gradient(135deg,${T.gold},${T.goldDim})`, color:"#07090d", fontSize:12, fontWeight:800, letterSpacing:".03em", boxShadow:`0 0 18px ${T.glow}`, transition:"box-shadow .2s" }}
+  <motion.a href={safe} target="_blank" rel="noopener noreferrer" whileTap={tapAnim.tap}
+  style={{ display:"block", textAlign:"center", padding:"10px 0", borderRadius:T.rsm, textDecoration:"none", fontFamily:"inherit", background:`linear-gradient(135deg,${T.gold},${T.goldDim})`, color:T.goldText, fontSize:12, fontWeight:800, letterSpacing:".03em", boxShadow:`0 0 18px ${T.glow}`, transition:"box-shadow .2s" }}
       onMouseEnter={e => (e.currentTarget.style.boxShadow = "0 0 32px rgba(201,168,76,0.5)")}
       onMouseLeave={e => (e.currentTarget.style.boxShadow = `0 0 18px ${T.glow}`)}>
       {label} →
@@ -292,7 +417,7 @@ function GoldCTA({ href, label }: { href: string; label: string }) {
 
 // ─────────────────────────────────────────────────────────────────────────────
 // SECTION 3A — CONSOLIDATED FORMATTING FUNCTIONS (Memoized for performance)
-// ─────────────────────────────────────────────────────────────────────────────
+// ────────────────────────────────�����────────────────────────────────────────────
 
 // Memoized currency formatter (supports billions properly)
 const formatCurrency = (v: number): string => {
@@ -310,7 +435,7 @@ const formatShortCurrency = (v: number): string => {
 
 // ─────────────────────────────────────────────────────────────────────────────
 // SECTION 3B — SLIDER COMPONENT (Memoized)
-// ─────────────────────────────────────────────────────────────────────────────
+// ────────────────────────────────────────────────────────────────��────────────
 
 const MAX_CURRENCY = 1_000_000_000;
 const MAX_PERCENT = 100;
@@ -326,7 +451,8 @@ const SliderComponent = ({ label, value, min, step = 1, onChange, fmt, maxVal }:
   
   // Dynamic visual max for slider bar (but capped)
   const visualMax = Math.min(hardMax, Math.max(value * 2, min * 10, isPercent ? 100 : 10000));
-  const pct = Math.max(0, Math.min(100, ((value - min) / (visualMax - min)) * 100));
+  // Always calculate position relative to the hard max so handle stays proportional to value
+  const pct = Math.max(0, Math.min(100, ((value - min) / (hardMax - min)) * 100));
   
   useEffect(() => {
     if (!editing) setInputVal(fmt(value));
@@ -381,7 +507,7 @@ const SliderComponent = ({ label, value, min, step = 1, onChange, fmt, maxVal }:
       </div>
       <div style={{ position:"relative", height:8, background:"rgba(255,255,255,0.08)", borderRadius:8, cursor:"pointer" }}>
         {/* Active fill bar */}
-        <div style={{ position:"absolute", left:0, top:0, height:"100%", width:`${pct}%`, backgroundImage:`linear-gradient(90deg,${T.goldDim},${T.gold})`, borderRadius:8, transition: isDragging ? "none" : "width .15s" }} />
+        <div style={{ position:"absolute", left:0, top:0, height:"100%", width:`${pct}%`, background:`linear-gradient(90deg,${T.goldDim},${T.gold})`, borderRadius:8, transition: isDragging ? "none" : "width .15s" }} />
         {/* Grip handle */}
         <div style={{
           position:"absolute",
@@ -443,7 +569,7 @@ function TypewriterGreeting() {
   const { out, done } = useTypewriter(WELCOME_MSG, 26);
   return (
     <motion.div variants={fadeUp} initial="hidden" animate="visible" style={{ padding:"26px 4px 14px", maxWidth:640, margin:"0 auto", textAlign:"center" }}>
-      <p style={{ fontFamily:"Inter,system-ui,sans-serif", fontSize:"clamp(14px,2vw,19px)", fontWeight:400, lineHeight:1.7, margin:0, backgroundImage:`linear-gradient(120deg,${T.text} 0%,${T.goldHi} 40%,${T.gold} 65%,${T.mid} 100%)`, WebkitBackgroundClip:"text", WebkitTextFillColor:"transparent", letterSpacing:"-.005em" }}>
+      <p style={{ fontFamily:"Inter,system-ui,sans-serif", fontSize:"clamp(14px,2vw,19px)", fontWeight:400, lineHeight:1.7, margin:0, background:`linear-gradient(120deg,${T.text} 0%,${T.goldHi} 40%,${T.gold} 65%,${T.mid} 100%)`, WebkitBackgroundClip:"text", WebkitTextFillColor:"transparent", letterSpacing:"-.005em" }}>
         {out}
         {!done && <span style={{ display:"inline-block", width:2, height:"1em", backgroundColor:T.gold, marginLeft:2, verticalAlign:"middle", animation:"wf-cur .65s steps(1) infinite" }} />}
       </p>
@@ -554,7 +680,7 @@ function AuthModal({ onClose }: { onClose: () => void }) {
             {mode === "signin" ? "Welcome Back" : "Create Account"}
           </h2>
           <p style={{ fontSize: 13, color: T.mid, margin: 0 }}>
-            {mode === "signin" ? "Sign in to access your saved items" : "Join Forge for free"}
+            {mode === "signin" ? "Sign in to access your saved items" : "Join WealthNutz for free"}
           </p>
         </div>
         
@@ -612,7 +738,7 @@ function AuthModal({ onClose }: { onClose: () => void }) {
             disabled={isLoading}
             style={{
               padding: "12px 0",
-              backgroundImage: `linear-gradient(135deg, ${T.gold}, ${T.goldDim})`,
+              background: `linear-gradient(135deg, ${T.gold}, ${T.goldDim})`,
               border: "none",
               borderRadius: T.rsm,
               color: "#07090d",
@@ -642,7 +768,7 @@ function AuthModal({ onClose }: { onClose: () => void }) {
         </form>
         
         <p style={{ fontSize: 12, color: T.mid, textAlign: "center", marginTop: 16 }}>
-          {mode === "signin" ? "Don&apos;t have an account? " : "Already have an account? "}
+          {mode === "signin" ? "Don't have an account? " : "Already have an account? "}
           <button
             onClick={() => { setMode(mode === "signin" ? "signup" : "signin"); setError(null); }}
             disabled={isLoading}
@@ -663,7 +789,7 @@ function AuthModal({ onClose }: { onClose: () => void }) {
 const COUNTRY_CONFIG = {
   Canada: {
     code: "CA",
-    flag: "🇨🇦",
+    flag: "���🇦",
     currency: "CAD",
     symbol: "$",
     tip: "Showing Canadian rates, TFSA/RRSP accounts, and OSAP loan information.",
@@ -768,71 +894,764 @@ function CountrySwitcher({
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
-// SECTION 5C — LOAN MARKETPLACE HERO (High Conversion)
+// SECTION 5B — EXPANDABLE TEXT COMPONENT
 // ─────────────────────────────────────────────────────────────────────────────
 
-function LoanMarketplaceHero({ country }: { country: "Canada" | "USA" }) {
+function ExpandableText({ text, maxLines = 2 }: { text: string; maxLines?: number }) {
+  const [expanded, setExpanded] = useState(false);
+  
+  return (
+    <motion.div layout style={{ position: "relative" }}>
+      {/* Text container — line-clamp only when collapsed */}
+      <motion.p
+        layout
+        style={{
+          fontSize: 11,
+          color: T.mid,
+          margin: 0,
+          lineHeight: 1.5,
+          ...(expanded ? {} : {
+            display: "-webkit-box",
+            WebkitLineClamp: maxLines,
+            WebkitBoxOrient: "vertical",
+            overflow: "hidden",
+          }),
+        }}
+      >
+        {text}
+      </motion.p>
+      
+      {/* Read more / Show less button — always visible outside the clamped area */}
+      <motion.button
+        onClick={(e) => {
+          e.preventDefault();
+          e.stopPropagation();
+          setExpanded(!expanded);
+        }}
+        style={{
+          background: "none",
+          border: "none",
+          color: T.gold,
+          fontSize: 10,
+          fontWeight: 600,
+          cursor: "pointer",
+          padding: 0,
+          marginTop: 6,
+          marginBottom: 10,
+          fontFamily: "inherit",
+          display: "block",
+        }}
+      >
+        {expanded ? "Show less" : "Read more..."}
+      </motion.button>
+    </motion.div>
+  );
+}
+
+// ─────────────────────────────────────────────────��────�������──���────────────�������──────
+// SECTION 5C-1 — FILTER SIDEBAR (Desktop) & SORT DROPDOWN
+// ─────────────────────────────────────────────────────────────────────────────
+
+function FilterCheckbox({ label, checked, onChange, count }: { label: string; checked: boolean; onChange: (v: boolean) => void; count?: number }) {
+  return (
+    <motion.label 
+      whileTap={{ scale: 0.98 }}
+      style={{ 
+        display: "flex", 
+        alignItems: "center", 
+        gap: 10, 
+        padding: "8px 0", 
+        cursor: "pointer",
+        fontSize: 12,
+        color: checked ? T.text : "#c0c0c0",
+        transition: "color 0.2s",
+      }}
+    >
+      <span style={{
+        width: 18,
+        height: 18,
+        borderRadius: 4,
+        border: `2px solid ${checked ? T.gold : T.border}`,
+        background: checked ? T.gold : "rgba(0,0,0,0)",
+        display: "flex",
+        alignItems: "center",
+        justifyContent: "center",
+        transition: "all 0.2s",
+        flexShrink: 0,
+      }}>
+        {checked && <Check size={12} color="#07090d" strokeWidth={3} />}
+      </span>
+      <span style={{ flex: 1 }}>{label}</span>
+      {count !== undefined && (
+        <span style={{ fontSize: 10, color: T.dim, background: T.glass, padding: "2px 6px", borderRadius: 10 }}>
+          {count}
+        </span>
+      )}
+      <input type="checkbox" checked={checked} onChange={e => onChange(e.target.checked)} style={{ display: "none" }} />
+    </motion.label>
+  );
+}
+
+function FilterRadio({ label, selected, onSelect, count }: { label: string; selected: boolean; onSelect: () => void; count?: number }) {
+  return (
+    <motion.label 
+      whileTap={{ scale: 0.98 }}
+      onClick={onSelect}
+      style={{ 
+        display: "flex", 
+        alignItems: "center", 
+        gap: 10, 
+        padding: "8px 0", 
+        cursor: "pointer",
+        fontSize: 12,
+        color: selected ? T.text : "#c0c0c0",
+        transition: "color 0.2s",
+      }}
+    >
+      <span style={{
+        width: 18,
+        height: 18,
+        borderRadius: "50%",
+        border: `2px solid ${selected ? T.gold : T.border}`,
+        background: "rgba(0,0,0,0)",
+        display: "flex",
+        alignItems: "center",
+        justifyContent: "center",
+        transition: "all 0.2s",
+        flexShrink: 0,
+      }}>
+        {selected && <span style={{ width: 8, height: 8, borderRadius: "50%", background: T.gold }} />}
+      </span>
+      <span style={{ flex: 1 }}>{label}</span>
+      {count !== undefined && (
+        <span style={{ fontSize: 10, color: T.dim, background: T.glass, padding: "2px 6px", borderRadius: 10 }}>
+          {count}
+        </span>
+      )}
+    </motion.label>
+  );
+}
+
+function FilterGroup({ title, children }: { title: string; children: ReactNode }) {
+  return (
+    <div style={{ marginBottom: 20 }}>
+      <h4 style={{ fontSize: 11, fontWeight: 700, color: "#d0d0d0", marginBottom: 8, textTransform: "uppercase", letterSpacing: "0.05em" }}>
+        {title}
+      </h4>
+      {children}
+    </div>
+  );
+}
+
+function SortDropdown({ value, onChange, resultCount }: { value: SortOption; onChange: (v: SortOption) => void; resultCount: number }) {
+  const [open, setOpen] = useState(false);
+  const currentLabel = SORT_OPTIONS.find(o => o.value === value)?.label || "Best Match";
+  
+  return (
+    <div style={{ position: "relative" }}>
+      <motion.button
+        whileTap={{ scale: 0.98 }}
+        onClick={() => setOpen(!open)}
+        style={{
+          display: "flex",
+          alignItems: "center",
+          gap: 8,
+          padding: "8px 14px",
+          borderRadius: T.rsm,
+          border: `1px solid ${T.border}`,
+          background: T.glass,
+          color: T.text,
+          fontSize: 12,
+          fontWeight: 500,
+          cursor: "pointer",
+          minWidth: 160,
+        }}
+      >
+        <span style={{ flex: 1, textAlign: "left" }}>{currentLabel}</span>
+        <motion.span animate={{ rotate: open ? 180 : 0 }} transition={{ duration: 0.2 }}>
+          <ChevronDown size={14} color={T.mid} />
+        </motion.span>
+      </motion.button>
+      
+      <AnimatePresence>
+        {open && (
+          <>
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              onClick={() => setOpen(false)}
+              style={{ position: "fixed", inset: 0, zIndex: 99 }}
+            />
+            <motion.div
+              initial={{ opacity: 0, y: -8 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -8 }}
+              style={{
+                position: "absolute",
+                top: "calc(100% + 6px)",
+                left: 0,
+                right: 0,
+                background: "#0a0a0a",
+                border: `1px solid ${T.border}`,
+                borderRadius: T.rsm,
+                overflow: "hidden",
+                zIndex: 1000,
+                boxShadow: "0 12px 32px rgba(0,0,0,0.5), 0 4px 12px rgba(0,0,0,0.3)",
+              }}
+            >
+              {SORT_OPTIONS.map(opt => (
+                <button
+                  key={opt.value}
+                  onClick={() => { onChange(opt.value); setOpen(false); }}
+                  style={{
+                    display: "block",
+                    width: "100%",
+                    padding: "10px 14px",
+                    border: "none",
+                    background: value === opt.value ? "rgba(245,158,11,0.15)" : "#0a0a0a",
+                    color: value === opt.value ? T.gold : T.text,
+                    fontSize: 12,
+                    textAlign: "left",
+                    cursor: "pointer",
+                    transition: "background .15s",
+                  }}
+                  onMouseEnter={e => { (e.currentTarget as HTMLElement).style.background = "rgba(245,158,11,0.1)"; }}
+                  onMouseLeave={e => { (e.currentTarget as HTMLElement).style.background = value === opt.value ? "rgba(245,158,11,0.15)" : "#0a0a0a"; }}
+                >
+                  {opt.label}
+                </button>
+              ))}
+            </motion.div>
+          </>
+        )}
+      </AnimatePresence>
+      
+      <span style={{ fontSize: 11, color: T.mid, marginLeft: 12 }}>{resultCount} results</span>
+    </div>
+  );
+}
+
+function LoanFilterSidebar({ 
+  filters, 
+  onChange, 
+  onClear,
+  counts 
+}: { 
+  filters: LoanFilters; 
+  onChange: (f: LoanFilters) => void; 
+  onClear: () => void;
+  counts: { fixed: number; variable: number; noCoSigner: number; deferment: number };
+}) {
+  const hasActiveFilters = filters.interestType !== "any" || filters.noCoSigner || filters.defermentAvailable;
+  
+  return (
+    <div style={{ padding: 16 }}>
+      <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 16 }}>
+        <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+          <SlidersHorizontal size={16} color={T.gold} />
+          <h3 style={{ fontSize: 14, fontWeight: 700, color: T.text, margin: 0 }}>Filters</h3>
+        </div>
+        {hasActiveFilters && (
+          <motion.button
+            whileTap={{ scale: 0.95 }}
+            onClick={onClear}
+            style={{
+              display: "flex",
+              alignItems: "center",
+              gap: 4,
+              padding: "4px 10px",
+              borderRadius: 6,
+              border: "none",
+              background: "rgba(248,113,113,0.15)",
+              color: "#f87171",
+              fontSize: 10,
+              fontWeight: 600,
+              cursor: "pointer",
+            }}
+          >
+            <RotateCcw size={10} /> Clear All
+          </motion.button>
+        )}
+      </div>
+      
+      <FilterGroup title="Interest Type">
+        <FilterRadio label="Any" selected={filters.interestType === "any"} onSelect={() => onChange({ ...filters, interestType: "any" })} />
+        <FilterRadio label="Fixed Rate" selected={filters.interestType === "fixed"} onSelect={() => onChange({ ...filters, interestType: "fixed" })} count={counts.fixed} />
+        <FilterRadio label="Variable Rate" selected={filters.interestType === "variable"} onSelect={() => onChange({ ...filters, interestType: "variable" })} count={counts.variable} />
+      </FilterGroup>
+      
+      <FilterGroup title="Requirements">
+        <FilterCheckbox label="No Co-Signer Required" checked={filters.noCoSigner} onChange={v => onChange({ ...filters, noCoSigner: v })} count={counts.noCoSigner} />
+        <FilterCheckbox label="Deferment Available" checked={filters.defermentAvailable} onChange={v => onChange({ ...filters, defermentAvailable: v })} count={counts.deferment} />
+      </FilterGroup>
+    </div>
+  );
+}
+
+function ScholarshipFilterSidebar({ 
+  filters, 
+  onChange, 
+  onClear,
+  counts 
+}: { 
+  filters: ScholarshipFilters; 
+  onChange: (f: ScholarshipFilters) => void; 
+  onClear: () => void;
+  counts: { under1k: number; k1to5: number; k5to10: number; k10plus: number; undergrad: number; graduate: number; noEssay: number; noGpa: number };
+}) {
+  const hasActiveFilters = filters.awardAmount !== "any" || filters.educationLevel !== "any" || filters.noEssay || filters.noGpaReq;
+  
+  return (
+    <div style={{ padding: 16 }}>
+      <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 16 }}>
+        <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+          <SlidersHorizontal size={16} color={T.gold} />
+          <h3 style={{ fontSize: 14, fontWeight: 700, color: T.text, margin: 0 }}>Filters</h3>
+        </div>
+        {hasActiveFilters && (
+          <motion.button
+            whileTap={{ scale: 0.95 }}
+            onClick={onClear}
+            style={{
+              display: "flex",
+              alignItems: "center",
+              gap: 4,
+              padding: "4px 10px",
+              borderRadius: 6,
+              border: "none",
+              background: "rgba(248,113,113,0.15)",
+              color: "#f87171",
+              fontSize: 10,
+              fontWeight: 600,
+              cursor: "pointer",
+            }}
+          >
+            <RotateCcw size={10} /> Clear All
+          </motion.button>
+        )}
+      </div>
+      
+      <FilterGroup title="Award Amount">
+        <FilterRadio label="Any Amount" selected={filters.awardAmount === "any"} onSelect={() => onChange({ ...filters, awardAmount: "any" })} />
+        <FilterRadio label="Under $1,000" selected={filters.awardAmount === "under-1k"} onSelect={() => onChange({ ...filters, awardAmount: "under-1k" })} count={counts.under1k} />
+        <FilterRadio label="$1,000 - $5,000" selected={filters.awardAmount === "1k-5k"} onSelect={() => onChange({ ...filters, awardAmount: "1k-5k" })} count={counts.k1to5} />
+        <FilterRadio label="$5,000 - $10,000" selected={filters.awardAmount === "5k-10k"} onSelect={() => onChange({ ...filters, awardAmount: "5k-10k" })} count={counts.k5to10} />
+        <FilterRadio label="$10,000+" selected={filters.awardAmount === "10k-plus"} onSelect={() => onChange({ ...filters, awardAmount: "10k-plus" })} count={counts.k10plus} />
+      </FilterGroup>
+      
+      <FilterGroup title="Education Level">
+        <FilterRadio label="Any Level" selected={filters.educationLevel === "any"} onSelect={() => onChange({ ...filters, educationLevel: "any" })} />
+        <FilterRadio label="Undergraduate" selected={filters.educationLevel === "undergrad"} onSelect={() => onChange({ ...filters, educationLevel: "undergrad" })} count={counts.undergrad} />
+        <FilterRadio label="Graduate" selected={filters.educationLevel === "graduate"} onSelect={() => onChange({ ...filters, educationLevel: "graduate" })} count={counts.graduate} />
+      </FilterGroup>
+      
+      <FilterGroup title="Easy Apply">
+        <FilterCheckbox label="No Essay Required" checked={filters.noEssay} onChange={v => onChange({ ...filters, noEssay: v })} count={counts.noEssay} />
+        <FilterCheckbox label="No GPA Requirement" checked={filters.noGpaReq} onChange={v => onChange({ ...filters, noGpaReq: v })} count={counts.noGpa} />
+      </FilterGroup>
+    </div>
+  );
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// SECTION 5C-2 — FILTER BOTTOM SHEET (Mobile)
+// ─────────────────────────────────────────────────────────────��────���─��────────
+
+function FilterBottomSheet({ 
+  isOpen, 
+  onClose, 
+  children,
+  title = "Filter & Sort",
+  isDarkMode = true
+}: { 
+  isOpen: boolean; 
+  onClose: () => void; 
+  children: ReactNode;
+  title?: string;
+  isDarkMode?: boolean;
+}) {
+  return (
+    <AnimatePresence>
+      {isOpen && (
+        <>
+          {/* Backdrop */}
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            onClick={onClose}
+            style={{
+              position: "fixed",
+              inset: 0,
+              background: "rgba(0,0,0,0.6)",
+              zIndex: 200,
+            }}
+          />
+          {/* Sheet */}
+          <motion.div
+            initial={{ y: "100%" }}
+            animate={{ y: 0 }}
+            exit={{ y: "100%" }}
+            transition={{ type: "spring", damping: 28, stiffness: 300 }}
+            style={{
+              position: "fixed",
+              bottom: 0,
+              left: 0,
+              right: 0,
+              maxHeight: "80vh",
+              background: "#000000",
+              borderRadius: "20px 20px 0 0",
+              zIndex: 201,
+              overflow: "hidden",
+              display: "flex",
+              flexDirection: "column",
+            }}
+          >
+            {/* Handle */}
+            <div style={{ padding: "12px 0 8px", display: "flex", justifyContent: "center" }}>
+              <div style={{ width: 40, height: 4, borderRadius: 2, background: T.dim }} />
+            </div>
+            
+            {/* Header */}
+            <div style={{ 
+              display: "flex", 
+              alignItems: "center", 
+              justifyContent: "space-between", 
+              padding: "0 20px 16px",
+              borderBottom: `1px solid ${T.border}`,
+            }}>
+              <h3 style={{ fontSize: 16, fontWeight: 700, color: T.text, margin: 0 }}>{title}</h3>
+              <motion.button
+                whileTap={{ scale: 0.9 }}
+                onClick={onClose}
+                style={{
+                  width: 32,
+                  height: 32,
+                  borderRadius: "50%",
+                  border: "none",
+                  background: T.glass,
+                  cursor: "pointer",
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  color: T.mid,
+                }}
+              >
+                <X size={18} />
+              </motion.button>
+            </div>
+            
+            {/* Content */}
+            <div style={{ flex: 1, overflowY: "auto", padding: "8px 4px" }}>
+              {children}
+            </div>
+            
+            {/* Apply Button */}
+            <div style={{ padding: 16, borderTop: `1px solid ${T.border}` }}>
+              <motion.button
+                whileTap={{ scale: 0.98 }}
+                onClick={onClose}
+                style={{
+                  width: "100%",
+                  padding: 14,
+                  borderRadius: T.rsm,
+                  border: "none",
+                  background: `linear-gradient(135deg, ${T.gold}, ${T.goldDim})`,
+                  color: "#07090d",
+                  fontSize: 14,
+                  fontWeight: 700,
+                  cursor: "pointer",
+                }}
+              >
+                Apply Filters
+              </motion.button>
+            </div>
+          </motion.div>
+        </>
+      )}
+    </AnimatePresence>
+  );
+}
+
+function MobileFilterButton({ onClick, hasFilters }: { onClick: () => void; hasFilters: boolean }) {
+  return (
+    <motion.button
+      whileTap={{ scale: 0.95 }}
+      onClick={onClick}
+      style={{
+        position: "fixed",
+        bottom: 20,
+        right: 20,
+        display: "flex",
+        alignItems: "center",
+        gap: 8,
+        padding: "12px 18px",
+        borderRadius: 30,
+        border: "none",
+        background: `linear-gradient(135deg, ${T.gold}, ${T.goldDim})`,
+        color: "#07090d",
+        fontSize: 13,
+        fontWeight: 700,
+        cursor: "pointer",
+        boxShadow: "0 4px 20px rgba(201,168,76,0.4)",
+        zIndex: 50,
+      }}
+      className="mobile-filter-btn"
+    >
+      <SlidersHorizontal size={16} />
+      Filter & Sort
+      {hasFilters && (
+        <span style={{
+          width: 8,
+          height: 8,
+          borderRadius: "50%",
+          background: "#f87171",
+          position: "absolute",
+          top: 8,
+          right: 8,
+        }} />
+      )}
+    </motion.button>
+  );
+}
+
+// ─────────────────────────────────────────────────���─���─────────────�������───────────
+// SECTION 5C-3 — LOAN MARKETPLACE HERO (High Conversion)
+// ─────────────────────────────────────────────────────────────────────────────
+
+function LoanMarketplaceHero({ 
+  country, 
+  filterType, 
+  onToggleSave, 
+  savedIds,
+  filters,
+  sortBy = "best-match",
+  onFiltersChange,
+  onSortChange,
+}: { 
+  country: "Canada" | "USA"; 
+  filterType?: LoanType; 
+  onToggleSave?: (item: ScoutResult) => void; 
+  savedIds?: Set<string>;
+  filters?: LoanFilters;
+  sortBy?: SortOption;
+  onFiltersChange?: (f: LoanFilters) => void;
+  onSortChange?: (s: SortOption) => void;
+}) {
   const countryCode = country === "Canada" ? "CA" : "US";
-  const offers = LOAN_MARKETPLACE.filter(o => o.country === countryCode);
+  const [currentTime, setCurrentTime] = useState(() => new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }));
+  const [mobileFilterOpen, setMobileFilterOpen] = useState(false);
+  const activeFilters = filters || DEFAULT_LOAN_FILTERS;
+  
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setCurrentTime(new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }));
+    }, 60000);
+    return () => clearInterval(interval);
+  }, []);
+  
+  // Calculate filter counts for dynamic badges
+  const allCountryOffers = LOAN_MARKETPLACE.filter(o => o.country === countryCode && (!filterType || o.loanType === filterType));
+  const filterCounts = useMemo(() => ({
+    fixed: allCountryOffers.filter(o => o.rate.toLowerCase().includes("fixed") || !o.rate.toLowerCase().includes("variable")).length,
+    variable: allCountryOffers.filter(o => o.rate.toLowerCase().includes("variable") || o.rate.toLowerCase().includes("prime")).length,
+    noCoSigner: allCountryOffers.filter(o => o.highlight.toLowerCase().includes("no co-signer") || o.highlight.toLowerCase().includes("no cosigner")).length,
+    deferment: allCountryOffers.filter(o => o.highlight.toLowerCase().includes("defer") || o.highlight.toLowerCase().includes("skip") || o.highlight.toLowerCase().includes("while in school")).length,
+  }), [allCountryOffers]);
+  
+  // Apply filters
+  const filteredOffers = allCountryOffers.filter(o => {
+    if (activeFilters.interestType === "fixed" && (o.rate.toLowerCase().includes("variable") || o.rate.toLowerCase().includes("prime"))) return false;
+    if (activeFilters.interestType === "variable" && !o.rate.toLowerCase().includes("variable") && !o.rate.toLowerCase().includes("prime")) return false;
+    // Additional filter logic would go here based on actual data properties
+    return true;
+  });
+  
+  // Apply sorting
+  const offers = useMemo(() => {
+    const sorted = [...filteredOffers];
+    if (sortBy === "lowest-rate" || sortBy === "highest-award") {
+      sorted.sort((a, b) => {
+        const rateA = parseFloat(a.rate.replace(/[^0-9.]/g, "")) || 99;
+        const rateB = parseFloat(b.rate.replace(/[^0-9.]/g, "")) || 99;
+        return rateA - rateB;
+      });
+    }
+    return sorted;
+  }, [filteredOffers, sortBy]);
+  
+  const hasActiveFilters = activeFilters.interestType !== "any" || activeFilters.noCoSigner || activeFilters.defermentAvailable;
   
   return (
     <motion.div variants={stagger} initial="hidden" animate="visible" style={{ marginBottom: 24 }}>
       {/* Section Header */}
-      <motion.div variants={fadeUp} style={{ marginBottom: 16 }}>
-        <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 6 }}>
-          <DollarSign size={18} color={T.gold} />
-          <h2 style={{ fontSize: 16, fontWeight: 800, color: T.text, margin: 0, letterSpacing: "-0.02em" }}>Financial Matches</h2>
-          <span style={{ fontSize: 10, background: T.gold, color: "#07090d", padding: "2px 8px", borderRadius: 10, fontWeight: 700 }}>PERSONALIZED</span>
+      <motion.div variants={fadeUp} style={{ marginBottom: 12 }}>
+        <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 4 }}>
+          <div style={{
+            width: 34,
+            height: 34,
+            borderRadius: 10,
+            background: `linear-gradient(135deg, ${T.gold}, ${T.goldDim})`,
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            flexShrink: 0,
+            boxShadow: `0 0 16px ${T.glow || "rgba(201,168,76,0.3)"}`,
+          }}>
+            <DollarSign size={20} color="#07090d" strokeWidth={2.5} />
+          </div>
+          <div>
+            <h2 style={{ fontSize: 22, fontWeight: 900, color: T.text, margin: 0, letterSpacing: "-0.03em", lineHeight: 1.15, WebkitFontSmoothing: "antialiased" }}>
+              {filterType ? `${filterType} Loan Marketplace` : "Loan Marketplace"}
+            </h2>
+            <p style={{ fontSize: 12, color: T.mid, margin: 0, marginTop: 2 }}>Pre-qualify without affecting your credit score.</p>
+          </div>
+          <span style={{ fontSize: 9, background: T.gold, color: "#07090d", padding: "3px 8px", borderRadius: 10, fontWeight: 800, letterSpacing: "0.05em", marginLeft: 4, alignSelf: "flex-start", marginTop: 4 }}>LIVE</span>
         </div>
-        <p style={{ fontSize: 12, color: T.mid, margin: 0 }}>Top loan offers matched to your profile. Pre-qualify without affecting your credit.</p>
       </motion.div>
       
-      {/* Loan Cards Grid */}
-      <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(280px, 1fr))", gap: 12 }}>
-        {offers.map((offer, i) => (
-          <motion.a
-            key={offer.id}
-            variants={fadeUp}
-            href={offer.href}
-            target="_blank"
-            rel="noopener noreferrer"
-            style={{
-              display: "block",
-              padding: 16,
-              borderRadius: T.r,
-              background: i === 0 ? `linear-gradient(135deg, rgba(201,168,76,0.15), rgba(139,105,20,0.08))` : T.cardBg,
-              border: `1px solid ${i === 0 ? "rgba(201,168,76,0.4)" : T.cardBorder}`,
-              textDecoration: "none",
-              transition: "all 0.25s ease",
-              position: "relative",
-              overflow: "hidden",
-            }}
-            whileHover={{ scale: 1.02, borderColor: T.gold }}
-            whileTap={{ scale: 0.98 }}
-          >
-            {/* Badge */}
-            {offer.badge && (
-              <span style={{
-                position: "absolute",
-                top: 12,
-                right: 12,
-                fontSize: 9,
-                fontWeight: 800,
-                background: i === 0 ? T.gold : T.glassHi,
-                color: i === 0 ? "#07090d" : T.gold,
-                padding: "3px 8px",
+      {/* Sort & Filter Controls */}
+      {onSortChange && (
+        <motion.div variants={fadeUp} style={{ marginBottom: 16, display: "flex", alignItems: "center", justifyContent: "space-between", flexWrap: "wrap", gap: 12 }}>
+          <SortDropdown value={sortBy} onChange={onSortChange} resultCount={offers.length} />
+          {hasActiveFilters && (
+            <motion.button
+              whileTap={{ scale: 0.95 }}
+              onClick={() => onFiltersChange?.(DEFAULT_LOAN_FILTERS)}
+              style={{
+                display: "flex",
+                alignItems: "center",
+                gap: 4,
+                padding: "6px 12px",
                 borderRadius: 6,
-                letterSpacing: "0.04em",
-              }}>
-                {offer.badge}
-              </span>
+                border: "none",
+                background: "rgba(248,113,113,0.15)",
+                color: "#f87171",
+                fontSize: 11,
+                fontWeight: 600,
+                cursor: "pointer",
+              }}
+            >
+              <RotateCcw size={12} /> Clear Filters
+            </motion.button>
+          )}
+        </motion.div>
+      )}
+      
+      {/* Main Content with Sidebar */}
+      <div style={{ display: "flex", gap: 16 }}>
+        {/* Desktop Filter Sidebar */}
+        {onFiltersChange && (
+          <div className="desktop-filter-sidebar" style={{ width: 220, flexShrink: 0 }}>
+            <Glass style={{ position: "sticky", top: 70 }}>
+              <LoanFilterSidebar 
+                filters={activeFilters}
+                onChange={onFiltersChange}
+                onClear={() => onFiltersChange(DEFAULT_LOAN_FILTERS)}
+                counts={filterCounts}
+              />
+            </Glass>
+          </div>
+        )}
+        
+        {/* Loan Cards Grid */}
+        <div style={{ flex: 1, display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(260px, 1fr))", gap: 12 }}>
+        {offers.map((offer, i) => (
+<motion.a
+          key={offer.id}
+          href={offer.href}
+          target="_blank"
+          rel="noopener noreferrer"
+          variants={fadeUp}
+          layout
+  style={{
+  display: "block",
+  padding: 16,
+  borderRadius: T.rmd,
+  background: T.cardBg,
+  border: `1px solid ${i === 0 ? T.gold : T.cardBorder}`,
+  textDecoration: "none",
+  transition: "all 0.25s ease",
+  position: "relative",
+  overflow: "hidden",
+  boxShadow: T.cardShadow || "none",
+  }}
+  whileHover={{ scale: 1.02, borderColor: T.gold }}
+  whileTap={{ scale: 0.98 }}
+        >
+          {/* Badge */}
+          {offer.badge && (
+          <span style={{
+          position: "absolute",
+          top: 12,
+          right: onToggleSave ? 44 : 12,
+          fontSize: 9,
+          fontWeight: 800,
+          background: i === 0 ? T.gold : (T.badgeBg || T.glassHi),
+          color: i === 0 ? T.goldText : (T.badgeText || T.gold),
+          padding: "3px 8px",
+          borderRadius: 6,
+          letterSpacing: "0.04em",
+          border: T.badgeBg ? `1px solid ${T.gold}` : "none",
+          }}>
+          {offer.badge}
+          </span>
+          )}
+            
+            {/* Bookmark Button */}
+            {onToggleSave && (
+              <motion.button
+                whileTap={{ scale: 0.85 }}
+                onClick={(e) => {
+                  e.preventDefault();
+                  e.stopPropagation();
+                  const scoutItem: ScoutResult = {
+                    id: offer.id,
+                    name: offer.name,
+                    rate: offer.rate,
+                    highlight: offer.highlight,
+                    cta: offer.cta,
+                    href: offer.href,
+                    type: "loan",
+                  };
+                  onToggleSave(scoutItem);
+                }}
+                style={{
+                  position: "absolute",
+                  top: 10,
+                  right: 10,
+                  width: 28,
+                  height: 28,
+                  borderRadius: 6,
+                  border: "none",
+                  background: savedIds?.has(offer.id) ? "rgba(201,168,76,0.25)" : T.glass,
+                  cursor: "pointer",
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  zIndex: 2,
+                }}
+                aria-label={savedIds?.has(offer.id) ? "Remove from saved" : "Save for later"}
+              >
+                <Bookmark 
+                  size={14} 
+                  color={T.gold}
+                  fill={savedIds?.has(offer.id) ? T.gold : "transparent"}
+                />
+              </motion.button>
             )}
             
             {/* Content */}
             <h3 style={{ fontSize: 14, fontWeight: 700, color: T.text, margin: "0 0 4px", paddingRight: offer.badge ? 60 : 0 }}>{offer.name}</h3>
-            <p style={{ fontSize: 20, fontWeight: 800, color: T.gold, margin: "0 0 2px" }}>{offer.rate}</p>
+            <div style={{ display: "flex", alignItems: "center", gap: 10, margin: "0 0 2px" }}>
+              <p style={{ fontSize: 20, fontWeight: 800, color: T.gold, margin: 0 }}>{offer.rate}</p>
+              <span style={{ display: "inline-flex", alignItems: "center", gap: 4, fontSize: 9, color: "#22c55e", background: "rgba(34,197,94,0.12)", padding: "3px 7px", borderRadius: 6, fontWeight: 600 }}>
+                <Check size={10} /> Verified 2m ago
+              </span>
+            </div>
             {offer.bonus && <p style={{ fontSize: 11, color: T.green, margin: "0 0 8px", fontWeight: 600 }}>{offer.bonus}</p>}
-            <p style={{ fontSize: 11, color: T.mid, margin: "0 0 14px", lineHeight: 1.4 }}>{offer.highlight}</p>
+            <ExpandableText text={offer.highlight} maxLines={2} />
             
             {/* CTA Button */}
             <div style={{
@@ -841,7 +1660,7 @@ function LoanMarketplaceHero({ country }: { country: "Canada" | "USA" }) {
               gap: 6,
               padding: "10px 20px",
               borderRadius: 8,
-              backgroundImage: `linear-gradient(135deg, ${T.gold}, ${T.goldDim})`,
+              background: `linear-gradient(135deg, ${T.gold}, ${T.goldDim})`,
               color: "#07090d",
               fontSize: 12,
               fontWeight: 800,
@@ -851,7 +1670,23 @@ function LoanMarketplaceHero({ country }: { country: "Canada" | "USA" }) {
             </div>
           </motion.a>
         ))}
+        </div>
       </div>
+      
+      {/* Mobile Filter Button & Bottom Sheet */}
+      {onFiltersChange && (
+        <>
+          <MobileFilterButton onClick={() => setMobileFilterOpen(true)} hasFilters={hasActiveFilters} />
+          <FilterBottomSheet isOpen={mobileFilterOpen} onClose={() => setMobileFilterOpen(false)} title="Filter Loans">
+            <LoanFilterSidebar 
+              filters={activeFilters}
+              onChange={onFiltersChange}
+              onClear={() => onFiltersChange(DEFAULT_LOAN_FILTERS)}
+              counts={filterCounts}
+            />
+          </FilterBottomSheet>
+        </>
+      )}
     </motion.div>
   );
 }
@@ -868,7 +1703,7 @@ function TopPicksSection({ country }: { country: "Canada" | "USA" }) {
     <motion.div variants={stagger} initial="hidden" animate="visible" style={{ marginBottom: 20 }}>
       <motion.div variants={fadeUp} style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 12 }}>
         <TrendingUp size={16} color={T.gold} />
-        <h3 style={{ fontSize: 13, fontWeight: 700, color: T.text, margin: 0 }}>Top Picks for You</h3>
+        <h3 style={{ fontSize: 13, fontWeight: 700, color: T.text, margin: 0 }}>Top Picks</h3>
       </motion.div>
       
       <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
@@ -890,7 +1725,9 @@ function TopPicksSection({ country }: { country: "Canada" | "USA" }) {
               textDecoration: "none",
               transition: "all 0.2s",
             }}
-            whileHover={{ borderColor: T.gold, background: T.glassHi }}
+            whileHover={{ borderColor: T.gold }}
+            onMouseEnter={e => { (e.currentTarget as HTMLElement).style.background = T.glassHi; }}
+            onMouseLeave={e => { (e.currentTarget as HTMLElement).style.background = T.glass; }}
           >
             <span style={{ fontSize: 20 }}>{p.logo}</span>
             <div style={{ flex: 1 }}>
@@ -907,7 +1744,7 @@ function TopPicksSection({ country }: { country: "Canada" | "USA" }) {
   );
 }
 
-// ─────────────────────────────────────────────────────────────────────────────
+// ����─��──��──���─────���──────���───���───────────────────────────────────────────────────
 // SECTION 5E — CREDIT PATH MODAL
 // ─────────────────────────────────────────────────────────────────────────────
 
@@ -987,7 +1824,7 @@ function CreditPathModal({ onClose, country }: { onClose: () => void; country: s
         {/* Header */}
         <div style={{ marginBottom: 24 }}>
           <h2 style={{ fontSize: 22, fontWeight: 800, color: T.text, margin: "0 0 6px" }}>
-            Your Forge Credit Path
+            Your WealthNutz Credit Path
           </h2>
           <p style={{ fontSize: 12, color: T.mid, margin: 0, lineHeight: 1.5 }}>
             Follow these 3 steps to build credit from scratch and unlock premium loan rates.
@@ -1123,7 +1960,7 @@ function CreditPathModal({ onClose, country }: { onClose: () => void; country: s
               transition={{ duration: 0.4 }}
               style={{
                 height: "100%",
-                backgroundImage: `linear-gradient(90deg, ${T.gold}, ${T.goldDim})`,
+                background: `linear-gradient(90deg, ${T.gold}, ${T.goldDim})`,
                 borderRadius: 3,
               }}
             />
@@ -1138,7 +1975,7 @@ function CreditPathModal({ onClose, country }: { onClose: () => void; country: s
             width: "100%",
             padding: "12px 0",
             borderRadius: T.rsm,
-            backgroundImage: `linear-gradient(135deg, ${T.gold}, ${T.goldDim})`,
+            background: `linear-gradient(135deg, ${T.gold}, ${T.goldDim})`,
             border: "none",
             color: "#07090d",
             fontSize: 13,
@@ -1166,9 +2003,8 @@ function Footer() {
       { label: "Security", href: "/about#security" },
     ],
     Support: [
-      { label: "Help Center", href: "#" },
-      { label: "Contact Us", href: "#" },
-      { label: "Careers", href: "#" },
+      { label: "Help Center", href: "/help" },
+      { label: "Contact Us", href: "/contact" },
     ],
     Legal: [
       { label: "Privacy Policy", href: "/privacy" },
@@ -1190,13 +2026,13 @@ function Footer() {
     { name: "and many more", abbr: "and many more" },
   ];
 
-  return (
-    <footer style={{
-      background: "#0a0a0a",
-      borderTop: `1px solid ${T.border}`,
-      padding: "40px 20px",
-      marginTop: 60,
-    }}>
+return (
+  <footer style={{
+  background: T.bg,
+  borderTop: `1px solid ${T.border}`,
+  padding: "40px 20px",
+  marginTop: 60,
+  }}>
       <div style={{ maxWidth: 1200, margin: "0 auto" }}>
         {/* Four column grid */}
         <div style={{
@@ -1220,14 +2056,18 @@ function Footer() {
               <ul style={{ listStyle: "none", padding: 0, margin: 0 }}>
                 {links.map(link => (
                   <li key={link.label} style={{ marginBottom: 8 }}>
-                    <a href={link.href} style={{
-                      fontSize: 11,
-                      color: T.mid,
-                      textDecoration: "none",
-                      transition: "color 0.2s",
-                    }}
-                    onMouseEnter={e => (e.currentTarget.style.color = T.gold)}
-                    onMouseLeave={e => (e.currentTarget.style.color = T.mid)}
+                    <a
+                      href={link.href}
+                      style={{
+                        fontSize: 11,
+                        color: T.mid,
+                        textDecoration: "none",
+                        transition: "color 0.2s",
+                        cursor: "pointer",
+                        display: "inline-block",
+                      }}
+                      onMouseEnter={e => (e.currentTarget.style.color = T.gold)}
+                      onMouseLeave={e => (e.currentTarget.style.color = T.mid)}
                     >
                       {link.label}
                     </a>
@@ -1284,7 +2124,7 @@ function Footer() {
             margin: 0,
             letterSpacing: ".02em",
           }}>
-            © 2026 Forge Finances. Empowering the next generation of global students.
+            © 2026 WealthNutz. Empowering the next generation of global students.
           </p>
         </div>
       </div>
@@ -1294,7 +2134,7 @@ function Footer() {
 
 // ─────────────────────────────────────────────────────────────────────────────
 // SECTION 6 — FINANCIAL TOOLS
-// ─────────────────────────────────────────────────────────────────────────────
+// ──────────────────────────────────────────────────────────────────────────���──
 
 // ── Budget Tool (Memoized) ────────────────────────────────────────────────────
 const BudgetToolComponent = () => {
@@ -1322,7 +2162,59 @@ const BudgetToolComponent = () => {
   
   return (
     <motion.div variants={fadeUp} initial="hidden" animate="visible" style={{ display:"flex", flexDirection:"column", gap:16 }}>
-      <Slider label="Monthly Income" value={income} min={100} step={50} onChange={setIncome} fmt={v=>"$"+v.toLocaleString()} maxVal={1_000_000_000} />
+      {/* Monthly Income — large numeric input, always high-contrast */}
+      <div style={{ display:"flex", flexDirection:"column", gap:6 }}>
+        <label style={{ fontSize:13, fontWeight:800, color:"#1A1A1A", letterSpacing:".01em" }}>
+          Monthly Income
+        </label>
+        <div style={{
+          display: "flex",
+          alignItems: "center",
+          border: "2.5px solid #000000",
+          borderRadius: 10,
+          background: "#ffffff",
+          overflow: "hidden",
+          boxShadow: "0 2px 8px rgba(0,0,0,0.10)",
+        }}>
+          <span style={{
+            padding: "14px 14px 14px 16px",
+            fontSize: 20,
+            fontWeight: 800,
+            color: "#000000",
+            background: "#f3f3f3",
+            borderRight: "2px solid #000000",
+            lineHeight: 1,
+            userSelect: "none",
+          }}>$</span>
+          <input
+            type="number"
+            min={0}
+            step={50}
+            value={income === 0 ? "" : income}
+            placeholder="e.g. 3000"
+            onChange={e => {
+              const v = parseFloat(e.target.value);
+              setIncome(isNaN(v) || v < 0 ? 0 : v);
+            }}
+            style={{
+              flex: 1,
+              border: "none",
+              outline: "none",
+              padding: "14px 16px",
+              fontSize: 20,
+              fontWeight: 700,
+              color: "#000000",
+              background: "#ffffff",
+              fontFamily: "inherit",
+              width: "100%",
+              boxSizing: "border-box",
+              appearance: "none",
+              MozAppearance: "textfield",
+            } as React.CSSProperties}
+          />
+        </div>
+        <p style={{ fontSize:11, color:"#555555", margin:0 }}>Enter your take-home pay per month.</p>
+      </div>
       <Slider label="Needs %"        value={needs}  min={0}  step={1}  onChange={handleNeedsChange}  fmt={v=>v+"%"} maxVal={100} />
       <Slider label="Wants %"        value={wants}  min={0}  step={1}  onChange={handleWantsChange}  fmt={v=>v+"%"} maxVal={100} />
       <div style={{ display:"flex", height:10, borderRadius:5, overflow:"hidden", gap:2 }}>
@@ -1424,7 +2316,25 @@ const LoanCalculatorComponent = () => {
   
   return (
     <div style={{ display:"flex", flexDirection:"column", gap:16 }}>
-      <Slider label="Loan Amount"   value={principal} min={500}   step={500}  onChange={setPrincipal} fmt={v=>"$"+v.toLocaleString()} maxVal={1_000_000_000} />
+      {/* Loan Amount — large numeric input, always high-contrast */}
+      <div style={{ display:"flex", flexDirection:"column", gap:6 }}>
+        <label style={{ fontSize:13, fontWeight:800, color:"#1A1A1A", letterSpacing:".01em" }}>Loan Amount</label>
+        <div style={{ display:"flex", alignItems:"center", border:"2.5px solid #1A1A1A", borderRadius:10, background:"#ffffff", overflow:"hidden", boxShadow:"0 2px 8px rgba(0,0,0,0.10)" }}>
+          <span style={{ padding:"14px 14px 14px 16px", fontSize:20, fontWeight:800, color:"#1A1A1A", background:"#f3f3f3", borderRight:"2px solid #1A1A1A", lineHeight:1, userSelect:"none" }}>$</span>
+          <input
+            type="text"
+            inputMode="numeric"
+            value={principal === 0 ? "" : principal.toLocaleString()}
+            placeholder="e.g. 25,000"
+            onChange={e => {
+              const raw = e.target.value.replace(/,/g, "");
+              const v = parseFloat(raw);
+              setPrincipal(isNaN(v) || v < 0 ? 0 : v);
+            }}
+            style={{ flex:1, border:"none", outline:"none", padding:"14px 16px", fontSize:20, fontWeight:700, color:"#1A1A1A", background:"#ffffff", fontFamily:"inherit", width:"100%", boxSizing:"border-box" } as React.CSSProperties}
+          />
+        </div>
+      </div>
       <Slider label="Interest Rate" value={rate}      min={0.5}   step={0.25} onChange={setRate}      fmt={v=>v+"%"} maxVal={50} />
       <Slider label="Term (Years)"  value={years}     min={1}     step={1}    onChange={setYears}     fmt={v=>v+" yrs"} maxVal={50} />
       <Slider label="Extra Monthly" value={extra}     min={0}     step={10}   onChange={setExtra}     fmt={v=>"$"+v} maxVal={Math.round(base * 10)} />
@@ -1443,7 +2353,7 @@ const LoanCalculatorComponent = () => {
       {extra > 0 && (
         <Glass style={{ padding:14, border:"1px solid rgba(74,222,128,0.2)" }}>
           <p style={{ fontSize:10, color:T.green, margin:"0 0 8px", letterSpacing:".07em" }}>WITH EXTRA ${extra}/MO</p>
-          {[["Interest saved","$"+Math.round(savedInt).toLocaleString(),true],["Months sooner",savedMo>0?savedMo+" months":"—"],["New payoff",`${Math.floor(mo/12)}y ${mo%12}m`]].map(([l,v,acc]) => (
+          {[["Interest saved","$"+Math.round(savedInt).toLocaleString(),true],["Months sooner",savedMo>0?savedMo+" months":"���"],["New payoff",`${Math.floor(mo/12)}y ${mo%12}m`]].map(([l,v,acc]) => (
             <div key={l as string} style={{ display:"flex", justifyContent:"space-between", padding:"5px 0", borderTop:"1px solid rgba(74,222,128,0.1)" }}>
               <span style={{ fontSize:12, color:T.mid }}>{l}</span>
               <span style={{ fontSize:13, color:acc?T.green:T.mid, fontWeight:acc?700:400 }}>{v as string}</span>
@@ -1458,19 +2368,19 @@ const LoanCalculatorComponent = () => {
 // Memoize LoanCalculator to prevent unnecessary re-renders
 const LoanCalculator = React_memo_compat(LoanCalculatorComponent);
 
-// ── Loan Finder ────────────────�����──────────────────────────────────────────────
+// ── Loan Finder ────��───────────�����──────���───���──────────�������───────────────────────
 type Phase = "idle"|"scanning"|"results";
 const SCAN_MSGS = ["Connecting to loan databases...","Scanning live lender rates...","Cross-referencing eligibility...","Compiling best rates for you..."];
 
-function LoanFinder({ onToggleSave, savedIds }: { onToggleSave: (item: ScoutResult) => void; savedIds: Set<string> }) {
+function LoanFinder({ onToggleSave, savedIds, userCountry, isDarkMode }: { onToggleSave: (item: ScoutResult) => void; savedIds: Set<string>; userCountry: string; isDarkMode: boolean }) {
   
   const [loanType, setLoanType] = useState<LoanType>("Student");
   const [amount,   setAmount]   = useState("");
   const [phase,    setPhase]    = useState<Phase>("idle");
   const [results,  setResults]  = useState<ScoutResult[]>([]);
   const [scanIdx,  setScanIdx]  = useState(0);
-  const [hist,     setHist]     = useState<HistRec[]>([]);
-  useEffect(() => { setHist(readHist().filter(h => h.type==="loan")); }, []);
+  const [loanFilters, setLoanFilters] = useState<LoanFilters>(DEFAULT_LOAN_FILTERS);
+  const [loanSort, setLoanSort] = useState<SortOption>("best-match");
   useEffect(() => {
     if (phase !== "scanning") return;
     setScanIdx(0);
@@ -1478,14 +2388,13 @@ function LoanFinder({ onToggleSave, savedIds }: { onToggleSave: (item: ScoutResu
     return () => clearInterval(iv);
   }, [phase]);
   const handleSearch = async () => {
+    // Always reset results first so every click triggers a visible fresh search
+    setResults([]);
     setPhase("scanning");
     try {
       const data = await fetchResults("loan", { loanType, amount: amount?.trim() ?? "" });
       const final = (data?.length ?? 0) > 0 ? data : MOCK_LOANS;
       setResults(final);
-      const rec: HistRec = { id:String(Date.now()), label:`${loanType}${amount?.trim() ? " — "+amount.trim() : ""}`, type:"loan", results:final, ts:Date.now() };
-      pushHist(rec);
-      setHist(readHist().filter(h => h.type==="loan"));
     } catch { setResults(MOCK_LOANS); }
     setPhase("results");
   };
@@ -1504,7 +2413,7 @@ function LoanFinder({ onToggleSave, savedIds }: { onToggleSave: (item: ScoutResu
         placeholder="Amount needed (e.g. $20,000)"
         style={{ padding:"10px 13px", background:T.glassHi, border:`1px solid ${T.border}`, borderRadius:T.rsm, color:T.text, fontSize:13, outline:"none", fontFamily:"inherit" }} />
       <motion.button whileTap={tapAnim.tap} onClick={handleSearch} disabled={phase==="scanning"}
-        style={{ padding:"11px 0", borderRadius:T.rsm, border:"none", cursor:"pointer", backgroundImage:`linear-gradient(135deg,${T.gold},${T.goldDim})`, color:"#07090d", fontSize:13, fontWeight:800, fontFamily:"inherit", opacity:phase==="scanning"?.65:1, boxShadow:`0 0 18px ${T.glow}` }}>
+        style={{ padding:"11px 0", borderRadius:T.rsm, border:"none", cursor:"pointer", background:`linear-gradient(135deg,${T.gold},${T.goldDim})`, color:"#07090d", fontSize:13, fontWeight:800, fontFamily:"inherit", opacity:phase==="scanning"?.65:1, boxShadow:`0 0 18px ${T.glow}` }}>
         {phase==="scanning" ? "Scanning lenders..." : "Find Best Rates"}
       </motion.button>
       <AnimatePresence>
@@ -1523,7 +2432,7 @@ function LoanFinder({ onToggleSave, savedIds }: { onToggleSave: (item: ScoutResu
       <AnimatePresence>
         {phase==="results" && results.length>0 && (
           <motion.div key="lr" variants={stagger} initial="hidden" animate="visible" style={{ display:"flex", flexDirection:"column", gap:10 }}>
-            {results.map(r => (
+            {(results ?? []).map(r => (
               <motion.div key={r.id} variants={fadeUp}>
                 <Glass glow style={{ padding:14 }}>
                   <div style={{ display:"flex", justifyContent:"space-between", alignItems:"flex-start", marginBottom:7, gap:10 }}>
@@ -1548,152 +2457,560 @@ function LoanFinder({ onToggleSave, savedIds }: { onToggleSave: (item: ScoutResu
           </motion.div>
         )}
       </AnimatePresence>
-      {hist.length > 0 && (
-        <div>
-          <p style={{ fontSize:10, color:T.dim, letterSpacing:".08em", margin:"4px 2px 8px" }}>RECENT SEARCHES</p>
-          {hist.slice(0,3).map(h => (
-            <Glass key={h.id} style={{ padding:"9px 12px", marginBottom:6, cursor:"pointer" }} onClick={() => { setResults(h.results ?? []); setPhase("results"); }}>
-              <div style={{ display:"flex", justifyContent:"space-between" }}>
-                <span style={{ fontSize:12, color:T.text }}>{h.label}</span>
-                <span style={{ fontSize:10, color:T.dim }}>{new Date(h.ts).toLocaleDateString()}</span>
-              </div>
-            </Glass>
-          ))}
-        </div>
-      )}
+      {/* Live Scour Marketplace — filtered by selected loan type and user country */}
+      <div style={{ marginTop: 20 }}>
+<LoanMarketplaceHero
+  country={userCountry === "Canada" ? "Canada" : "USA"}
+  filterType={loanType}
+  onToggleSave={onToggleSave}
+  savedIds={savedIds}
+  filters={loanFilters}
+  sortBy={loanSort}
+  onFiltersChange={setLoanFilters}
+  onSortChange={setLoanSort}
+/>
+      </div>
     </div>
   );
 }
 
-// ── Loan Tool (tabs) ──────────────────────────────────────────────────────────
-function LoanTool({ onToggleSave, savedIds }: { onToggleSave: (item: ScoutResult) => void; savedIds: Set<string> }) {
+// ── Loan Tool (tabs) ────────────────���─────────────────────────────────────────
+function LoanTool({ onToggleSave, savedIds, userCountry, isDarkMode }: { onToggleSave: (item: ScoutResult) => void; savedIds: Set<string>; userCountry: string; isDarkMode: boolean }) {
   
-  const [tab, setTab] = useState<"calc"|"finder">("calc");
+  const [tab, setTab] = useState<"calc"|"finder">("finder");
   return (
     <motion.div variants={fadeUp} initial="hidden" animate="visible" style={{ display:"flex", flexDirection:"column", gap:0 }}>
       <div style={{ display:"flex", gap:4, background:T.glass, borderRadius:T.rsm, padding:3, marginBottom:16 }}>
-        {([["calc","Calculator"],["finder","Loan Finder"]] as const).map(([id,lbl]) => (
+        {([["finder","Loan Finder"],["calc","Calculator"]] as const).map(([id,lbl]) => (
           <motion.button key={id} whileTap={tapAnim.tap} onClick={() => setTab(id)}
-            style={{ flex:1, padding:"8px 0", borderRadius:7, border:"none", cursor:"pointer", fontFamily:"inherit", fontSize:12, fontWeight:600, background:tab===id?"rgba(201,168,76,0.18)":"transparent", color:tab===id?T.gold:T.mid }}>
+            style={{ flex:1, padding:"8px 0", borderRadius:7, border:"none", cursor:"pointer", fontFamily:"inherit", fontSize:12, fontWeight:600, background:tab===id?"rgba(201,168,76,0.18)":"rgba(0,0,0,0)", color:tab===id?T.gold:T.mid }}>
             {lbl}
           </motion.button>
         ))}
       </div>
-      {tab==="calc" ? <LoanCalculator /> : <LoanFinder onToggleSave={onToggleSave} savedIds={savedIds} />}
+      {tab==="finder" ? <LoanFinder onToggleSave={onToggleSave} savedIds={savedIds} userCountry={userCountry} isDarkMode={isDarkMode} /> : <LoanCalculator />}
     </motion.div>
   );
 }
 
-// ── Scholarship Scout ────────────────────────────────────────────��──────────��─
+// ── Scholarship Scout ─────────────────────������������─����──────────────────�����──────────��─
 const SCH_SCAN_MSGS = ["Connecting to scholarship databases...","Scanning national award portals...","Cross-referencing eligibility...","Aggregating live results for you..."];
 
-function ScholarshipScout({ onToggleSave, savedIds }: { onToggleSave: (item: ScoutResult) => void; savedIds: Set<string> }) {
+// Custom themed dropdown — replaces native <select> so colors work in both themes
+function ScholarshipSelect({ value, options, onChange, isDarkMode = false }: { value: string; options: readonly string[]; onChange: (v: string) => void; isDarkMode?: boolean }) {
+  const [open, setOpen] = useState(false);
+  const ref = useRef<HTMLDivElement>(null);
+
+  // Close when clicking outside
+  useEffect(() => {
+    if (!open) return;
+    const handler = (e: MouseEvent) => {
+      if (ref.current && !ref.current.contains(e.target as Node)) setOpen(false);
+    };
+    document.addEventListener("mousedown", handler);
+    return () => document.removeEventListener("mousedown", handler);
+  }, [open]);
+
+  return (
+    <div ref={ref} style={{ position: "relative", minWidth: 0, width: "100%" }}>
+      {/* Trigger button */}
+      <button
+        type="button"
+        onClick={() => setOpen(o => !o)}
+        style={{
+          width: "100%",
+          padding: "9px 30px 9px 10px",
+          background: T.glass,
+          border: `1px solid ${open ? T.gold : T.border}`,
+          borderRadius: T.rsm,
+          color: T.text,
+          fontSize: 12,
+          fontFamily: "inherit",
+          outline: "none",
+          cursor: "pointer",
+          textAlign: "left",
+          boxSizing: "border-box",
+          overflow: "hidden",
+          textOverflow: "ellipsis",
+          whiteSpace: "nowrap",
+          transition: "border-color .15s",
+          position: "relative",
+        }}
+      >
+        {value}
+        {/* Chevron */}
+        <span style={{
+          position: "absolute",
+          right: 8,
+          top: "50%",
+          transform: `translateY(-50%) rotate(${open ? 180 : 0}deg)`,
+          transition: "transform .2s",
+          pointerEvents: "none",
+          color: T.mid,
+          display: "flex",
+          alignItems: "center",
+        }}>
+          <ChevronDown size={12} />
+        </span>
+      </button>
+
+      {/* Dropdown panel */}
+      <AnimatePresence>
+        {open && (
+          <motion.div
+            initial={{ opacity: 0, y: -6, scaleY: 0.92 }}
+            animate={{ opacity: 1, y: 0, scaleY: 1 }}
+            exit={{ opacity: 0, y: -6, scaleY: 0.92 }}
+            transition={{ duration: 0.15 }}
+            style={{
+              position: "absolute",
+              top: "calc(100% + 4px)",
+              left: 0,
+              minWidth: "100%",
+              maxHeight: 220,
+              overflowY: "auto",
+              background: isDarkMode ? "#000000" : "#FFFFFF",
+              border: `1px solid ${T.border}`,
+              borderRadius: T.rsm,
+              boxShadow: "0 12px 32px rgba(0,0,0,0.5)",
+              zIndex: 1000,
+              transformOrigin: "top",
+            }}
+          >
+            {options.map(opt => (
+              <button
+                key={opt}
+                type="button"
+                onClick={() => { onChange(opt); setOpen(false); }}
+                style={{
+                  display: "block",
+                  width: "100%",
+                  padding: "9px 12px",
+                  border: "none",
+                  background: opt === value ? (T.gold + "22") : "rgba(0,0,0,0)",
+                  color: opt === value ? T.gold : T.text,
+                  fontSize: 12,
+                  fontFamily: "inherit",
+                  textAlign: "left",
+                  cursor: "pointer",
+                  whiteSpace: "nowrap",
+                  transition: "background .1s",
+                }}
+                onMouseEnter={e => { if (opt !== value) (e.currentTarget as HTMLElement).style.background = T.glassHi; }}
+                onMouseLeave={e => { if (opt !== value) (e.currentTarget as HTMLElement).style.background = "rgba(0,0,0,0)"; }}
+              >
+                {opt}
+              </button>
+            ))}
+          </motion.div>
+        )}
+      </AnimatePresence>
+    </div>
+  );
+}
+
+// Pulled out of ScholarshipScout's IIFE to avoid Turbopack regex parse errors
+function parseScholarshipAmount(amt: string): number {
+  const m = amt.match(/[\d,]+/);
+  return m ? parseInt(m[0].replace(/,/g, ""), 10) : 0;
+}
+
+// Extract negative/exclusion terms from user query for client-side double-check filtering
+function extractExcludeTerms(query: string): string[] {
+  if (!query) return [];
+  const queryLower = query.toLowerCase();
+  const excludeTerms: string[] = [];
+  
+  // Patterns to detect negation
+  const patterns = [
+    /\b(?:i am |i'm |i )not\s+(?:a |an )?(\w+)/gi,
+    /\bnot\s+(?:a |an )?(\w+)/gi,
+    /\bnon[- ]?(\w+)/gi,
+    /\bwithout\s+(?:being |having )?(?:a |an )?(\w+)/gi,
+    /\bexclude\s+(\w+)/gi,
+    /\bexcluding\s+(\w+)/gi,
+  ];
+  
+  for (const pattern of patterns) {
+    let match;
+    while ((match = pattern.exec(queryLower)) !== null) {
+      const term = match[1]?.trim().toLowerCase();
+      if (term && term.length > 2) {
+        excludeTerms.push(term);
+      }
+    }
+  }
+  return excludeTerms;
+}
+
+// Check if a scholarship should be excluded based on negative keywords
+function shouldExcludeScholarship(scholarship: ScoutResult, excludeTerms: string[]): boolean {
+  if (excludeTerms.length === 0) return false;
+  
+  const searchableText = (
+    scholarship.title + " " +
+    ((scholarship as { description?: string }).description || "") + " " +
+    (scholarship.eligibility || "")
+  ).toLowerCase();
+  
+  const demographicTerms = [
+    "indigenous", "aboriginal", "native", "first nations", "metis", "inuit",
+    "international", "foreign", "immigrant", "refugee",
+    "female", "women", "woman", "male", "men",
+    "black", "african", "hispanic", "latino", "latina", "asian", "minority",
+    "lgbtq", "lgbt", "veteran", "military", "disabled", "disability",
+    "citizen", "resident"
+  ];
+  
+  for (const term of excludeTerms) {
+    const isDemographic = demographicTerms.some(d => term.includes(d) || d.includes(term));
+    if (isDemographic && searchableText.includes(term)) {
+      return true; // Exclude
+    }
+    if (scholarship.eligibility?.toLowerCase().includes(term) ||
+        scholarship.title.toLowerCase().includes(term)) {
+      return true; // Exclude
+    }
+  }
+  return false;
+}
+
+type ScholarshipResultsProps = {
+  phase: Phase;
+  results: ScoutResult[];
+  country: string;
+  userQuery: string;
+  schSort: SortOption;
+  setSchSort: (v: SortOption) => void;
+  schFilters: ScholarshipFilters;
+  setSchFilters: (f: ScholarshipFilters) => void;
+  hasMore: boolean;
+  loadingMore: boolean;
+  totalCount: number;
+  handleLoadMore: () => void;
+  onToggleSave: (item: ScoutResult) => void;
+  savedIds: Set<string>;
+  mobileFilterOpen: boolean;
+  setMobileFilterOpen: (v: boolean) => void;
+};
+
+function ScholarshipResults({ phase, results, country, userQuery, schSort, setSchSort, schFilters, setSchFilters, hasMore, loadingMore, totalCount, handleLoadMore, onToggleSave, savedIds, mobileFilterOpen, setMobileFilterOpen }: ScholarshipResultsProps) {
+  // Extract exclusion terms from user query for client-side double-check
+  const excludeTerms = extractExcludeTerms(userQuery);
+  
+  // Apply exclusion filter first — this is the double-check before display
+  const excludeFiltered = results.filter(r => !shouldExcludeScholarship(r, excludeTerms));
+  
+  const filterCounts = {
+    under1k:  excludeFiltered.filter(r => parseScholarshipAmount(r.amount ?? "0") < 1000).length,
+    k1to5:    excludeFiltered.filter(r => { const a = parseScholarshipAmount(r.amount ?? "0"); return a >= 1000 && a <= 5000; }).length,
+    k5to10:   excludeFiltered.filter(r => { const a = parseScholarshipAmount(r.amount ?? "0"); return a > 5000 && a <= 10000; }).length,
+    k10plus:  excludeFiltered.filter(r => parseScholarshipAmount(r.amount ?? "0") > 10000).length,
+    undergrad: excludeFiltered.filter(r => (r.eligibility ?? "").toLowerCase().includes("undergrad") || !(r.eligibility ?? "").toLowerCase().includes("graduate")).length,
+    graduate:  excludeFiltered.filter(r => (r.eligibility ?? "").toLowerCase().includes("graduate")).length,
+    noEssay:   excludeFiltered.filter(r => (r.eligibility ?? "").toLowerCase().includes("no essay")).length,
+    noGpa:     excludeFiltered.filter(r => !(r.eligibility ?? "").toLowerCase().includes("gpa")).length,
+  };
+
+  const filteredResults = excludeFiltered.filter(r => {
+    const itemCountry = (r as { country?: string }).country;
+    if (country !== "Any" && itemCountry) {
+      if (country === "Canada" && itemCountry !== "Canada") return false;
+      if (country === "USA" && itemCountry !== "USA") return false;
+    }
+    const amt = parseScholarshipAmount(r.amount ?? "0");
+    if (schFilters.awardAmount === "under-1k" && amt >= 1000) return false;
+    if (schFilters.awardAmount === "1k-5k" && (amt < 1000 || amt > 5000)) return false;
+    if (schFilters.awardAmount === "5k-10k" && (amt <= 5000 || amt > 10000)) return false;
+    if (schFilters.awardAmount === "10k-plus" && amt <= 10000) return false;
+    if (schFilters.noEssay && !(r.eligibility ?? "").toLowerCase().includes("no essay")) return false;
+    if (schFilters.noGpaReq && (r.eligibility ?? "").toLowerCase().includes("gpa")) return false;
+    return true;
+  });
+
+  const sortedResults = [...filteredResults].sort((a, b) => {
+    if (schSort === "highest-award") return parseScholarshipAmount(b.amount ?? "0") - parseScholarshipAmount(a.amount ?? "0");
+    if (schSort === "deadline-soonest") return (a.deadline ?? "").localeCompare(b.deadline ?? "");
+    return 0;
+  });
+
+  const hasActiveFilters = schFilters.awardAmount !== "any" || schFilters.educationLevel !== "any" || schFilters.noEssay || schFilters.noGpaReq;
+
+  if (phase !== "results" || results.length === 0) return null;
+
+  return (
+    <AnimatePresence>
+      <motion.div key="sch-results" initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} style={{ marginTop: 24 }}>
+        {/* Sort & Filter Controls */}
+        <motion.div variants={fadeUp} style={{ marginBottom: 16, display: "flex", alignItems: "center", justifyContent: "space-between", flexWrap: "wrap", gap: 12 }}>
+          <SortDropdown value={schSort} onChange={setSchSort} resultCount={sortedResults.length} />
+          {hasActiveFilters && (
+            <motion.button whileTap={{ scale: 0.95 }} onClick={() => setSchFilters(DEFAULT_SCHOLARSHIP_FILTERS)}
+              style={{ display:"flex", alignItems:"center", gap:4, padding:"6px 12px", borderRadius:6, border:"none", background:"rgba(248,113,113,0.15)", color:"#f87171", fontSize:11, fontWeight:600, cursor:"pointer" }}>
+              <RotateCcw size={12} /> Clear Filters
+            </motion.button>
+          )}
+        </motion.div>
+
+        {/* Main Content with Sidebar */}
+        <div style={{ display:"flex", gap:16 }}>
+          {/* Desktop Filter Sidebar */}
+          <div className="desktop-filter-sidebar" style={{ width:220, flexShrink:0 }}>
+            <Glass style={{ position:"sticky", top:70 }}>
+              <ScholarshipFilterSidebar filters={schFilters} onChange={setSchFilters} onClear={() => setSchFilters(DEFAULT_SCHOLARSHIP_FILTERS)} counts={filterCounts} />
+            </Glass>
+          </div>
+
+          {/* Results */}
+          <motion.div key="sr" variants={stagger} initial="hidden" animate="visible" style={{ flex:1, display:"flex", flexDirection:"column", gap:10 }}>
+            {(sortedResults ?? []).map(r => (
+              <motion.div key={r.id} variants={fadeUp}>
+                <Glass glow style={{ padding:14 }}>
+                  <div style={{ display:"flex", justifyContent:"space-between", alignItems:"flex-start", marginBottom:7, gap:10 }}>
+                    <div style={{ flex:1 }}>
+                      <p style={{ fontSize:13, fontWeight:700, color:T.text, margin:"0 0 2px" }}>{r.title}</p>
+                      <p style={{ fontSize:11, color:T.mid, margin:0 }}>{r.provider}</p>
+                    </div>
+                    <div style={{ display:"flex", alignItems:"center", gap:6, flexShrink:0 }}>
+                      <Chip label={r.amount} color={T.gold} />
+                      <motion.button whileTap={{ scale:0.9 }} onClick={() => onToggleSave(r)}
+                        style={{ background:"none", border:"none", cursor:"pointer", padding:2, color:savedIds.has(r.id) ? "#f59e0b" : T.mid }}>
+                        <Bookmark size={16} fill={savedIds.has(r.id) ? "#f59e0b" : "none"} />
+                      </motion.button>
+                    </div>
+                  </div>
+                  <ExpandableText text={(r as { description?: string }).description || r.eligibility} maxLines={3} />
+                  <p style={{ fontSize:10, color:T.dim, margin:"8px 0 10px" }}>Deadline: {r.deadline}</p>
+                  <GoldCTA href={r.url} label="Apply Now" />
+                </Glass>
+              </motion.div>
+            ))}
+
+            {/* Show More Button */}
+            {hasMore && (
+              <motion.div variants={fadeUp} style={{ marginTop:8 }}>
+                <motion.button whileTap={{ scale:0.98 }} onClick={handleLoadMore} disabled={loadingMore}
+                  style={{ width:"100%", padding:"16px 0", borderRadius:T.rmd, border:`2px solid ${T.gold}`, background:"transparent", color:T.gold, fontSize:14, fontWeight:700, fontFamily:"inherit", cursor:loadingMore ? "wait" : "pointer", opacity:loadingMore ? 0.7 : 1, transition:"all 0.2s" }}>
+                  {loadingMore ? "Loading more scholarships..." : `Show More Scholarships (${totalCount - results.length} remaining)`}
+                </motion.button>
+              </motion.div>
+            )}
+
+            {/* Results count footer */}
+            <p style={{ fontSize:10, color:T.dim, textAlign:"center", margin:"12px 0 0" }}>
+              Showing {results.length} of {totalCount} scholarships for {country}
+            </p>
+          </motion.div>
+        </div>
+
+        {/* Mobile Filter */}
+        <MobileFilterButton onClick={() => setMobileFilterOpen(true)} hasFilters={hasActiveFilters} />
+        <FilterBottomSheet isOpen={mobileFilterOpen} onClose={() => setMobileFilterOpen(false)} title="Filter Scholarships">
+          <ScholarshipFilterSidebar filters={schFilters} onChange={setSchFilters} onClear={() => setSchFilters(DEFAULT_SCHOLARSHIP_FILTERS)} counts={filterCounts} />
+        </FilterBottomSheet>
+      </motion.div>
+    </AnimatePresence>
+  );
+}
+
+function ScholarshipScout({ onToggleSave, savedIds, isDarkMode }: { onToggleSave: (item: ScoutResult) => void; savedIds: Set<string>; isDarkMode: boolean }) {
   
   const [query,   setQuery]   = useState("");
   const [major,   setMajor]   = useState<string>(SCHOLARSHIP_MAJORS[0] as string);
   const [country, setCountry] = useState<string>(SCHOLARSHIP_COUNTRIES[0] as string);
-  const [year,    setYear]    = useState<string>(SCHOLARSHIP_YEARS[0] as string);
+  const [level,   setLevel]   = useState<string>(SCHOLARSHIP_LEVELS[0] as string);
   const [phase,   setPhase]   = useState<Phase>("idle");
   const [results, setResults] = useState<ScoutResult[]>([]);
+  const [error,   setError]   = useState<string>("");
+  const [validationError, setValidationError] = useState<string>("");
   const [scanIdx, setScanIdx] = useState(0);
-  const [hist,    setHist]    = useState<HistRec[]>([]);
-  useEffect(() => { setHist(readHist().filter(h => h.type==="scholarship")); }, []);
+  const [schFilters, setSchFilters] = useState<ScholarshipFilters>(DEFAULT_SCHOLARSHIP_FILTERS);
+  const [schSort, setSchSort] = useState<SortOption>("best-match");
+  const [mobileFilterOpen, setMobileFilterOpen] = useState(false);
+  // Pagination state
+  const [totalCount, setTotalCount] = useState(0);
+  const [hasMore, setHasMore] = useState(false);
+  const [nextOffset, setNextOffset] = useState<number | null>(null);
+  const [loadingMore, setLoadingMore] = useState(false);
+
+  // Clear results whenever the user changes their selections
+  const handleMajorChange = (v: string) => { setMajor(v); setResults([]); setPhase("idle"); setValidationError(""); };
+  const handleLevelChange  = (v: string) => { setLevel(v);  setResults([]); setPhase("idle"); setValidationError(""); };
+  const handleCountryChange = (v: string) => { setCountry(v); setResults([]); setPhase("idle"); setValidationError(""); };
+  
   useEffect(() => {
     if (phase !== "scanning") return;
     setScanIdx(0);
     const iv = setInterval(() => setScanIdx(p => Math.min(p+1, SCH_SCAN_MSGS.length-1)), 530);
     return () => clearInterval(iv);
   }, [phase]);
+  
   const handleSearch = async () => {
+    // Input validation — require country and major
+    const missingCountry = country === "Any Country" || !country;
+    const missingMajor   = major   === "Any Major";
+    if (missingCountry || missingMajor) {
+      setValidationError("Action Required: Please fill out your country and major first.");
+      return;
+    }
+    setValidationError("");
+    setResults([]);
     setPhase("scanning");
+    setError("");
+    setHasMore(false);
+    setNextOffset(null);
+    setTotalCount(0);
     try {
-      const data = await fetchResults("scholarship", { major, country, year, query: query?.trim() ?? "" });
-      const final = (data?.length ?? 0) > 0 ? data : MOCK_SCHOLARSHIPS;
-      setResults(final);
-      const rec: HistRec = { id:String(Date.now()), label:query?.trim() || major, type:"scholarship", results:final, ts:Date.now() };
-      pushHist(rec);
-      setHist(readHist().filter(h => h.type==="scholarship"));
-    } catch { setResults(MOCK_SCHOLARSHIPS); }
+      const response = await fetch("/api/scholarships", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ country, major, level, query: query?.trim() ?? "", offset: 0, limit: 10 }),
+      });
+      const data = await response.json();
+      if (!response.ok || !data.scholarships) {
+        setError(data.error || "Failed to fetch scholarships. Please try again.");
+        setResults([]);
+      } else if (data.scholarships.length === 0) {
+        setError(`No scholarships found for ${major} in ${country}. Try adjusting your search.`);
+        setResults([]);
+      } else {
+        setResults(data.scholarships);
+        setTotalCount(data.total || data.scholarships.length);
+        setHasMore(data.hasMore || false);
+        setNextOffset(data.nextOffset || null);
+        setError("");
+      }
+    } catch (err) {
+      console.error("[v0] Scholarship search error:", err);
+      setError("Network error: Please check your connection and try again.");
+      setResults([]);
+    }
     setPhase("results");
   };
+  
+  const handleLoadMore = async () => {
+    if (!hasMore || nextOffset === null || loadingMore) return;
+    setLoadingMore(true);
+    try {
+      const response = await fetch("/api/scholarships", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ country, major, year, query: query?.trim() ?? "", offset: nextOffset, limit: 20 }),
+      });
+      const data = await response.json();
+      if (response.ok && data.scholarships) {
+        setResults(prev => [...prev, ...data.scholarships]);
+        setHasMore(data.hasMore || false);
+        setNextOffset(data.nextOffset || null);
+      }
+    } catch (err) {
+      console.error("[v0] Load more error:", err);
+    }
+    setLoadingMore(false);
+  };
   return (
-    <motion.div variants={fadeUp} initial="hidden" animate="visible" style={{ display:"flex", flexDirection:"column", gap:14, width:"100%", maxWidth:"90vw", boxSizing:"border-box" }}>
+    <motion.div variants={fadeUp} initial="hidden" animate="visible" style={{ display:"flex", flexDirection:"column", gap:14, width:"100%", maxWidth:"90vw", boxSizing:"border-box", marginTop:40 }}>
       <Glass glow style={{ padding:18, display:"flex", flexDirection:"column", gap:11, width:"100%", boxSizing:"border-box" }}>
         <p style={{ fontSize:10, color:T.mid, margin:0, letterSpacing:".08em" }}>AI SCHOLARSHIP SCOUT</p>
         <input value={query} onChange={e => setQuery(e.target.value ?? "")} onKeyDown={e => e.key==="Enter" && handleSearch()}
           placeholder="Tell us about yourself"
           style={{ width:"100%", padding:"10px 13px", background:T.glassHi, border:`1px solid ${T.border}`, borderRadius:T.rsm, color:T.text, fontSize:13, outline:"none", fontFamily:"inherit", boxSizing:"border-box" }} />
-        <div style={{ display:"grid", gridTemplateColumns:"2fr 1fr 1fr", gap:8, width:"100%", boxSizing:"border-box" }}>
-          {[{val:major,set:setMajor,opts:SCHOLARSHIP_MAJORS},{val:year,set:setYear,opts:SCHOLARSHIP_YEARS},{val:country,set:setCountry,opts:SCHOLARSHIP_COUNTRIES}].map(({val,set,opts},i) => (
-            <select key={i} value={val} onChange={e => set(e.target.value ?? "")} style={{ width:"100%", padding:"8px 9px", background:T.glass, border:`1px solid ${T.border}`, borderRadius:T.rsm, color:T.text, fontSize:11, fontFamily:"inherit", outline:"none", boxSizing:"border-box", minWidth:0 }}>
-              {(opts as readonly string[]).map(o => <option key={o} value={o}>{o}</option>)}
-            </select>
-          ))}
+        <div style={{ display:"flex", flexWrap:"wrap", gap:8, width:"100%", boxSizing:"border-box" }}>
+          {/* Major — takes full row width until there is enough space to share */}
+          <div style={{ flex:"1 1 180px", minWidth:140 }}>
+            <ScholarshipSelect value={major} options={SCHOLARSHIP_MAJORS as readonly string[]} onChange={handleMajorChange} isDarkMode={isDarkMode} />
+          </div>
+          {/* Level — always visible, fixed minimum */}
+          <div style={{ flex:"1 1 110px", minWidth:100 }}>
+            <ScholarshipSelect value={level} options={SCHOLARSHIP_LEVELS as readonly string[]} onChange={handleLevelChange} isDarkMode={isDarkMode} />
+          </div>
+          {/* Country — always visible, fixed minimum */}
+          <div style={{ flex:"1 1 90px", minWidth:84 }}>
+            <ScholarshipSelect value={country} options={SCHOLARSHIP_COUNTRIES as readonly string[]} onChange={handleCountryChange} isDarkMode={isDarkMode} />
+          </div>
         </div>
         <motion.button whileTap={tapAnim.tap} onClick={handleSearch} disabled={phase==="scanning"}
-          style={{ width:"100%", padding:"11px 0", borderRadius:T.rsm, border:"none", cursor:"pointer", backgroundImage:`linear-gradient(135deg,${T.gold},${T.goldDim})`, color:"#07090d", fontSize:13, fontWeight:800, fontFamily:"inherit", opacity:phase==="scanning"?.65:1, boxShadow:`0 0 18px ${T.glow}`, boxSizing:"border-box" }}>
+          style={{ width:"100%", padding:"11px 0", borderRadius:T.rsm, border:"none", cursor:"pointer", background:"linear-gradient(135deg," + T.gold + "," + T.goldDim + ")", color:"#07090d", fontSize:13, fontWeight:800, fontFamily:"inherit", opacity:phase==="scanning"?.65:1, boxShadow:"0 0 18px " + T.glow, boxSizing:"border-box" }}>
           {phase==="scanning" ? "Scanning databases..." : "Find Scholarships"}
         </motion.button>
+
+        {/* Validation warning — shown when user tries to search without selecting options */}
+        <AnimatePresence>
+          {validationError && (
+            <motion.div
+              key="val-warn"
+              initial={{ opacity: 0, y: -6 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -6 }}
+              style={{
+                marginTop: 4,
+                padding: "12px 14px",
+                borderRadius: T.rsm,
+                background: "rgba(239,68,68,0.1)",
+                border: "1px solid rgba(239,68,68,0.4)",
+                display: "flex",
+                alignItems: "flex-start",
+                gap: 10,
+              }}
+            >
+              <span style={{ fontSize: 14, lineHeight: 1, flexShrink: 0, marginTop: 1 }}>!</span>
+              <p style={{ fontSize: 12, color: "#ef4444", fontWeight: 600, margin: 0, lineHeight: 1.5, textAlign: "left" }}>
+                {validationError}
+              </p>
+            </motion.div>
+          )}
+        </AnimatePresence>
+
+        {/* Scanning & Error states */}
+        <AnimatePresence>
+          {phase==="scanning" && (
+            <motion.div key="ss" initial={{opacity:0}} animate={{opacity:1}} exit={{opacity:0}}>
+              <Glass style={{ padding:16, display:"flex", flexDirection:"column", gap:9 }}>
+                <div style={{ display:"flex", alignItems:"center", gap:8 }}>
+                  <span style={{ width:7, height:7, borderRadius:"50%", background:T.gold, display:"inline-block", animation:"wf-pulse 1s infinite" }} />
+                  <span style={{ fontSize:12, color:T.gold }}>{SCH_SCAN_MSGS[scanIdx] ?? SCH_SCAN_MSGS[0]}</span>
+                </div>
+                <Skel h={12} w="90%" /><Skel h={12} w="75%" /><Skel h={12} w="85%" />
+              </Glass>
+            </motion.div>
+          )}
+          {phase==="results" && error && (
+            <motion.div key="error" initial={{opacity:0, y:-8}} animate={{opacity:1, y:0}} exit={{opacity:0, y:-8}}>
+              <div style={{ padding:16, display:"flex", flexDirection:"column", gap:8, background:`rgba(239,68,68,0.08)`, borderRadius:T.rmd, borderWidth:"0 0 0 3px", borderStyle:"solid", borderColor:"#ef4444" }}>
+                <span style={{ fontSize:12, color:"#ef4444", fontWeight:600 }}>⚠ {error}</span>
+                <motion.button whileTap={tapAnim.tap} onClick={handleSearch} disabled={phase==="scanning"}
+                  style={{ width:"100%", padding:"9px 0", borderRadius:T.rsm, border:`1px solid #ef4444`, background:"transparent", color:"#ef4444", fontSize:12, fontWeight:700, fontFamily:"inherit", cursor:"pointer", boxSizing:"border-box" }}>
+                  Try Again
+                </motion.button>
+              </div>
+            </motion.div>
+          )}
+        </AnimatePresence>
       </Glass>
-      <AnimatePresence>
-        {phase==="scanning" && (
-          <motion.div key="ss" initial={{opacity:0}} animate={{opacity:1}} exit={{opacity:0}}>
-            <Glass style={{ padding:16, display:"flex", flexDirection:"column", gap:9 }}>
-              <div style={{ display:"flex", alignItems:"center", gap:8 }}>
-                <span style={{ width:7, height:7, borderRadius:"50%", background:T.gold, display:"inline-block", animation:"wf-pulse 1s infinite" }} />
-                <span style={{ fontSize:12, color:T.gold }}>{SCH_SCAN_MSGS[scanIdx] ?? SCH_SCAN_MSGS[0]}</span>
-              </div>
-              <Skel h={12} w="90%" /><Skel h={12} w="75%" /><Skel h={12} w="85%" />
-            </Glass>
-          </motion.div>
-        )}
-      </AnimatePresence>
-      <AnimatePresence>
-        {phase==="results" && results.length>0 && (
-          <motion.div key="sr" variants={stagger} initial="hidden" animate="visible" style={{ display:"flex", flexDirection:"column", gap:10 }}>
-            {results.map(r => (
-              <motion.div key={r.id} variants={fadeUp}>
-                <Glass glow style={{ padding:14 }}>
-                  <div style={{ display:"flex", justifyContent:"space-between", alignItems:"flex-start", marginBottom:7, gap:10 }}>
-                    <div><p style={{ fontSize:13, fontWeight:700, color:T.text, margin:"0 0 2px" }}>{r.title}</p><p style={{ fontSize:11, color:T.mid, margin:0 }}>{r.provider}</p></div>
-                    <div style={{ display:"flex", alignItems:"center", gap:6 }}>
-                      <Chip label={r.amount} color={T.gold} />
-                      <motion.button
-                        whileTap={{ scale: 0.9 }}
-                        onClick={() => onToggleSave(r)}
-                        style={{ background:"none", border:"none", cursor:"pointer", padding:2, color:savedIds.has(r.id) ? "#f59e0b" : T.mid }}
-                      >
-                        <Bookmark size={16} fill={savedIds.has(r.id) ? "#f59e0b" : "none"} />
-                      </motion.button>
-                    </div>
-                  </div>
-                  <p style={{ fontSize:11, color:T.mid, margin:"0 0 4px", lineHeight:1.4 }}>{r.eligibility}</p>
-                  <p style={{ fontSize:10, color:T.dim, margin:"0 0 10px" }}>Deadline: {r.deadline}</p>
-                  <GoldCTA href={r.url} label="Apply Now" />
-                </Glass>
-              </motion.div>
-            ))}
-          </motion.div>
-        )}
-      </AnimatePresence>
-      {hist.length > 0 && (
-        <div>
-          <p style={{ fontSize:10, color:T.dim, letterSpacing:".08em", margin:"4px 2px 8px" }}>RECENT SEARCHES</p>
-          {hist.slice(0,3).map(h => (
-            <Glass key={h.id} style={{ padding:"9px 12px", marginBottom:6, cursor:"pointer" }} onClick={() => { setResults(h.results ?? []); setPhase("results"); }}>
-              <div style={{ display:"flex", justifyContent:"space-between" }}>
-                <span style={{ fontSize:12, color:T.text }}>{h.label}</span>
-                <span style={{ fontSize:10, color:T.dim }}>{new Date(h.ts).toLocaleDateString()}</span>
-              </div>
-            </Glass>
-          ))}
-        </div>
-      )}
+      {/* Results section — computed vars hoisted out of IIFE to avoid regex parse errors */}
+      <ScholarshipResults
+        phase={phase}
+        results={results}
+        country={country}
+        userQuery={query}
+        schSort={schSort}
+        setSchSort={setSchSort}
+        schFilters={schFilters}
+        setSchFilters={setSchFilters}
+        hasMore={hasMore}
+        loadingMore={loadingMore}
+        totalCount={totalCount}
+        handleLoadMore={handleLoadMore}
+        onToggleSave={onToggleSave}
+        savedIds={savedIds}
+        mobileFilterOpen={mobileFilterOpen}
+        setMobileFilterOpen={setMobileFilterOpen}
+      />
     </motion.div>
   );
 }
 
-// ── Saved Items (My Vault) ─────────────────────────���──────────────────────────
+// ── Saved Items (My Vault) ─────────────────────────���──��───────────────────────
 function SavedItems({ saved, onRemove }: { saved: ScoutResult[]; onRemove: (item: ScoutResult) => void }) {
   
   
@@ -1710,24 +3027,24 @@ function SavedItems({ saved, onRemove }: { saved: ScoutResult[]; onRemove: (item
   return (
     <motion.div variants={stagger} initial="hidden" animate="visible" style={{ display: "flex", flexDirection: "column", gap: 10 }}>
       {saved.map(r => (
-        <motion.div key={r.id} variants={fadeUp}>
+        <motion.div key={r.id} variants={fadeUp} layout>
           <Glass glow style={{ padding: 14 }}>
             <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: 7, gap: 10 }}>
-              <div>
+              <div style={{ flex: 1 }}>
                 <Chip label={r.type === "scholarship" ? "Scholarship" : "Loan"} color={r.type === "scholarship" ? T.gold : T.green} />
-                <p style={{ fontSize: 13, fontWeight: 700, color: T.text, margin: "6px 0 2px" }}>{r.title}</p>
-                <p style={{ fontSize: 11, color: T.mid, margin: 0 }}>{r.provider}</p>
+                <p style={{ fontSize: 13, fontWeight: 700, color: T.text, margin: "6px 0 2px" }}>{r.title || r.name}</p>
+                {(r.provider || r.highlight) && <ExpandableText text={r.provider || r.highlight || ""} maxLines={2} />}
               </div>
               <motion.button
                 whileTap={{ scale: 0.9 }}
                 onClick={() => onRemove(r)}
-                style={{ background: "none", border: "none", cursor: "pointer", padding: 2, color: T.gold }}
+                style={{ background: "none", border: "none", cursor: "pointer", padding: 2, color: T.gold, flexShrink: 0 }}
               >
                 <Bookmark size={16} fill={T.gold} />
               </motion.button>
             </div>
-            <p style={{ fontSize: 12, color: T.goldHi, fontWeight: 600, margin: "0 0 10px" }}>{r.amount}</p>
-            <GoldCTA href={r.url} label={r.type === "scholarship" ? "Apply Now" : "Check Rate"} />
+            <p style={{ fontSize: 12, color: T.goldHi, fontWeight: 600, margin: "0 0 10px" }}>{r.amount || r.rate}</p>
+            <GoldCTA href={r.url || r.href} label={r.cta || (r.type === "scholarship" ? "Apply Now" : "Check Rate")} />
           </Glass>
         </motion.div>
       ))}
@@ -1832,7 +3149,7 @@ function Marketplace({ country }: { country: string }) {
 // SECTION 8 — INLINE CHAT (moved to app/inline-chat.tsx, imported as InlineChatComponent)
 // ─────────────────────────────────────────────────────────────────────────────
 
-// ─────────────────────────────────────────────────────────────────────────────
+// ────────���───────────��────────────────��────��──────────────────────────────────
 // SECTION 9 — MAIN PAGE
 // ───────────────────────────��──────���───────────��──────────────────────────────
 
@@ -1845,8 +3162,8 @@ const NAV_TOOLS: { id: ToolId; label: string; Icon: React.FC<{size?:number}> }[]
   { id:"saved",   label:"My Saved",     Icon: ({size=15}) => <Bookmark   size={size} /> },
 ];
 
-// v54 — Layout deleted and recreated, forces complete Turbopack restart
-export default function ForgePageV54() {
+// v55 — inputVal verified at line 319, browser running stale cache
+export default function WealthNutzPage() {
   const [activeTool, setActiveTool] = useState<ToolId|"">("");
   const [panelView,  setPanelView]  = useState<"chat"|"tool">("chat");
   const [country,    setCountry]    = useState<string>("");
@@ -1856,6 +3173,11 @@ export default function ForgePageV54() {
   const [showAuth,   setShowAuth]   = useState(false);
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [sidebarClosing, setSidebarClosing] = useState(false);
+  const [isDarkMode, setIsDarkMode] = useState(true);
+  
+  // Update theme tokens when mode changes
+  T = isDarkMode ? DARK_THEME : LIGHT_THEME;
+  
   const closeSidebar = useCallback(() => {
     setSidebarClosing(true);
     setTimeout(() => { setSidebarOpen(false); setSidebarClosing(false); }, 240);
@@ -1864,9 +3186,43 @@ export default function ForgePageV54() {
   const [authLoading, setAuthLoading] = useState(true);
   const [savedItems, setSavedItems] = useState<ScoutResult[]>([]);
   const savedIds = useMemo(() => new Set(savedItems.map(x => x.id)), [savedItems]);
+  const [locationBarDismissed, setLocationBarDismissed] = useState(false);
+  const [toast, setToast] = useState<string | null>(null);
+  const [discardedItems, setDiscardedItems] = useState<Map<string, ScoutResult>>(new Map());
+  const [lastDiscardedId, setLastDiscardedId] = useState<string | null>(null);
+  
+  // Auto-dismiss toast
+  useEffect(() => {
+    if (toast) {
+      const t = setTimeout(() => setToast(null), 5000);
+      return () => clearTimeout(t);
+    }
+  }, [toast]);
+
+  // Handle discarding a scholarship/loan and showing undo toast
+  const handleDiscardItem = (item: ScoutResult) => {
+    setDiscardedItems(prev => new Map(prev).set(item.id, item));
+    setLastDiscardedId(item.id);
+    setToast(`Discarded: ${item.title}`);
+  };
+
+  // Handle undoing a discard
+  const handleUndoDiscard = () => {
+    if (lastDiscardedId) {
+      setDiscardedItems(prev => {
+        const next = new Map(prev);
+        next.delete(lastDiscardedId);
+        return next;
+      });
+      setLastDiscardedId(null);
+      setToast(null);
+    }
+  };
 
 useEffect(() => {
-  setSavedItems(readSaved());
+  // Load from localStorage first (for guests)
+  const localSaved = readSaved();
+  setSavedItems(localSaved);
   
   // Supabase auth state listener for persistent sessions
   let subscription: { unsubscribe: () => void } | null = null;
@@ -1881,9 +3237,36 @@ useEffect(() => {
       setUser(session?.user ?? null);
       setAuthLoading(false);
       
+      // If user is logged in, fetch their bookmarks from Supabase immediately
+      if (session?.user) {
+        const bookmarks = await fetchBookmarksFromSupabase(session.user.id);
+        setSavedItems(bookmarks); // Always update state with DB data
+        writeSaved(bookmarks); // Sync to localStorage as backup
+      }
+      
       // Listen for auth changes
-      const { data: { subscription: sub } } = supabase.auth.onAuthStateChange((_event, session) => {
+      const { data: { subscription: sub } } = supabase.auth.onAuthStateChange(async (event, session) => {
         setUser(session?.user ?? null);
+        
+        // Fetch bookmarks immediately when user signs in
+        if (event === "SIGNED_IN" && session?.user) {
+          const bookmarks = await fetchBookmarksFromSupabase(session.user.id);
+          setSavedItems(bookmarks); // Always update, even if empty
+          writeSaved(bookmarks);
+        }
+        
+        // Also handle token refresh which keeps the session alive
+        if (event === "TOKEN_REFRESHED" && session?.user) {
+          const bookmarks = await fetchBookmarksFromSupabase(session.user.id);
+          setSavedItems(bookmarks);
+          writeSaved(bookmarks);
+        }
+        
+        // Clear saved items when user signs out
+        if (event === "SIGNED_OUT") {
+          setSavedItems([]);
+          writeSaved([]);
+        }
       });
       subscription = sub;
     } catch {
@@ -1898,10 +3281,27 @@ useEffect(() => {
   };
   }, []);
   
-  const handleToggleSave = useCallback((item: ScoutResult) => {
-    const updated = toggleSaved(item);
+  const handleToggleSave = useCallback(async (item: ScoutResult) => {
+    // Check if user is logged in
+    if (!user) {
+      setToast("Sign in to save this for later");
+      return;
+    }
+    
+    // Toggle locally first for instant feedback
+    const current = savedItems;
+    const exists = current.some(x => x.id === item.id);
+    const updated = exists ? current.filter(x => x.id !== item.id) : [...current, item];
     setSavedItems(updated);
-  }, []);
+    writeSaved(updated);
+    
+    // Sync with Supabase
+    if (exists) {
+      await deleteBookmarkFromSupabase(user.id, item.id);
+    } else {
+      await upsertBookmarkToSupabase(user.id, item);
+    }
+  }, [user, savedItems]);
 
   // Scroll to section by element ID and close sidebar
   const scrollToSection = useCallback((sectionId: string) => {
@@ -1941,7 +3341,7 @@ const handleSignOut = useCallback(async () => {
 const hBtn = (active = false): CSSProperties => ({
   padding:"4px 10px", borderRadius:20, fontFamily:"inherit", fontSize:11, cursor:"pointer", fontWeight: 500,
   border:`1px solid ${active ? T.gold : T.border}`,
-  background: active ? "rgba(201,168,76,0.12)" : "transparent",
+  background: active ? "rgba(201,168,76,0.12)" : "rgba(0,0,0,0)",
   color: active ? T.gold : T.mid,
   transition:"all .2s",
   });
@@ -1968,7 +3368,7 @@ const hBtn = (active = false): CSSProperties => ({
   /* ── Mobile responsiveness ─────────────────────────────────────────── */
   @media (max-width: 768px) {
   .forge-header { padding: 6px 10px !important; gap: 6px !important; }
-  .forge-logo-text { font-size: 15px !important; }
+  .wealthnutz-logo-text { font-size: 15px !important; }
   .forge-body { flex-direction: column !important; }
   }
     .forge-main { min-width: 0 !important; }
@@ -1995,29 +3395,43 @@ const hBtn = (active = false): CSSProperties => ({
     .forge-sidebar-header { display: none !important; }
   }
 
-  /* MENU button visible on all screens; sidebar close header only on mobile */
-  .forge-hamburger { display: flex !important; }
   .forge-sidebar-header { display: none !important; }
 
+  /* Tap-outside overlay — hidden on desktop, shown on mobile */
+  .forge-sidebar-overlay {
+    display: none;
+  }
+
   @media (max-width: 640px) {
-  .forge-header { padding: 5px 10px !important; gap: 5px !important; }
-  .forge-logo-text { font-size: 14px !important; }
-  .forge-hamburger { display: flex !important; }
+    .forge-sidebar-overlay {
+      display: block !important;
+      position: fixed !important;
+      inset: 0 !important;
+      background: rgba(0,0,0,0.6) !important;
+      z-index: 9998 !important;
+      cursor: pointer !important;
+    }
+  }
+
+  @media (max-width: 640px) {
+    .forge-header { padding: 5px 10px !important; gap: 5px !important; }
+    .wealthnutz-logo-text { font-size: 14px !important; }
     .forge-body { flex-direction: column !important; }
     .forge-main { overflow-x: hidden !important; }
     .forge-sidebar {
       position: fixed !important;
-      top: 0 !important; left: 0 !important;
-      width: 88vw !important;
-      max-width: 320px !important;
-      height: 100vh !important;
+      top: 0 !important;
+      left: 0 !important;
+      width: 100vw !important;
+      max-width: 100vw !important;
+      height: 100dvh !important;
       z-index: 9999 !important;
       transform: translateX(-100%) !important;
       opacity: 0 !important;
-      transition: transform 0.26s cubic-bezier(0.4,0,0.2,1), opacity 0.22s ease !important;
+      transition: transform 0.28s cubic-bezier(0.4,0,0.2,1), opacity 0.22s ease !important;
       border-left: none !important;
-      border-right: 1px solid rgba(255,255,255,0.1) !important;
-      box-shadow: 4px 0 24px rgba(0,0,0,0.6) !important;
+      border-right: none !important;
+      box-shadow: none !important;
       overflow-y: auto !important;
     }
     .forge-sidebar.open {
@@ -2025,20 +3439,18 @@ const hBtn = (active = false): CSSProperties => ({
       opacity: 1 !important;
     }
     .forge-sidebar.closing {
-      transform: translateX(40px) !important;
+      transform: translateX(-100%) !important;
       opacity: 0 !important;
     }
     .forge-sidebar-header { display: flex !important; }
     .forge-hero-section { padding: 12px 12px 0 !important; }
     .forge-picks-credit-row { flex-direction: column !important; }
     .forge-footer-grid { grid-template-columns: 1fr 1fr !important; gap: 16px !important; }
-    /* Ensure chat input and messages have proper edge padding */
     .forge-chat-input-bar { padding: 10px 12px !important; }
   }
 
   @media (max-width: 400px) {
     .forge-footer-grid { grid-template-columns: 1fr !important; }
-    .forge-sidebar { width: 100vw !important; max-width: 100vw !important; }
   }
         `}</style>
 
@@ -2050,20 +3462,10 @@ const hBtn = (active = false): CSSProperties => ({
 
 
         {/* ═══ HEADER ══════════════════════════════════════════════════════════ */}
-        <header style={{ display:"flex", alignItems:"center", justifyContent:"space-between", padding:"7px 14px", borderBottom:`1px solid ${T.border}`, flexShrink:0, zIndex:10, background:"rgba(5,5,5,0.97)", backdropFilter:"blur(22px)", WebkitBackdropFilter:"blur(22px)", gap:10, minHeight:44 }} className="forge-header">
-          {/* Left: logo + name — clickable, scrolls to top, closes sidebar, returns home */}
-          <motion.button
-            whileTap={{ scale: 0.94 }}
-            onClick={() => { closeSidebar(); setPanelView("chat"); setActiveTool(""); window.scrollTo({ top: 0, behavior: "smooth" }); }}
-            aria-label="Go to home"
-            style={{ display:"flex", alignItems:"center", gap:8, flexShrink:0, background:"none", border:"none", cursor:"pointer", padding:0, outline:"none" }}
-          >
-            <LogoMark size={24} />
-            <span style={{ fontSize:17, fontWeight:900, letterSpacing:"-.03em", backgroundImage:`linear-gradient(90deg,${T.goldHi},${T.gold},${T.goldDim},${T.goldHi})`, backgroundSize:"200%", WebkitBackgroundClip:"text", WebkitTextFillColor:"transparent", animation:"wf-shimmer 5s linear infinite", textTransform:"uppercase", whiteSpace:"nowrap", lineHeight:1 }} className="forge-logo-text">Forge</span>
-          </motion.button>
+        <header style={{ display:"flex", alignItems:"center", justifyContent:"space-between", padding:"10px 14px", borderBottom:`1px solid ${T.border}`, flexShrink:0, zIndex:10, background: isDarkMode ? "#0a0a0a" : "#ffffff", gap:8, minHeight:52 }} className="forge-header">
           
-          {/* Middle: Country flags + Clear button — tight group */}
-          <div style={{ display:"flex", gap:6, alignItems:"center", flexWrap:"nowrap" }}>
+          {/* Left: Country flags */}
+          <div style={{ display:"flex", gap:6, alignItems:"center", flexWrap:"nowrap", minWidth: 80 }}>
             {(["Canada","USA"] as const).map(c => {
               const isCanada = c === "Canada";
               const isActive = country === c;
@@ -2075,28 +3477,132 @@ const hBtn = (active = false): CSSProperties => ({
                 </motion.button>
               );
             })}
-            {panelView==="chat" && (
-              <motion.button whileTap={tapAnim.tap} onClick={clearChat}
-                style={{ ...hBtn(), padding:"5px 8px", fontSize:"clamp(10px, 2vw, 12px)", borderRadius:10, display:"flex", alignItems:"center", gap:2, minWidth:32, height:32 }}
-                onMouseEnter={e => {(e.currentTarget as HTMLElement).style.color=T.red;(e.currentTarget as HTMLElement).style.borderColor="rgba(248,113,113,.35)";}}
-                onMouseLeave={e => {(e.currentTarget as HTMLElement).style.color=T.mid;(e.currentTarget as HTMLElement).style.borderColor=T.border;}}>
-                <Trash2 size={11} />
-                <span style={{display:"none"}}>Clear</span>
-              </motion.button>
-            )}
           </div>
           
-          {/* Right: MENU button (mobile only) */}
-          <motion.button whileTap={{ scale: 0.93 }} onClick={() => sidebarOpen ? closeSidebar() : setSidebarOpen(true)}
-            style={{ background:"none", border:`1px solid ${T.border}`, color:"#c4b594", cursor:"pointer", padding:"5px 10px", borderRadius:T.rsm, display:"flex", alignItems:"center", gap:5, fontSize:"clamp(10px, 2vw, 12px)", fontWeight:700, letterSpacing:".05em", lineHeight:1, whiteSpace:"nowrap", flexShrink:0 }} className="forge-hamburger">
-            <span style={{ fontSize:14, lineHeight:1 }}>☰</span> MENU
+          {/* Center: Logo — clickable, scrolls to top, closes sidebar, returns home */}
+          <motion.button
+            whileTap={{ scale: 0.94 }}
+            onClick={() => { closeSidebar(); setPanelView("chat"); setActiveTool(""); window.scrollTo({ top: 0, behavior: "smooth" }); }}
+            aria-label="Go to home"
+            style={{ display:"flex", alignItems:"center", justifyContent:"center", flex:1, background:"none", border:"none", cursor:"pointer", padding:0, outline:"none" }}
+          >
+            <img 
+              src="/images/wealthnutz-logo-full.png" 
+              alt="WealthNutz" 
+              style={{ height:"clamp(34px, 8vw, 46px)", width:"auto", objectFit:"contain" }} 
+              className="wealthnutz-logo"
+            />
           </motion.button>
+          
+          {/* Right: Theme toggle + MENU button */}
+          <div style={{ display:"flex", gap:8, alignItems:"center", minWidth: 80, justifyContent:"flex-end" }}>
+            {/* Theme Toggle */}
+            <motion.button 
+              whileTap={{ scale: 0.9 }}
+              onClick={() => setIsDarkMode(!isDarkMode)}
+              style={{ 
+                background: isDarkMode ? T.glass : "rgba(0,0,0,0.05)", 
+                border: `1px solid ${isDarkMode ? T.border : "rgba(0,0,0,0.12)"}`, 
+                borderRadius: 8, 
+                padding: "6px 8px", 
+                cursor: "pointer", 
+                display: "flex", 
+                alignItems: "center", 
+                justifyContent: "center",
+                color: isDarkMode ? T.gold : "#0F172A",
+              }}
+              aria-label={isDarkMode ? "Switch to light mode" : "Switch to dark mode"}
+            >
+              {isDarkMode ? <Sun size={16} /> : <Moon size={16} />}
+            </motion.button>
+            
+
+          </div>
         </header>
+
+        {/* ═══ LOCATION BAR ═════════════════════���══════════════════════════════ */}
+        <AnimatePresence>
+          {!locationBarDismissed && !country && (
+            <motion.div
+              initial={{ height: 0, opacity: 0 }}
+              animate={{ height: "auto", opacity: 1 }}
+              exit={{ height: 0, opacity: 0 }}
+              transition={{ duration: 0.2 }}
+              style={{ background: isDarkMode ? "#1a1a1a" : "#F1F5F9", borderBottom: `1px solid ${T.border}`, overflow: "hidden" }}
+            >
+              <div style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: 12, padding: "10px 14px", flexWrap: "wrap" }}>
+                <span style={{ fontSize: 12, color: T.mid, textAlign: "center" }}>
+                  To find the most accurate rates in your area, please select your location:
+                </span>
+                <div style={{ display: "flex", gap: 8 }}>
+                  <motion.button
+                    whileTap={{ scale: 0.95 }}
+                    onClick={() => { setCountry("Canada"); setLocationBarDismissed(true); }}
+                    style={{ 
+                      padding: "6px 14px", 
+                      borderRadius: 8, 
+                      border: "none", 
+                      background: T.gold, 
+                      color: "#07090d", 
+                      fontSize: 12, 
+                      fontWeight: 700, 
+                      cursor: "pointer", 
+                      fontFamily: "inherit",
+                      display: "flex",
+                      alignItems: "center",
+                      gap: 6
+                    }}
+                  >
+                    <span>🇨🇦</span> CA
+                  </motion.button>
+                  <motion.button
+                    whileTap={{ scale: 0.95 }}
+                    onClick={() => { setCountry("USA"); setLocationBarDismissed(true); }}
+                    style={{ 
+                      padding: "6px 14px", 
+                      borderRadius: 8, 
+                      border: "none", 
+                      background: T.gold, 
+                      color: "#07090d", 
+                      fontSize: 12, 
+                      fontWeight: 700, 
+                      cursor: "pointer", 
+                      fontFamily: "inherit",
+                      display: "flex",
+                      alignItems: "center",
+                      gap: 6
+                    }}
+                  >
+                    <span>🇺🇸</span> US
+                  </motion.button>
+                </div>
+                <motion.button
+                  whileTap={{ scale: 0.9 }}
+                  onClick={() => setLocationBarDismissed(true)}
+                  style={{ 
+                    position: "absolute", 
+                    right: 14, 
+                    background: "none", 
+                    border: "none", 
+                    color: T.dim, 
+                    cursor: "pointer", 
+                    padding: 4,
+                    display: "flex",
+                    alignItems: "center"
+                  }}
+                  aria-label="Dismiss"
+                >
+                  <X size={16} />
+                </motion.button>
+              </div>
+            </motion.div>
+          )}
+        </AnimatePresence>
 
         {/* ═══ BODY ════════════════════════════════════════════════════════════ */}
         <div style={{ flex:1, display:"flex", overflow:"auto" }} className="forge-body">
 
-          {/* ── Main panel ─────────────────────────────────────────────────────── */}
+          {/* ── Main panel ──────────────────────────────────────────────��──────── */}
           <div style={{ flex:1, display:"flex", flexDirection:"column", overflow:"hidden", minHeight:0 }} className="forge-main">
 
             {/* Tool view */}
@@ -2104,7 +3610,7 @@ const hBtn = (active = false): CSSProperties => ({
               <motion.div key={activeTool} initial={{opacity:0,x:12}} animate={{opacity:1,x:0}} transition={{duration:.26}}
                 style={{ flex:1, display:"flex", flexDirection:"column", overflow:"hidden" }}>
                 <div style={{ padding:"12px 20px", borderBottom:`1px solid ${T.border}`, display:"flex", alignItems:"center", gap:10, flexShrink:0 }}>
-                  <motion.button whileTap={tapAnim.tap} onClick={() => setPanelView("chat")} style={{ background:"none", border:"none", color:T.mid, cursor:"pointer", padding:4, display:"flex", alignItems:"center", borderRadius:6 }}>
+                  <motion.button whileTap={tapAnim.tap} onClick={() => { setPanelView("chat"); setActiveTool(""); window.scrollTo({ top: 0, behavior: "instant" }); }} style={{ background:"none", border:"none", color:T.mid, cursor:"pointer", padding:4, display:"flex", alignItems:"center", borderRadius:6 }}>
                     <ChevronLeft size={18} />
                   </motion.button>
                   <span style={{ fontSize:13, fontWeight:700, color:T.gold }}>{currentTool?.label ?? ""}</span>
@@ -2112,22 +3618,97 @@ const hBtn = (active = false): CSSProperties => ({
                 <div style={{ flex:1, overflowY:"auto", padding:20 }}>
                   {activeTool==="budget"  && <BudgetTool />}
                   {activeTool==="savings" && <SavingsTool />}
-                  {activeTool==="loan"    && <LoanTool onToggleSave={handleToggleSave} savedIds={savedIds} />}
-                  {activeTool==="scholar" && <ScholarshipScout onToggleSave={handleToggleSave} savedIds={savedIds} />}
+                  {activeTool==="loan"    && <LoanTool onToggleSave={handleToggleSave} savedIds={savedIds} userCountry={country} isDarkMode={isDarkMode} />}
+                  {activeTool==="scholar" && <ScholarshipScout onToggleSave={handleToggleSave} savedIds={savedIds} isDarkMode={isDarkMode} />}
                   {activeTool==="saved"   && <SavedItems saved={savedItems} onRemove={handleToggleSave} />}
                 </div>
               </motion.div>
             )}
 
-            {/* Chat view */}
-            {panelView==="chat" && (
-              <>
-                <div style={{ flex:1, display:"flex", flexDirection:"column" }}>
-                  <div style={{ flex:1 }}>
-                    <InlineChatComponent key={chatKey} country={country} />
-                  </div>
-                </div>
-                <footer style={{ borderTop:`1px solid ${T.border}`, background:"rgba(5,5,5,0.6)", padding:"8px 10px" }}>
+{/* Chat view */}
+  {panelView==="chat" && (
+  <>
+  <div style={{ flex:1, display:"flex", flexDirection:"column" }}>
+  {/* Hero Section */}
+  <motion.div 
+    initial={{ opacity: 0, y: 20 }}
+    animate={{ opacity: 1, y: 0 }}
+    transition={{ duration: 0.5 }}
+    style={{ 
+      padding: "40px 20px 30px", 
+      textAlign: "center",
+      background: `linear-gradient(180deg, ${isDarkMode ? "rgba(201,168,76,0.08)" : "rgba(184,146,47,0.06)"} 0%, rgba(0,0,0,0) 100%)`,
+    }}
+  >
+    <h1 style={{ 
+      fontSize: "clamp(24px, 5vw, 36px)", 
+      fontWeight: 800, 
+      color: T.text, 
+      margin: "0 0 12px",
+      lineHeight: 1.2,
+      letterSpacing: "-0.02em",
+    }}>
+      Stop searching and start finding.
+    </h1>
+    <p style={{ 
+      fontSize: "clamp(13px, 2.5vw, 15px)", 
+      color: T.mid, 
+      margin: 0,
+      maxWidth: 420,
+      marginLeft: "auto",
+      marginRight: "auto",
+      lineHeight: 1.5,
+    }}>
+      {TAGLINE}
+    </p>
+
+    {/* ── Centrepiece MENU button (mobile only) ── */}
+    <div style={{ marginTop: 28, justifyContent: "center" }} className="flex md:hidden">
+      <motion.button
+        whileHover={{ scale: 1.03 }}
+        whileTap={{ scale: 0.96 }}
+        onClick={() => sidebarOpen ? closeSidebar() : setSidebarOpen(true)}
+        aria-label="Open menu"
+        style={{
+          display: "flex",
+          alignItems: "center",
+          gap: 10,
+          padding: "14px 36px",
+          borderRadius: 999,
+          border: `2.5px solid ${T.gold}`,
+          background: isDarkMode ? "rgba(201,168,76,0.10)" : "rgba(201,168,76,0.08)",
+          color: T.gold,
+          fontSize: "clamp(14px, 3vw, 16px)",
+          fontWeight: 800,
+          letterSpacing: ".12em",
+          cursor: "pointer",
+          fontFamily: "inherit",
+          boxShadow: isDarkMode
+            ? "0 0 24px rgba(201,168,76,0.18), inset 0 1px 0 rgba(255,255,255,0.06)"
+            : "0 2px 16px rgba(201,168,76,0.22)",
+          transition: "box-shadow .2s",
+          minWidth: "clamp(180px, 40vw, 260px)",
+          justifyContent: "center",
+          whiteSpace: "nowrap",
+        }}
+      >
+        <span style={{ fontWeight: 800, letterSpacing: ".14em" }}>MENU</span>
+        <ChevronRight size={18} strokeWidth={2.5} />
+      </motion.button>
+    </div>
+  </motion.div>
+  <div style={{ flex:1 }}>
+  <InlineChatComponent key={chatKey} country={country} isDarkMode={isDarkMode} />
+  </div>
+  
+  {/* Top Picks — at bottom, visible after country selection */}
+  {country && (
+    <div style={{ padding: "16px 16px 20px", borderTop: `1px solid ${T.border}` }}>
+      <TopPicksSection country={country === "Canada" ? "Canada" : "USA"} />
+    </div>
+  )}
+  </div>
+  <footer style={{ borderTop:`1px solid ${T.border}`, background: isDarkMode ? "rgba(5,5,5,0.6)" : "rgba(250,250,250,0.9)", padding:"8px 10px" }}>
                   {/* Partners — compact horizontal */}
                   <div style={{ display:"flex", justifyContent:"center", gap:12, marginBottom:6, flexWrap:"wrap", fontSize:9 }}>
                     {PARTNERS.map(p => (
@@ -2143,20 +3724,33 @@ const hBtn = (active = false): CSSProperties => ({
             )}
           </div>
 
-          {/* ═══ SIDEBAR ���═════════════════════════════════��═════���════════════ */}
-          <aside style={{ width:"100%", maxWidth:224, flexShrink:0, borderLeft:`1px solid ${T.border}`, background:"rgba(255,255,255,0.014)", backdropFilter:"blur(12px)", display:"flex", flexDirection:"column", overflow:"hidden" }} className={`forge-sidebar${sidebarOpen ? ' open' : ''}${sidebarClosing ? ' closing' : ''}`}>
+          {/* ═══ SIDEBAR ���═════════════����═══��══════════════��══���══����════════════ */}
+          {/* Tap-outside overlay — mobile only, shown via CSS */}
+          {(sidebarOpen || sidebarClosing) && (
+            <div
+              aria-hidden="true"
+              onClick={() => closeSidebar()}
+              className="forge-sidebar-overlay"
+            />
+          )}
+
+          <aside style={{ width:"100%", maxWidth:224, flexShrink:0, borderWidth:"0 0 0 1px", borderStyle:"solid", borderColor:T.border, background: isDarkMode ? "#0a0a0a" : "#ffffff", display:"flex", flexDirection:"column", overflow:"hidden" }} className={`forge-sidebar${sidebarOpen ? ' open' : ''}${sidebarClosing ? ' closing' : ''}`}>
             {/* Mobile close button */}
-            <div style={{ display:"flex", padding:"10px 12px", justifyContent:"space-between", alignItems:"center", borderBottom:`1px solid ${T.border}`, flexShrink:0 }} className="forge-sidebar-header">
-              <span style={{ fontSize:12, fontWeight:700, color:T.gold, letterSpacing:".06em" }}>MENU</span>
-              <button onClick={() => closeSidebar()} style={{ background:"none", border:`1px solid ${T.border}`, color:T.text, cursor:"pointer", borderRadius:6, width:28, height:28, display:"flex", alignItems:"center", justifyContent:"center", fontSize:16, lineHeight:1 }}>
-                <X size={16} />
+            <div style={{ display:"flex", padding:"14px 16px", justifyContent:"space-between", alignItems:"center", borderBottom:`1px solid ${T.border}`, flexShrink:0 }} className="forge-sidebar-header">
+              <span style={{ fontSize:14, fontWeight:800, color:T.gold, letterSpacing:".08em" }}>MENU</span>
+              <button
+                onClick={() => closeSidebar()}
+                aria-label="Close menu"
+                style={{ background:"none", border:`1.5px solid ${T.border}`, color:T.text, cursor:"pointer", borderRadius:8, width:38, height:38, display:"flex", alignItems:"center", justifyContent:"center", flexShrink:0 }}
+              >
+                <X size={20} />
               </button>
             </div>
             {/* Tabs */}
             <div style={{ display:"flex", padding:"10px 10px 0", gap:4, flexShrink:0, borderBottom:`1px solid ${T.border}` }}>
               {([["tools","Tools"],["market","Marketplace"]] as const).map(([id,lbl]) => (
-                <motion.button key={id} whileTap={tapAnim.tap} onClick={() => { setSideTab(id); if (id === "market") closeSidebar(); }}
-                  style={{ flex:1, padding:"7px 4px", borderRadius:7, border:"none", cursor:"pointer", fontFamily:"inherit", fontSize:10, fontWeight:700, letterSpacing:".04em", marginBottom:8, background:sideTab===id?"rgba(201,168,76,0.14)":"transparent", color:sideTab===id?T.gold:"#c4b594", transition:"all .2s" }}>
+                <motion.button key={id} whileTap={tapAnim.tap} onClick={() => setSideTab(id)}
+                  style={{ flex:1, padding:"8px 4px", borderRadius:8, border:"none", cursor:"pointer", fontFamily:"inherit", fontSize:11, fontWeight:sideTab===id?800:700, letterSpacing:".04em", marginBottom:8, background:sideTab===id?"rgba(201,168,76,0.22)":"rgba(0,0,0,0)", color:sideTab===id?T.gold:"#a89968", transition:"all .2s", boxShadow:sideTab===id?`inset 0 0 12px rgba(201,168,76,0.1)`:"none" }}>
                   {lbl}
                 </motion.button>
               ))}
@@ -2172,9 +3766,9 @@ const hBtn = (active = false): CSSProperties => ({
                     const on = activeTool===t.id && panelView==="tool";
                     return (
                       <motion.button key={t.id} variants={fadeUp} whileTap={tapAnim.tap} onClick={() => { openTool(t.id); closeSidebar(); }}
-                        style={{ display:"flex", alignItems:"center", gap:9, padding:"9px 10px", borderRadius:T.rsm, border:`1px solid ${on?"rgba(201,168,76,0.4)":"transparent"}`, background:on?"rgba(201,168,76,0.14)":"transparent", color:on?T.gold:T.mid, cursor:"pointer", fontSize:12, fontWeight:on?600:400, width:"100%", textAlign:"left", fontFamily:"inherit", transition:"all .2s" }}
-                        onMouseEnter={e => { if(!on){(e.currentTarget as HTMLElement).style.background=T.glassHi;(e.currentTarget as HTMLElement).style.color=T.text;} }}
-                        onMouseLeave={e => { if(!on){(e.currentTarget as HTMLElement).style.background="transparent";(e.currentTarget as HTMLElement).style.color=T.mid;} }}>
+style={{ display:"flex", alignItems:"center", gap:9, padding:"9px 10px", borderRadius:T.rsm, border:`1px solid ${on?"rgba(201,168,76,0.4)":"rgba(0,0,0,0)"}`, background:on?"rgba(201,168,76,0.14)":"rgba(0,0,0,0)", color:on?T.gold:T.mid, cursor:"pointer", fontSize:12, fontWeight:on?600:400, width:"100%", textAlign:"left", fontFamily:"inherit", transition:"all .2s" }}
+          onMouseEnter={e => { if(!on){(e.currentTarget as HTMLElement).style.background=T.glassHi;(e.currentTarget as HTMLElement).style.color=T.text;} }}
+          onMouseLeave={e => { if(!on){(e.currentTarget as HTMLElement).style.background="rgba(0,0,0,0)";(e.currentTarget as HTMLElement).style.color=T.mid;} }}>
                         <t.Icon />{t.label}
                         {t.id === "saved" && savedItems.length > 0 && (
                           <span style={{ marginLeft:"auto", fontSize:10, background:T.gold, color:"#07090d", borderRadius:10, padding:"1px 6px", fontWeight:700 }}>{savedItems.length}</span>
@@ -2200,7 +3794,7 @@ const hBtn = (active = false): CSSProperties => ({
           <p style={{ fontSize:11, fontWeight:600, color:T.text, margin:0, overflow:"hidden", textOverflow:"ellipsis", whiteSpace:"nowrap" }}>
             {user.email?.split("@")[0] || "Member"}
           </p>
-          <p style={{ fontSize:9, color:T.mid, margin:0 }}>Forge Member</p>
+          <p style={{ fontSize:9, color:T.mid, margin:0 }}>WealthNutz Member</p>
         </div>
       </div>
       
@@ -2211,9 +3805,40 @@ const hBtn = (active = false): CSSProperties => ({
       </motion.button>
     </>
   ) : (
-    <motion.button variants={fadeUp} whileTap={tapAnim.tap} onClick={() => { setShowAuth(true); closeSidebar(); }}
-      style={{ display:"flex", alignItems:"center", justifyContent:"center", gap:7, padding:"10px 0", borderRadius:T.rsm, cursor:"pointer", fontFamily:"inherit", fontSize:11, fontWeight:600, border:`1px solid ${T.gold}`, background:"rgba(201,168,76,0.08)", color:T.gold, transition:"all .3s" }}>
-      <LogIn size={14} /> Member Sign In
+    <motion.button 
+      variants={fadeUp} 
+      whileTap={{ scale: 0.97 }} 
+      whileHover={{ scale: 1.02, boxShadow: isDarkMode ? "0 0 14px rgba(201,168,76,0.35)" : "0 2px 12px rgba(0,0,0,0.12)" }}
+      onClick={() => { setShowAuth(true); closeSidebar(); }}
+      style={{ 
+        display:"flex", 
+        alignItems:"center", 
+        justifyContent:"center", 
+        gap:8, 
+        padding:"12px 0", 
+        borderRadius:T.rsm, 
+        cursor:"pointer", 
+        fontFamily:"inherit", 
+        fontSize:11, 
+        fontWeight:700, 
+        border: isDarkMode ? `1.5px solid ${T.gold}` : `1px solid ${T.cardBorder}`, 
+        background: isDarkMode ? "rgba(201,168,76,0.1)" : "#FFFFFF", 
+        color: isDarkMode ? T.gold : "#0F172A", 
+        transition:"all .25s ease",
+        letterSpacing: "0.03em",
+        boxShadow: isDarkMode ? "none" : "0 1px 3px rgba(0,0,0,0.06)",
+      }}>
+      <img 
+        src="/images/wealthnutz-logo-full.png" 
+        alt="" 
+        style={{ 
+          height: 18, 
+          width: "auto", 
+          objectFit: "contain",
+          filter: isDarkMode ? "none" : "brightness(0.25)",
+        }} 
+      />
+      Member Sign In
     </motion.button>
   )}
                   
@@ -2222,7 +3847,7 @@ const hBtn = (active = false): CSSProperties => ({
                   {/* Share button */}
                   <motion.button variants={fadeUp} whileTap={tapAnim.tap} onClick={handleShare}
                     style={{ display:"flex", alignItems:"center", justifyContent:"center", gap:7, padding:"10px 0", borderRadius:T.rsm, cursor:"pointer", fontFamily:"inherit", fontSize:11, fontWeight:600, border:`1px solid ${copied?"rgba(74,222,128,0.4)":T.border}`, background:copied?"rgba(74,222,128,0.08)":T.glass, color:copied?T.green:T.mid, transition:"all .3s" }}>
-                    {copied ? <><Check size={14} /> Copied!</> : <><Share2 size={14} /> Share Forge</>}
+                    {copied ? <><Check size={14} /> Copied!</> : <><Share2 size={14} /> Share WealthNutz</>}
                   </motion.button>
 <p style={{ fontSize:9, color:"#c4b594", textAlign:"center", margin:"4px 0 0", lineHeight:1.5 }}>
   Share with friends — help them find free money
@@ -2239,9 +3864,79 @@ const hBtn = (active = false): CSSProperties => ({
       
       {/* Footer */}
       <Footer />
+      
+      {/* Toast Notification */}
+      <AnimatePresence>
+        {toast && (
+          <motion.div
+            initial={{ opacity: 0, y: 50, x: "-50%" }}
+            animate={{ opacity: 1, y: 0, x: "-50%" }}
+            exit={{ opacity: 0, y: 50, x: "-50%" }}
+            style={{
+              position: "fixed",
+              bottom: 24,
+              left: "50%",
+              background: T.cardBg,
+              border: `1px solid ${T.gold}`,
+              borderRadius: 12,
+              padding: "12px 20px",
+              display: "flex",
+              alignItems: "center",
+              gap: 10,
+              boxShadow: `0 8px 32px rgba(0,0,0,0.4)`,
+              zIndex: 9999,
+            }}
+          >
+            {lastDiscardedId ? (
+              <>
+                <span style={{ fontSize: 13, color: T.text, fontWeight: 500 }}>{toast}</span>
+                <motion.button
+                  whileTap={{ scale: 0.9 }}
+                  onClick={handleUndoDiscard}
+                  style={{
+                    padding: "6px 14px",
+                    borderRadius: 6,
+                    background: T.gold,
+                    border: "none",
+                    color: "#07090d",
+                    fontSize: 12,
+                    fontWeight: 700,
+                    cursor: "pointer",
+                    marginLeft: "auto",
+                  }}
+                >
+                  Undo
+                </motion.button>
+              </>
+            ) : (
+              <>
+                <LogIn size={16} color={T.gold} />
+                <span style={{ fontSize: 13, color: T.text, fontWeight: 500 }}>{toast}</span>
+                <motion.button
+                  whileTap={{ scale: 0.9 }}
+                  onClick={() => { setToast(null); setShowAuth(true); }}
+                  style={{
+                    background: T.gold,
+                    border: "none",
+                    borderRadius: 6,
+                    padding: "6px 12px",
+                    fontSize: 11,
+                    fontWeight: 700,
+                    color: "#07090d",
+                    cursor: "pointer",
+                    fontFamily: "inherit",
+                  }}
+                >
+                  Sign In
+                </motion.button>
+              </>
+            )}
+          </motion.div>
+        )}
+      </AnimatePresence>
     </>
   );
 }
 
-// Cache invalidation marker — v16 AI personality improved, scrollToSection added, responsive header text, safe area padding
-export const __CACHE_BUST_V16__ = "ui-personality-scroll-" + Date.now();
+// Cache invalidation marker — v137 final fix
+export const __CACHE_BUST_V137__ = "final-stability-" + Date.now();
