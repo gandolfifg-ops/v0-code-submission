@@ -1,7 +1,7 @@
 "use client";
 
 /**
- * WealthNutz — Single File, v0-Ready (build:v109-cache-bust-links)
+ * WealthNutz — Single File, v0-Ready (build:v120 footer-uses-anchor-not-Link)
  * ─────────────────────────────────────────────────────────────────────────────
  * Paste this entire file into app/page.tsx in any Next.js project.
  *
@@ -21,7 +21,6 @@
  */
 
 import { useState, useEffect, useRef, useCallback, useMemo, memo as React_memo, type ReactNode, type CSSProperties, type FormEvent } from "react";
-import Link from "next/link";
 import { motion, AnimatePresence } from "framer-motion";
 import {
   TrendingUp, Clock, DollarSign, GraduationCap, ShoppingBag,
@@ -166,7 +165,7 @@ const PARTNERS = [
   { name: "EdTech Alliance", desc: "Financial literacy integration" },
 ];
 
-// ─────────────────────────────────────────────────��───�������──────���─�����─────────────
+// ─────────────────────────────────────────────────��───���������──────���─�����─────────────
 // SECTION 2 — DESIGN TOKENS (Light/Dark Mode Support)
 // ─────────────────────────────────────────────────────────────────────────────
 
@@ -963,7 +962,7 @@ function ExpandableText({ text, maxLines = 2 }: { text: string; maxLines?: numbe
   );
 }
 
-// ─────────────────────────────────────────────────��────����──���────────────�������──────
+// ─────────────────────────────────────────────────��────������──���────────────�������──────
 // SECTION 5C-1 — FILTER SIDEBAR (Desktop) & SORT DROPDOWN
 // ─────────────────────────────────────────────────────────────────────────────
 
@@ -2069,7 +2068,7 @@ return (
               <ul style={{ listStyle: "none", padding: 0, margin: 0 }}>
                 {links.map(link => (
                   <li key={link.label} style={{ marginBottom: 8 }}>
-                    <Link
+                    <a
                       href={link.href}
                       style={{
                         fontSize: 11,
@@ -2083,7 +2082,7 @@ return (
                       onMouseLeave={e => (e.currentTarget.style.color = T.mid)}
                     >
                       {link.label}
-                    </Link>
+                    </a>
                   </li>
                 ))}
               </ul>
@@ -3453,7 +3452,7 @@ const hBtn = (active = false): CSSProperties => ({
     </p>
 
     {/* ── Centrepiece MENU button (mobile only) ── */}
-    <div style={{ marginTop: 28, display: "flex", justifyContent: "center" }} className="block md:hidden">
+    <div style={{ marginTop: 28, justifyContent: "center" }} className="flex md:hidden">
       <motion.button
         whileHover={{ scale: 1.03 }}
         whileTap={{ scale: 0.96 }}

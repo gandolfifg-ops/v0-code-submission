@@ -1,8 +1,7 @@
-/* build:v106 — no nested <a> in any Link */
+/* build:v120 — plain anchor tags only */
 "use client";
 
 import { useState } from "react";
-import Link from "next/link";
 
 export default function ContactPage() {
   const [name, setName] = useState("");
@@ -30,9 +29,9 @@ export default function ContactPage() {
       <div style={{ maxWidth: 600, margin: "0 auto", padding: "80px 20px 60px" }}>
         {/* Header */}
         <div style={{ marginBottom: 40 }}>
-          <Link href="/" style={{ color: "#f59e0b", textDecoration: "none", fontSize: 14, fontWeight: 600, marginBottom: 16, display: "inline-block" }}>
+          <a href="/" style={{ color: "#f59e0b", textDecoration: "none", fontSize: 14, fontWeight: 600, marginBottom: 16, display: "inline-block" }}>
             ← Back to Home
-          </Link>
+          </a>
           <h1 style={{ fontSize: 40, fontWeight: 900, color: "#1a1a1a", margin: "20px 0 12px" }} className="dark:text-white">
             Contact Us
           </h1>
