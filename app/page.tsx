@@ -1,7 +1,7 @@
 "use client";
 
 /**
- * WealthNutz — Single File, v0-Ready (build:v129 fix-iife-regex-parse-error)
+ * WealthNutz — Single File, v0-Ready (build:v130 academic-level-update-solid-dropdowns-validation)
  * ─────────────────────────────────────────────────────────────────────────────
  * Paste this entire file into app/page.tsx in any Next.js project.
  *
@@ -69,9 +69,9 @@ const LOAN_MARKETPLACE = [
 
 const TAGLINE = "The all-in-one financial ecosystem for the modern student. Build credit, learn to invest, and grow your wealth.";
 
-const SCHOLARSHIP_MAJORS   = ["Any Major","Computer Science / Engineering","Business / Finance","Medicine / Health Sciences","Arts & Humanities","Law / Political Science","Education","Environmental Science","Mathematics / Statistics","Nursing","Social Work","Trades / Vocational"] as const;
-const SCHOLARSHIP_COUNTRIES= ["Canada","USA","Both"] as const;
-const SCHOLARSHIP_YEARS    = ["Any Year","1st Year","2nd Year","3rd Year","4th Year","Graduate"] as const;
+const SCHOLARSHIP_MAJORS    = ["Any Major","STEM","Engineering","Business","Finance","Healthcare","Nursing","Computer Science","Data Science","Mathematics","Physics","Chemistry","Biology","Psychology","Education","Arts","Design","Music","Writing","History","Political Science","Environmental Science"] as const;
+const SCHOLARSHIP_COUNTRIES = ["Canada","USA"] as const;
+const SCHOLARSHIP_LEVELS    = ["Any Level","Undergraduate","Graduate","Masters","PhD"] as const;
 const LOAN_TYPES           = ["Student","Personal","Auto"] as const;
 type  LoanType             = typeof LOAN_TYPES[number];
 
@@ -1414,7 +1414,7 @@ function MobileFilterButton({ onClick, hasFilters }: { onClick: () => void; hasF
   );
 }
 
-// ─────────────────────────────────────────────────────────────────�����───────────
+// ─────────────────────────────────────────────────────────────────�������───────────
 // SECTION 5C-3 — LOAN MARKETPLACE HERO (High Conversion)
 // ─────────────────────────────────────────────────────────────────────────────
 
@@ -2366,7 +2366,7 @@ const LoanCalculatorComponent = () => {
 // Memoize LoanCalculator to prevent unnecessary re-renders
 const LoanCalculator = React_memo_compat(LoanCalculatorComponent);
 
-// ── Loan Finder ────��───────────�����─────────────────────�����───────────────────────
+// ── Loan Finder ────��───────────�����─────────────────────�������───────────────────────
 type Phase = "idle"|"scanning"|"results";
 const SCAN_MSGS = ["Connecting to loan databases...","Scanning live lender rates...","Cross-referencing eligibility...","Compiling best rates for you..."];
 
@@ -2495,7 +2495,7 @@ function LoanTool({ onToggleSave, savedIds, userCountry, isDarkMode }: { onToggl
 const SCH_SCAN_MSGS = ["Connecting to scholarship databases...","Scanning national award portals...","Cross-referencing eligibility...","Aggregating live results for you..."];
 
 // Custom themed dropdown — replaces native <select> so colors work in both themes
-function ScholarshipSelect({ value, options, onChange }: { value: string; options: readonly string[]; onChange: (v: string) => void }) {
+function ScholarshipSelect({ value, options, onChange, isDarkMode = false }: { value: string; options: readonly string[]; onChange: (v: string) => void; isDarkMode?: boolean }) {
   const [open, setOpen] = useState(false);
   const ref = useRef<HTMLDivElement>(null);
 
@@ -2567,10 +2567,10 @@ function ScholarshipSelect({ value, options, onChange }: { value: string; option
               minWidth: "100%",
               maxHeight: 220,
               overflowY: "auto",
-              background: T.cardBg,
+              background: isDarkMode ? "#000000" : "#FFFFFF",
               border: `1px solid ${T.border}`,
               borderRadius: T.rsm,
-              boxShadow: "0 8px 32px rgba(0,0,0,0.22)",
+              boxShadow: "0 12px 32px rgba(0,0,0,0.5)",
               zIndex: 1000,
               transformOrigin: "top",
             }}
@@ -2749,7 +2749,7 @@ function ScholarshipScout({ onToggleSave, savedIds, isDarkMode }: { onToggleSave
   const [query,   setQuery]   = useState("");
   const [major,   setMajor]   = useState<string>(SCHOLARSHIP_MAJORS[0] as string);
   const [country, setCountry] = useState<string>(SCHOLARSHIP_COUNTRIES[0] as string);
-  const [year,    setYear]    = useState<string>(SCHOLARSHIP_YEARS[0] as string);
+  const [level,   setLevel]   = useState<string>(SCHOLARSHIP_LEVELS[0] as string);
   const [phase,   setPhase]   = useState<Phase>("idle");
   const [results, setResults] = useState<ScoutResult[]>([]);
   const [error,   setError]   = useState<string>("");
@@ -2766,7 +2766,7 @@ function ScholarshipScout({ onToggleSave, savedIds, isDarkMode }: { onToggleSave
 
   // Clear results whenever the user changes their selections
   const handleMajorChange = (v: string) => { setMajor(v); setResults([]); setPhase("idle"); setValidationError(""); };
-  const handleYearChange  = (v: string) => { setYear(v);  setResults([]); setPhase("idle"); setValidationError(""); };
+  const handleLevelChange  = (v: string) => { setLevel(v);  setResults([]); setPhase("idle"); setValidationError(""); };
   const handleCountryChange = (v: string) => { setCountry(v); setResults([]); setPhase("idle"); setValidationError(""); };
   
   useEffect(() => {
@@ -2777,17 +2777,17 @@ function ScholarshipScout({ onToggleSave, savedIds, isDarkMode }: { onToggleSave
   }, [phase]);
   
   const handleSearch = async () => {
-    // Input validation — require a specific major and year
+    // Input validation — require country and major
+    const missingCountry = country === "Any Country" || !country;
     const missingMajor   = major   === "Any Major";
-    const missingYear    = year    === "Any Year";
-    if (missingMajor || missingYear) {
-      setValidationError("Action Required: Please tell us a bit about yourself first so we can find the most relevant scholarships for you.");
+    if (missingCountry || missingMajor) {
+      setValidationError("Action Required: Please fill out your country and major first.");
       return;
     }
     setValidationError("");
+    setResults([]);
     setPhase("scanning");
     setError("");
-    setResults([]);
     setHasMore(false);
     setNextOffset(null);
     setTotalCount(0);
@@ -2795,14 +2795,14 @@ function ScholarshipScout({ onToggleSave, savedIds, isDarkMode }: { onToggleSave
       const response = await fetch("/api/scholarships", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ country, major, year, query: query?.trim() ?? "", offset: 0, limit: 10 }),
+        body: JSON.stringify({ country, major, level, query: query?.trim() ?? "", offset: 0, limit: 10 }),
       });
       const data = await response.json();
       if (!response.ok || !data.scholarships) {
         setError(data.error || "Failed to fetch scholarships. Please try again.");
         setResults([]);
       } else if (data.scholarships.length === 0) {
-        setError(`No scholarships found for ${country}. Try adjusting your filters.`);
+        setError(`No scholarships found for ${major} in ${country}. Try adjusting your search.`);
         setResults([]);
       } else {
         setResults(data.scholarships);
@@ -2840,7 +2840,7 @@ function ScholarshipScout({ onToggleSave, savedIds, isDarkMode }: { onToggleSave
     setLoadingMore(false);
   };
   return (
-    <motion.div variants={fadeUp} initial="hidden" animate="visible" style={{ display:"flex", flexDirection:"column", gap:14, width:"100%", maxWidth:"90vw", boxSizing:"border-box" }}>
+    <motion.div variants={fadeUp} initial="hidden" animate="visible" style={{ display:"flex", flexDirection:"column", gap:14, width:"100%", maxWidth:"90vw", boxSizing:"border-box", marginTop:40 }}>
       <Glass glow style={{ padding:18, display:"flex", flexDirection:"column", gap:11, width:"100%", boxSizing:"border-box" }}>
         <p style={{ fontSize:10, color:T.mid, margin:0, letterSpacing:".08em" }}>AI SCHOLARSHIP SCOUT</p>
         <input value={query} onChange={e => setQuery(e.target.value ?? "")} onKeyDown={e => e.key==="Enter" && handleSearch()}
@@ -2849,19 +2849,19 @@ function ScholarshipScout({ onToggleSave, savedIds, isDarkMode }: { onToggleSave
         <div style={{ display:"flex", flexWrap:"wrap", gap:8, width:"100%", boxSizing:"border-box" }}>
           {/* Major — takes full row width until there is enough space to share */}
           <div style={{ flex:"1 1 180px", minWidth:140 }}>
-            <ScholarshipSelect value={major} options={SCHOLARSHIP_MAJORS as readonly string[]} onChange={handleMajorChange} />
+            <ScholarshipSelect value={major} options={SCHOLARSHIP_MAJORS as readonly string[]} onChange={handleMajorChange} isDarkMode={isDarkMode} />
           </div>
-          {/* Year — always visible, fixed minimum */}
+          {/* Level — always visible, fixed minimum */}
           <div style={{ flex:"1 1 110px", minWidth:100 }}>
-            <ScholarshipSelect value={year} options={SCHOLARSHIP_YEARS as readonly string[]} onChange={handleYearChange} />
+            <ScholarshipSelect value={level} options={SCHOLARSHIP_LEVELS as readonly string[]} onChange={handleLevelChange} isDarkMode={isDarkMode} />
           </div>
           {/* Country — always visible, fixed minimum */}
           <div style={{ flex:"1 1 90px", minWidth:84 }}>
-            <ScholarshipSelect value={country} options={SCHOLARSHIP_COUNTRIES as readonly string[]} onChange={handleCountryChange} />
+            <ScholarshipSelect value={country} options={SCHOLARSHIP_COUNTRIES as readonly string[]} onChange={handleCountryChange} isDarkMode={isDarkMode} />
           </div>
         </div>
         <motion.button whileTap={tapAnim.tap} onClick={handleSearch} disabled={phase==="scanning"}
-          style={{ width:"100%", padding:"11px 0", borderRadius:T.rsm, border:"none", cursor:"pointer", background:`linear-gradient(135deg,${T.gold},${T.goldDim})`, color:"#07090d", fontSize:13, fontWeight:800, fontFamily:"inherit", opacity:phase==="scanning"?.65:1, boxShadow:`0 0 18px ${T.glow}`, boxSizing:"border-box" }}>
+          style={{ width:"100%", padding:"11px 0", borderRadius:T.rsm, border:"none", cursor:"pointer", background:"linear-gradient(135deg," + T.gold + "," + T.goldDim + ")", color:"#07090d", fontSize:13, fontWeight:800, fontFamily:"inherit", opacity:phase==="scanning"?.65:1, boxShadow:"0 0 18px " + T.glow, boxSizing:"border-box" }}>
           {phase==="scanning" ? "Scanning databases..." : "Find Scholarships"}
         </motion.button>
 
