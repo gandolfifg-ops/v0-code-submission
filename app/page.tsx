@@ -1,7 +1,7 @@
 "use client";
 
 /**
- * WealthNutz — Single File, v0-Ready (build:v120 footer-uses-anchor-not-Link)
+ * WealthNutz — Single File, v0-Ready (build:v121 scholarship-country-filter-and-expandable-text-fix)
  * ─────────────────────────────────────────────────────────────────────────────
  * Paste this entire file into app/page.tsx in any Next.js project.
  *
@@ -114,11 +114,14 @@ const DEFAULT_LOAN_FILTERS: LoanFilters = {
 
 // Mock data — shown instantly while DB / search API is connecting
 const MOCK_SCHOLARSHIPS = [
-  { id:"ms1", type:"scholarship" as const, title:"National Merit Excellence Award",    provider:"National Foundation",       amount:"$5,000–$10,000", deadline:"March 31",   eligibility:"GPA 3.0+, any major, CA or USA",            url:"#" },
-  { id:"ms2", type:"scholarship" as const, title:"Future Leaders Bursary",             provider:"Community Foundation",      amount:"$2,500",         deadline:"January 31", eligibility:"First-generation student, any year",         url:"#" },
-  { id:"ms3", type:"scholarship" as const, title:"STEM Advancement Grant",             provider:"Tech Industry Fund",        amount:"$4,500–$8,000",  deadline:"February 15",eligibility:"STEM major, 2nd year or above",               url:"#" },
-  { id:"ms4", type:"scholarship" as const, title:"Community Impact Scholarship",       provider:"Provincial / State Gov't",  amount:"$3,000",         deadline:"Rolling",    eligibility:"Demonstrated community service, any major",  url:"#" },
-  { id:"ms5", type:"scholarship" as const, title:"Women in Business Award",            provider:"Business Leadership Council",amount:"$2,000–$6,000", deadline:"April 1",    eligibility:"Business / Finance major, undergrad",        url:"#" },
+  { id:"ms1", type:"scholarship" as const, title:"National Merit Excellence Award",    provider:"National Foundation",       amount:"$5,000–$10,000", deadline:"March 31",   eligibility:"GPA 3.0+, any major",            country:"USA", description:"This prestigious award recognizes students who have demonstrated exceptional academic achievement and leadership potential. Recipients are selected based on their GPA, extracurricular activities, and commitment to community service. The scholarship can be used for tuition, books, and living expenses at any accredited institution.", url:"#" },
+  { id:"ms2", type:"scholarship" as const, title:"Future Leaders Bursary",             provider:"Community Foundation",      amount:"$2,500",         deadline:"January 31", eligibility:"First-generation student, any year", country:"Canada", description:"Designed to support first-generation college students in Canada, this bursary provides financial assistance to help cover educational costs. Applicants must demonstrate financial need and a commitment to academic excellence. No essay required for application.", url:"#" },
+  { id:"ms3", type:"scholarship" as const, title:"STEM Advancement Grant",             provider:"Tech Industry Fund",        amount:"$4,500–$8,000",  deadline:"February 15",eligibility:"STEM major, 2nd year or above", country:"USA", description:"The STEM Advancement Grant supports students pursuing degrees in Science, Technology, Engineering, and Mathematics. This grant aims to increase diversity in STEM fields and provides mentorship opportunities alongside financial support. Recipients gain access to internship programs with leading tech companies.", url:"#" },
+  { id:"ms4", type:"scholarship" as const, title:"Community Impact Scholarship",       provider:"Provincial Government",     amount:"$3,000",         deadline:"Rolling",    eligibility:"Demonstrated community service, any major", country:"Canada", description:"This scholarship rewards students who have made significant contributions to their communities through volunteer work and civic engagement. Applicants must submit documentation of at least 100 hours of community service and a personal statement describing their impact.", url:"#" },
+  { id:"ms5", type:"scholarship" as const, title:"Women in Business Award",            provider:"Business Leadership Council",amount:"$2,000–$6,000", deadline:"April 1",    eligibility:"Business / Finance major, undergrad", country:"USA", description:"Empowering the next generation of female business leaders, this award supports undergraduate women pursuing degrees in Business, Finance, Economics, or related fields. The scholarship includes networking events with industry professionals and career development workshops.", url:"#" },
+  { id:"ms6", type:"scholarship" as const, title:"Indigenous Students Bursary",        provider:"First Nations Education Fund",amount:"$4,000",       deadline:"May 15",     eligibility:"Indigenous student, any program", country:"Canada", description:"Supporting Indigenous students across Canada in their pursuit of higher education. This bursary is available to Status and Non-Status First Nations, Métis, and Inuit students enrolled in any post-secondary program. No GPA requirement.", url:"#" },
+  { id:"ms7", type:"scholarship" as const, title:"Engineering Excellence Award",       provider:"American Society of Engineers",amount:"$7,500",      deadline:"March 1",    eligibility:"Engineering major, GPA 3.5+", country:"USA", description:"Recognizing outstanding achievement in engineering studies, this competitive award is granted to students who demonstrate both academic excellence and innovative thinking. Recipients are invited to present their projects at the annual engineering symposium.", url:"#" },
+  { id:"ms8", type:"scholarship" as const, title:"Healthcare Heroes Scholarship",      provider:"Canadian Medical Association",amount:"$5,500",       deadline:"April 30",   eligibility:"Healthcare/Nursing major, any year", country:"Canada", description:"Honoring students committed to careers in healthcare, this scholarship supports those pursuing nursing, medicine, paramedicine, and allied health programs. Preference given to students from rural or underserved communities.", url:"#" },
 ];
 const MOCK_LOANS = [
   { id:"ml1", type:"loan" as const, title:"Federal Student Loan (Direct)",    provider:"U.S. Dept. of Education / NSLSC",amount:"From 5.50% APR", deadline:"Apply via FAFSA / NSLSC", eligibility:"Enrolled student, US or Canada",           url:"#" },
@@ -165,7 +168,7 @@ const PARTNERS = [
   { name: "EdTech Alliance", desc: "Financial literacy integration" },
 ];
 
-// ─────────────────────────────────────────────────��───���������──────���─�����─────────────
+// ─────────────────────────────────────────────────��───���������──��───���─�����─────────────
 // SECTION 2 — DESIGN TOKENS (Light/Dark Mode Support)
 // ─────────────────────────────────────────────────────────────────────────────
 
@@ -783,7 +786,7 @@ function AuthModal({ onClose }: { onClose: () => void }) {
 const COUNTRY_CONFIG = {
   Canada: {
     code: "CA",
-    flag: "🇨🇦",
+    flag: "���🇦",
     currency: "CAD",
     symbol: "$",
     tip: "Showing Canadian rates, TFSA/RRSP accounts, and OSAP loan information.",
@@ -896,73 +899,53 @@ function ExpandableText({ text, maxLines = 2 }: { text: string; maxLines?: numbe
   
   return (
     <motion.div layout style={{ position: "relative" }}>
+      {/* Text container — line-clamp only when collapsed */}
       <motion.p
         layout
         style={{
           fontSize: 11,
           color: T.mid,
-          margin: "0 0 14px",
+          margin: 0,
           lineHeight: 1.5,
-          display: "-webkit-box",
-          WebkitLineClamp: expanded ? "unset" : maxLines,
-          WebkitBoxOrient: "vertical",
-          overflow: expanded ? "visible" : "hidden",
+          ...(expanded ? {} : {
+            display: "-webkit-box",
+            WebkitLineClamp: maxLines,
+            WebkitBoxOrient: "vertical",
+            overflow: "hidden",
+          }),
         }}
       >
         {text}
-        {!expanded && (
-          <motion.button
-            onClick={(e) => {
-              e.preventDefault();
-              e.stopPropagation();
-              setExpanded(true);
-            }}
-            style={{
-              background: "none",
-              border: "none",
-              color: T.gold,
-              fontSize: 11,
-              fontWeight: 600,
-              cursor: "pointer",
-              padding: 0,
-              marginLeft: 4,
-              fontFamily: "inherit",
-            }}
-          >
-            ...read more
-          </motion.button>
-        )}
       </motion.p>
-      {expanded && (
-        <motion.button
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          onClick={(e) => {
-            e.preventDefault();
-            e.stopPropagation();
-            setExpanded(false);
-          }}
-          style={{
-            background: "none",
-            border: "none",
-            color: T.gold,
-            fontSize: 10,
-            fontWeight: 600,
-            cursor: "pointer",
-            padding: 0,
-            marginTop: -10,
-            marginBottom: 10,
-            fontFamily: "inherit",
-          }}
-        >
-          show less
-        </motion.button>
-      )}
+      
+      {/* Read more / Show less button — always visible outside the clamped area */}
+      <motion.button
+        onClick={(e) => {
+          e.preventDefault();
+          e.stopPropagation();
+          setExpanded(!expanded);
+        }}
+        style={{
+          background: "none",
+          border: "none",
+          color: T.gold,
+          fontSize: 10,
+          fontWeight: 600,
+          cursor: "pointer",
+          padding: 0,
+          marginTop: 6,
+          marginBottom: 10,
+          fontFamily: "inherit",
+          display: "block",
+        }}
+      >
+        {expanded ? "Show less" : "Read more..."}
+      </motion.button>
     </motion.div>
   );
 }
 
-// ─────────────────────────────────────────────────��────������──���────────────�������──────
+// ─────────────────────────────────────────────────��────�������──���────────────�������──────
 // SECTION 5C-1 — FILTER SIDEBAR (Desktop) & SORT DROPDOWN
 // ─────────────────────────────────────────────────────────────────────────────
 
@@ -1756,7 +1739,7 @@ function TopPicksSection({ country }: { country: "Canada" | "USA" }) {
   );
 }
 
-// ���─��──��──���─────���──────���───���───────────────────────────────────────────────────
+// ����─��──��──���─────���──────���───���───────────────────────────────────────────────────
 // SECTION 5E — CREDIT PATH MODAL
 // ─────────────────────────────────────────────────────────────────────────────
 
@@ -2705,8 +2688,15 @@ function ScholarshipScout({ onToggleSave, savedIds, isDarkMode }: { onToggleSave
           noGpa: results.filter(r => !(r.eligibility ?? "").toLowerCase().includes("gpa")).length,
         };
         
-        // Apply filters
+        // Apply filters including strict country matching
         const filteredResults = results.filter(r => {
+          // Strict country filtering — must match exactly
+          const itemCountry = (r as { country?: string }).country;
+          if (country !== "Any" && itemCountry) {
+            if (country === "Canada" && itemCountry !== "Canada") return false;
+            if (country === "USA" && itemCountry !== "USA") return false;
+          }
+          
           const amt = parseAmount(r.amount ?? "0");
           if (schFilters.awardAmount === "under-1k" && amt >= 1000) return false;
           if (schFilters.awardAmount === "1k-5k" && (amt < 1000 || amt > 5000)) return false;
