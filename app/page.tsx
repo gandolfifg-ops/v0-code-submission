@@ -1,7 +1,7 @@
 "use client";
 
 /**
- * Forge — Single File, v0-Ready
+ * WealthNutz — Single File, v0-Ready
  * ─────────────────────────────────────────────────────────────────────────────
  * Paste this entire file into app/page.tsx in any Next.js project.
  *
@@ -387,7 +387,7 @@ function LogoMark({ size = 32 }: { size?: number }) {
   // Gold "F" shield logo - rendered without background
   return (
     <img 
-src="/images/forge-logo.png"
+    src="/images/wealthnutz-logo.png"
             alt="WealthNutz"
       width={size} 
       height={size} 
@@ -766,7 +766,7 @@ function AuthModal({ onClose }: { onClose: () => void }) {
         </form>
         
         <p style={{ fontSize: 12, color: T.mid, textAlign: "center", marginTop: 16 }}>
-          {mode === "signin" ? "Don&apos;t have an account? " : "Already have an account? "}
+          {mode === "signin" ? "Don't have an account? " : "Already have an account? "}
           <button
             onClick={() => { setMode(mode === "signin" ? "signup" : "signin"); setError(null); }}
             disabled={isLoading}
@@ -2348,7 +2348,7 @@ const LoanCalculatorComponent = () => {
       {extra > 0 && (
         <Glass style={{ padding:14, border:"1px solid rgba(74,222,128,0.2)" }}>
           <p style={{ fontSize:10, color:T.green, margin:"0 0 8px", letterSpacing:".07em" }}>WITH EXTRA ${extra}/MO</p>
-          {[["Interest saved","$"+Math.round(savedInt).toLocaleString(),true],["Months sooner",savedMo>0?savedMo+" months":"—"],["New payoff",`${Math.floor(mo/12)}y ${mo%12}m`]].map(([l,v,acc]) => (
+          {[["Interest saved","$"+Math.round(savedInt).toLocaleString(),true],["Months sooner",savedMo>0?savedMo+" months":"���"],["New payoff",`${Math.floor(mo/12)}y ${mo%12}m`]].map(([l,v,acc]) => (
             <div key={l as string} style={{ display:"flex", justifyContent:"space-between", padding:"5px 0", borderTop:"1px solid rgba(74,222,128,0.1)" }}>
               <span style={{ fontSize:12, color:T.mid }}>{l}</span>
               <span style={{ fontSize:13, color:acc?T.green:T.mid, fontWeight:acc?700:400 }}>{v as string}</span>
@@ -2979,7 +2979,7 @@ function Marketplace({ country }: { country: string }) {
 // SECTION 8 — INLINE CHAT (moved to app/inline-chat.tsx, imported as InlineChatComponent)
 // ─────────────────────────────────────────────────────────────────────────────
 
-// ─────────────────────────────────────────────────────────────────────────────
+// ──────────────────────────────────────────��──────────────────────────────────
 // SECTION 9 — MAIN PAGE
 // ───────────────────────────��──────���───────────��──────────────────────────────
 
@@ -2992,8 +2992,8 @@ const NAV_TOOLS: { id: ToolId; label: string; Icon: React.FC<{size?:number}> }[]
   { id:"saved",   label:"My Saved",     Icon: ({size=15}) => <Bookmark   size={size} /> },
 ];
 
-// v55 — inputVal verified at line 319, browser running stale ForgePageV9 cache
-export default function ForgePageV55() {
+// v55 — inputVal verified at line 319, browser running stale cache
+export default function WealthNutzPage() {
   const [activeTool, setActiveTool] = useState<ToolId|"">("");
   const [panelView,  setPanelView]  = useState<"chat"|"tool">("chat");
   const [country,    setCountry]    = useState<string>("");
@@ -3176,7 +3176,7 @@ const hBtn = (active = false): CSSProperties => ({
   /* ── Mobile responsiveness ─────────────────────────────────────────── */
   @media (max-width: 768px) {
   .forge-header { padding: 6px 10px !important; gap: 6px !important; }
-  .forge-logo-text { font-size: 15px !important; }
+  .wealthnutz-logo-text { font-size: 15px !important; }
   .forge-body { flex-direction: column !important; }
   }
     .forge-main { min-width: 0 !important; }
@@ -3213,7 +3213,7 @@ const hBtn = (active = false): CSSProperties => ({
 
   @media (max-width: 640px) {
   .forge-header { padding: 5px 10px !important; gap: 5px !important; }
-  .forge-logo-text { font-size: 14px !important; }
+  .wealthnutz-logo-text { font-size: 14px !important; }
   .forge-hamburger { display: flex !important; }
     .forge-body { flex-direction: column !important; }
     .forge-main { overflow-x: hidden !important; }
