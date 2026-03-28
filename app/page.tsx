@@ -1,7 +1,7 @@
 "use client";
 
 /**
- * WealthNutz — Single File, v0-Ready (build:v135 emergency-jsx-fix)
+ * WealthNutz — Single File, v0-Ready (build:v137 final-stability-fix)
  * ─────────────────────────────────────────────────────────────────────────────
  * Paste this entire file into app/page.tsx in any Next.js project.
  *
@@ -1262,12 +1262,14 @@ function FilterBottomSheet({
   isOpen, 
   onClose, 
   children,
-  title = "Filter & Sort"
+  title = "Filter & Sort",
+  isDarkMode = true
 }: { 
   isOpen: boolean; 
   onClose: () => void; 
   children: ReactNode;
   title?: string;
+  isDarkMode?: boolean;
 }) {
   return (
     <AnimatePresence>
@@ -1298,7 +1300,7 @@ function FilterBottomSheet({
               left: 0,
               right: 0,
               maxHeight: "80vh",
-              background: isDarkMode ? "#000000" : "#FFFFFF",
+              background: "#000000",
               borderRadius: "20px 20px 0 0",
               zIndex: 201,
               overflow: "hidden",
@@ -1414,7 +1416,7 @@ function MobileFilterButton({ onClick, hasFilters }: { onClick: () => void; hasF
   );
 }
 
-// ───────────────────────────────────────────────────���─────────────�������───────────
+// ─────────────────────────────────────────────────���─���─────────────�������───────────
 // SECTION 5C-3 — LOAN MARKETPLACE HERO (High Conversion)
 // ─────────────────────────────────────────────────────────────────────────────
 
@@ -2430,36 +2432,9 @@ function LoanFinder({ onToggleSave, savedIds, userCountry, isDarkMode }: { onTog
       <AnimatePresence>
         {phase==="results" && results.length>0 && (
           <motion.div key="lr" variants={stagger} initial="hidden" animate="visible" style={{ display:"flex", flexDirection:"column", gap:10 }}>
-            {results.filter(r => !discardedItems.has(r.id)).map(r => (
-              <motion.div key={r.id} variants={fadeUp} style={{ position: "relative" }}>
+            {(results ?? []).map(r => (
+              <motion.div key={r.id} variants={fadeUp}>
                 <Glass glow style={{ padding:14 }}>
-                  {/* Discard button */}
-                  <motion.button
-                    whileTap={{ scale: 0.9 }}
-                    onClick={() => handleDiscardItem(r)}
-                    style={{
-                      position: "absolute",
-                      top: 8,
-                      right: 8,
-                      background: "transparent",
-                      border: "none",
-                      cursor: "pointer",
-                      padding: 4,
-                      color: T.mid,
-                      borderRadius: 4,
-                      transition: "all 0.2s",
-                    }}
-                    onMouseEnter={(e) => {
-                      (e.currentTarget as HTMLButtonElement).style.background = "rgba(239,68,68,0.2)";
-                      (e.currentTarget as HTMLButtonElement).style.color = "#ef4444";
-                    }}
-                    onMouseLeave={(e) => {
-                      (e.currentTarget as HTMLButtonElement).style.background = "transparent";
-                      (e.currentTarget as HTMLButtonElement).style.color = T.mid;
-                    }}
-                  >
-                    <X size={16} />
-                  </motion.button>
                   <div style={{ display:"flex", justifyContent:"space-between", alignItems:"flex-start", marginBottom:7, gap:10 }}>
                     <div><p style={{ fontSize:13, fontWeight:700, color:T.text, margin:"0 0 2px" }}>{r.title}</p><p style={{ fontSize:11, color:T.mid, margin:0 }}>{r.provider}</p></div>
                     <div style={{ display:"flex", alignItems:"center", gap:6 }}>
@@ -2788,36 +2763,9 @@ function ScholarshipResults({ phase, results, country, userQuery, schSort, setSc
 
           {/* Results */}
           <motion.div key="sr" variants={stagger} initial="hidden" animate="visible" style={{ flex:1, display:"flex", flexDirection:"column", gap:10 }}>
-            {sortedResults.filter(r => !discardedItems.has(r.id)).map(r => (
-              <motion.div key={r.id} variants={fadeUp} style={{ position: "relative" }}>
+            {(sortedResults ?? []).map(r => (
+              <motion.div key={r.id} variants={fadeUp}>
                 <Glass glow style={{ padding:14 }}>
-                  {/* Discard button */}
-                  <motion.button
-                    whileTap={{ scale: 0.9 }}
-                    onClick={() => handleDiscardItem(r)}
-                    style={{
-                      position: "absolute",
-                      top: 8,
-                      right: 8,
-                      background: "transparent",
-                      border: "none",
-                      cursor: "pointer",
-                      padding: 4,
-                      color: T.mid,
-                      borderRadius: 4,
-                      transition: "all 0.2s",
-                    }}
-                    onMouseEnter={(e) => {
-                      (e.currentTarget as HTMLButtonElement).style.background = "rgba(239,68,68,0.2)";
-                      (e.currentTarget as HTMLButtonElement).style.color = "#ef4444";
-                    }}
-                    onMouseLeave={(e) => {
-                      (e.currentTarget as HTMLButtonElement).style.background = "transparent";
-                      (e.currentTarget as HTMLButtonElement).style.color = T.mid;
-                    }}
-                  >
-                    <X size={16} />
-                  </motion.button>
                   <div style={{ display:"flex", justifyContent:"space-between", alignItems:"flex-start", marginBottom:7, gap:10 }}>
                     <div style={{ flex:1 }}>
                       <p style={{ fontSize:13, fontWeight:700, color:T.text, margin:"0 0 2px" }}>{r.title}</p>
@@ -3776,7 +3724,7 @@ const hBtn = (active = false): CSSProperties => ({
             )}
           </div>
 
-          {/* ═══ SIDEBAR ���═════════════����═══��══════════════��══��══����════════════ */}
+          {/* ═══ SIDEBAR ���═════════════����═══��══════════════��══���══����════════════ */}
           {/* Tap-outside overlay — mobile only, shown via CSS */}
           {(sidebarOpen || sidebarClosing) && (
             <div
@@ -3990,5 +3938,5 @@ style={{ display:"flex", alignItems:"center", gap:9, padding:"9px 10px", borderR
   );
 }
 
-// Cache invalidation marker — v135 emergency JSX fix
-export const __CACHE_BUST_V135__ = "emergency-jsx-fix-" + Date.now();
+// Cache invalidation marker — v137 final fix
+export const __CACHE_BUST_V137__ = "final-stability-" + Date.now();
