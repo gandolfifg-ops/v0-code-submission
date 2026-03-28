@@ -21,6 +21,7 @@
  */
 
 import { useState, useEffect, useRef, useCallback, useMemo, memo as React_memo, type ReactNode, type CSSProperties, type FormEvent } from "react";
+import Link from "next/link";
 import { motion, AnimatePresence } from "framer-motion";
 import {
   TrendingUp, Clock, DollarSign, GraduationCap, ShoppingBag,
@@ -165,7 +166,7 @@ const PARTNERS = [
   { name: "EdTech Alliance", desc: "Financial literacy integration" },
 ];
 
-// ─────────────────────────────────────────────────────────────���───────────────
+// ─────────────────────────────────────────────────────────────���─�����─────────────
 // SECTION 2 — DESIGN TOKENS (Light/Dark Mode Support)
 // ─────────────────────────────────────────────────────────────────────────────
 
@@ -962,7 +963,7 @@ function ExpandableText({ text, maxLines = 2 }: { text: string; maxLines?: numbe
   );
 }
 
-// ──────────────────────────────────────────────────────────────────────���──────
+// ──────────────────────────────────────────────────────────────────────�������──────
 // SECTION 5C-1 — FILTER SIDEBAR (Desktop) & SORT DROPDOWN
 // ─────────────────────────────────────────────────────────────────────────────
 
@@ -1756,7 +1757,7 @@ function TopPicksSection({ country }: { country: "Canada" | "USA" }) {
   );
 }
 
-// ─────��────────���──────────────────────────────────────────────────────────────
+// ─────��────────���──────���───���───────────────────────────────────────────────────
 // SECTION 5E — CREDIT PATH MODAL
 // ─────────────────────────────────────────────────────────────────────────────
 
@@ -2015,9 +2016,8 @@ function Footer() {
       { label: "Security", href: "/about#security" },
     ],
     Support: [
-      { label: "Help Center", href: "#" },
-      { label: "Contact Us", href: "#" },
-      { label: "Careers", href: "#" },
+      { label: "Help Center", href: "/help" },
+      { label: "Contact Us", href: "/contact" },
     ],
     Legal: [
       { label: "Privacy Policy", href: "/privacy" },
@@ -2069,17 +2069,20 @@ return (
               <ul style={{ listStyle: "none", padding: 0, margin: 0 }}>
                 {links.map(link => (
                   <li key={link.label} style={{ marginBottom: 8 }}>
-                    <a href={link.href} style={{
-                      fontSize: 11,
-                      color: T.mid,
-                      textDecoration: "none",
-                      transition: "color 0.2s",
-                    }}
-                    onMouseEnter={e => (e.currentTarget.style.color = T.gold)}
-                    onMouseLeave={e => (e.currentTarget.style.color = T.mid)}
-                    >
-                      {link.label}
-                    </a>
+                    <Link href={link.href}>
+                      <a style={{
+                        fontSize: 11,
+                        color: T.mid,
+                        textDecoration: "none",
+                        transition: "color 0.2s",
+                        cursor: "pointer",
+                      }}
+                      onMouseEnter={e => (e.currentTarget.style.color = T.gold)}
+                      onMouseLeave={e => (e.currentTarget.style.color = T.mid)}
+                      >
+                        {link.label}
+                      </a>
+                    </Link>
                   </li>
                 ))}
               </ul>
@@ -3183,24 +3186,41 @@ const hBtn = (active = false): CSSProperties => ({
 
   .forge-sidebar-header { display: none !important; }
 
+  /* Tap-outside overlay — hidden on desktop, shown on mobile */
+  .forge-sidebar-overlay {
+    display: none;
+  }
+
   @media (max-width: 640px) {
-  .forge-header { padding: 5px 10px !important; gap: 5px !important; }
-  .wealthnutz-logo-text { font-size: 14px !important; }
+    .forge-sidebar-overlay {
+      display: block !important;
+      position: fixed !important;
+      inset: 0 !important;
+      background: rgba(0,0,0,0.6) !important;
+      z-index: 9998 !important;
+      cursor: pointer !important;
+    }
+  }
+
+  @media (max-width: 640px) {
+    .forge-header { padding: 5px 10px !important; gap: 5px !important; }
+    .wealthnutz-logo-text { font-size: 14px !important; }
     .forge-body { flex-direction: column !important; }
     .forge-main { overflow-x: hidden !important; }
     .forge-sidebar {
       position: fixed !important;
-      top: 0 !important; left: 0 !important;
-      width: 88vw !important;
-      max-width: 320px !important;
-      height: 100vh !important;
+      top: 0 !important;
+      left: 0 !important;
+      width: 100vw !important;
+      max-width: 100vw !important;
+      height: 100dvh !important;
       z-index: 9999 !important;
       transform: translateX(-100%) !important;
       opacity: 0 !important;
-      transition: transform 0.26s cubic-bezier(0.4,0,0.2,1), opacity 0.22s ease !important;
+      transition: transform 0.28s cubic-bezier(0.4,0,0.2,1), opacity 0.22s ease !important;
       border-left: none !important;
-      border-right: 1px solid rgba(255,255,255,0.1) !important;
-      box-shadow: 4px 0 24px rgba(0,0,0,0.6) !important;
+      border-right: none !important;
+      box-shadow: none !important;
       overflow-y: auto !important;
     }
     .forge-sidebar.open {
@@ -3208,20 +3228,18 @@ const hBtn = (active = false): CSSProperties => ({
       opacity: 1 !important;
     }
     .forge-sidebar.closing {
-      transform: translateX(40px) !important;
+      transform: translateX(-100%) !important;
       opacity: 0 !important;
     }
     .forge-sidebar-header { display: flex !important; }
     .forge-hero-section { padding: 12px 12px 0 !important; }
     .forge-picks-credit-row { flex-direction: column !important; }
     .forge-footer-grid { grid-template-columns: 1fr 1fr !important; gap: 16px !important; }
-    /* Ensure chat input and messages have proper edge padding */
     .forge-chat-input-bar { padding: 10px 12px !important; }
   }
 
   @media (max-width: 400px) {
     .forge-footer-grid { grid-template-columns: 1fr !important; }
-    .forge-sidebar { width: 100vw !important; max-width: 100vw !important; }
   }
         `}</style>
 
@@ -3496,12 +3514,25 @@ const hBtn = (active = false): CSSProperties => ({
           </div>
 
           {/* ═══ SIDEBAR ���═════════════��════��══════════════��══��══���════════════ */}
+          {/* Tap-outside overlay — mobile only, shown via CSS */}
+          {(sidebarOpen || sidebarClosing) && (
+            <div
+              aria-hidden="true"
+              onClick={() => closeSidebar()}
+              className="forge-sidebar-overlay"
+            />
+          )}
+
           <aside style={{ width:"100%", maxWidth:224, flexShrink:0, borderLeft:`1px solid ${T.border}`, background: isDarkMode ? "#0a0a0a" : "#ffffff", display:"flex", flexDirection:"column", overflow:"hidden" }} className={`forge-sidebar${sidebarOpen ? ' open' : ''}${sidebarClosing ? ' closing' : ''}`}>
             {/* Mobile close button */}
-            <div style={{ display:"flex", padding:"10px 12px", justifyContent:"space-between", alignItems:"center", borderBottom:`1px solid ${T.border}`, flexShrink:0 }} className="forge-sidebar-header">
-              <span style={{ fontSize:12, fontWeight:700, color:T.gold, letterSpacing:".06em" }}>MENU</span>
-              <button onClick={() => closeSidebar()} style={{ background:"none", border:`1px solid ${T.border}`, color:T.text, cursor:"pointer", borderRadius:6, width:28, height:28, display:"flex", alignItems:"center", justifyContent:"center", fontSize:16, lineHeight:1 }}>
-                <X size={16} />
+            <div style={{ display:"flex", padding:"14px 16px", justifyContent:"space-between", alignItems:"center", borderBottom:`1px solid ${T.border}`, flexShrink:0 }} className="forge-sidebar-header">
+              <span style={{ fontSize:14, fontWeight:800, color:T.gold, letterSpacing:".08em" }}>MENU</span>
+              <button
+                onClick={() => closeSidebar()}
+                aria-label="Close menu"
+                style={{ background:"none", border:`1.5px solid ${T.border}`, color:T.text, cursor:"pointer", borderRadius:8, width:38, height:38, display:"flex", alignItems:"center", justifyContent:"center", flexShrink:0 }}
+              >
+                <X size={20} />
               </button>
             </div>
             {/* Tabs */}
