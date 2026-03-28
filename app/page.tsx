@@ -1,7 +1,7 @@
 "use client";
 
 /**
- * WealthNutz — Single File, v0-Ready (build:v101 isDarkMode prop threading)
+ * WealthNutz — Single File, v0-Ready (build:v102 isDarkMode removed from SortDropdown+ScholarshipSelect)
  * ─────────────────────────────────────────────────────────────────────────────
  * Paste this entire file into app/page.tsx in any Next.js project.
  *
@@ -263,11 +263,7 @@ function useTypewriter(text: string, speed = 26) {
   return { out, done };
 }
 
-const HIST_KEY = "wf_hist_v3";
-const SAVED_KEY = "wf_saved_v1";
-type HistRec = { id: string; label: string; type: "scholarship"|"loan"; results: ScoutResult[]; ts: number };
-function readHist(): HistRec[] { try { return JSON.parse(typeof window !== "undefined" ? localStorage.getItem(HIST_KEY) ?? "[]" : "[]"); } catch { return []; } }
-function pushHist(r: HistRec) { try { const n = [r, ...readHist().filter(x => x.id !== r.id)].slice(0,10); localStorage.setItem(HIST_KEY, JSON.stringify(n)); } catch {} }
+
 
 function readSaved(): ScoutResult[] { try { return JSON.parse(typeof window !== "undefined" ? localStorage.getItem(SAVED_KEY) ?? "[]" : "[]"); } catch { return []; } }
 function writeSaved(items: ScoutResult[]) { try { localStorage.setItem(SAVED_KEY, JSON.stringify(items)); } catch {} }
@@ -337,7 +333,7 @@ async function fetchResults(type: "scholarship"|"loan", filters: Record<string,s
 
 // ────────────────────────────────────────────────────��───────────────────────��
 // SECTION 5 — PRIMITIVE UI COMPONENTS
-// ─────────────────────────────────────────────────────────────────────────────
+// ─────────────────────────────────────────────────────────────────────────��───
 
 function Glass({ children, style, glow, onClick }: { children: ReactNode; style?: CSSProperties; glow?: boolean; onClick?: () => void }) {
   const [hov, setHov] = useState(false);
@@ -1061,7 +1057,7 @@ function FilterGroup({ title, children }: { title: string; children: ReactNode }
   );
 }
 
-function SortDropdown({ value, onChange, resultCount, isDarkMode }: { value: SortOption; onChange: (v: SortOption) => void; resultCount: number; isDarkMode: boolean }) {
+function SortDropdown({ value, onChange, resultCount }: { value: SortOption; onChange: (v: SortOption) => void; resultCount: number }) {
   const [open, setOpen] = useState(false);
   const currentLabel = SORT_OPTIONS.find(o => o.value === value)?.label || "Best Match";
   
@@ -1110,7 +1106,7 @@ function SortDropdown({ value, onChange, resultCount, isDarkMode }: { value: Sor
                 top: "calc(100% + 6px)",
                 left: 0,
                 right: 0,
-                background: isDarkMode ? "#1a1a1a" : "#ffffff",
+                background: T.cardBg,
                 border: `1px solid ${T.border}`,
                 borderRadius: T.rsm,
                 overflow: "hidden",
@@ -1520,7 +1516,7 @@ function LoanMarketplaceHero({
             <DollarSign size={20} color="#07090d" strokeWidth={2.5} />
           </div>
           <div>
-            <h2 style={{ fontSize: 22, fontWeight: 900, color: T.text, margin: 0, letterSpacing: "-0.03em", lineHeight: 1.15 }}>
+            <h2 style={{ fontSize: 22, fontWeight: 900, color: T.text, margin: 0, letterSpacing: "-0.03em", lineHeight: 1.15, WebkitFontSmoothing: "antialiased" }}>
               {filterType ? `${filterType} Loan Marketplace` : "Loan Marketplace"}
             </h2>
             <p style={{ fontSize: 12, color: T.mid, margin: 0, marginTop: 2 }}>Pre-qualify without affecting your credit score.</p>
@@ -1532,7 +1528,7 @@ function LoanMarketplaceHero({
       {/* Sort & Filter Controls */}
       {onSortChange && (
         <motion.div variants={fadeUp} style={{ marginBottom: 16, display: "flex", alignItems: "center", justifyContent: "space-between", flexWrap: "wrap", gap: 12 }}>
-          <SortDropdown value={sortBy} onChange={onSortChange} resultCount={offers.length} isDarkMode={isDarkMode} />
+          <SortDropdown value={sortBy} onChange={onSortChange} resultCount={offers.length} />
           {hasActiveFilters && (
             <motion.button
               whileTap={{ scale: 0.95 }}
@@ -2179,7 +2175,7 @@ const BudgetToolComponent = () => {
     <motion.div variants={fadeUp} initial="hidden" animate="visible" style={{ display:"flex", flexDirection:"column", gap:16 }}>
       {/* Monthly Income — large numeric input, always high-contrast */}
       <div style={{ display:"flex", flexDirection:"column", gap:6 }}>
-        <label style={{ fontSize:13, fontWeight:800, color:"#000000", letterSpacing:".01em" }}>
+        <label style={{ fontSize:13, fontWeight:800, color:"#1A1A1A", letterSpacing:".01em" }}>
           Monthly Income
         </label>
         <div style={{
@@ -2331,7 +2327,25 @@ const LoanCalculatorComponent = () => {
   
   return (
     <div style={{ display:"flex", flexDirection:"column", gap:16 }}>
-      <Slider label="Loan Amount"   value={principal} min={500}   step={500}  onChange={setPrincipal} fmt={v=>"$"+v.toLocaleString()} maxVal={1_000_000_000} />
+      {/* Loan Amount — large numeric input, always high-contrast */}
+      <div style={{ display:"flex", flexDirection:"column", gap:6 }}>
+        <label style={{ fontSize:13, fontWeight:800, color:"#1A1A1A", letterSpacing:".01em" }}>Loan Amount</label>
+        <div style={{ display:"flex", alignItems:"center", border:"2.5px solid #1A1A1A", borderRadius:10, background:"#ffffff", overflow:"hidden", boxShadow:"0 2px 8px rgba(0,0,0,0.10)" }}>
+          <span style={{ padding:"14px 14px 14px 16px", fontSize:20, fontWeight:800, color:"#1A1A1A", background:"#f3f3f3", borderRight:"2px solid #1A1A1A", lineHeight:1, userSelect:"none" }}>$</span>
+          <input
+            type="text"
+            inputMode="numeric"
+            value={principal === 0 ? "" : principal.toLocaleString()}
+            placeholder="e.g. 25,000"
+            onChange={e => {
+              const raw = e.target.value.replace(/,/g, "");
+              const v = parseFloat(raw);
+              setPrincipal(isNaN(v) || v < 0 ? 0 : v);
+            }}
+            style={{ flex:1, border:"none", outline:"none", padding:"14px 16px", fontSize:20, fontWeight:700, color:"#1A1A1A", background:"#ffffff", fontFamily:"inherit", width:"100%", boxSizing:"border-box" } as React.CSSProperties}
+          />
+        </div>
+      </div>
       <Slider label="Interest Rate" value={rate}      min={0.5}   step={0.25} onChange={setRate}      fmt={v=>v+"%"} maxVal={50} />
       <Slider label="Term (Years)"  value={years}     min={1}     step={1}    onChange={setYears}     fmt={v=>v+" yrs"} maxVal={50} />
       <Slider label="Extra Monthly" value={extra}     min={0}     step={10}   onChange={setExtra}     fmt={v=>"$"+v} maxVal={Math.round(base * 10)} />
@@ -2376,10 +2390,8 @@ function LoanFinder({ onToggleSave, savedIds, userCountry, isDarkMode }: { onTog
   const [phase,    setPhase]    = useState<Phase>("idle");
   const [results,  setResults]  = useState<ScoutResult[]>([]);
   const [scanIdx,  setScanIdx]  = useState(0);
-  const [hist,     setHist]     = useState<HistRec[]>([]);
   const [loanFilters, setLoanFilters] = useState<LoanFilters>(DEFAULT_LOAN_FILTERS);
   const [loanSort, setLoanSort] = useState<SortOption>("best-match");
-  useEffect(() => { setHist(readHist().filter(h => h.type==="loan")); }, []);
   useEffect(() => {
     if (phase !== "scanning") return;
     setScanIdx(0);
@@ -2392,9 +2404,6 @@ function LoanFinder({ onToggleSave, savedIds, userCountry, isDarkMode }: { onTog
       const data = await fetchResults("loan", { loanType, amount: amount?.trim() ?? "" });
       const final = (data?.length ?? 0) > 0 ? data : MOCK_LOANS;
       setResults(final);
-      const rec: HistRec = { id:String(Date.now()), label:`${loanType}${amount?.trim() ? " — "+amount.trim() : ""}`, type:"loan", results:final, ts:Date.now() };
-      pushHist(rec);
-      setHist(readHist().filter(h => h.type==="loan"));
     } catch { setResults(MOCK_LOANS); }
     setPhase("results");
   };
@@ -2512,7 +2521,7 @@ function LoanTool({ onToggleSave, savedIds, userCountry, isDarkMode }: { onToggl
 const SCH_SCAN_MSGS = ["Connecting to scholarship databases...","Scanning national award portals...","Cross-referencing eligibility...","Aggregating live results for you..."];
 
 // Custom themed dropdown — replaces native <select> so colors work in both themes
-function ScholarshipSelect({ value, options, onChange, isDarkMode }: { value: string; options: readonly string[]; onChange: (v: string) => void; isDarkMode: boolean }) {
+function ScholarshipSelect({ value, options, onChange }: { value: string; options: readonly string[]; onChange: (v: string) => void }) {
   const [open, setOpen] = useState(false);
   const ref = useRef<HTMLDivElement>(null);
 
@@ -2584,7 +2593,7 @@ function ScholarshipSelect({ value, options, onChange, isDarkMode }: { value: st
               minWidth: "100%",
               maxHeight: 220,
               overflowY: "auto",
-              background: isDarkMode ? "#1a1a1a" : "#ffffff",
+              background: T.cardBg,
               border: `1px solid ${T.border}`,
               borderRadius: T.rsm,
               boxShadow: "0 8px 32px rgba(0,0,0,0.22)",
@@ -2603,7 +2612,7 @@ function ScholarshipSelect({ value, options, onChange, isDarkMode }: { value: st
                   padding: "9px 12px",
                   border: "none",
                   background: opt === value ? (T.gold + "22") : "rgba(0,0,0,0)",
-                  color: opt === value ? T.gold : (isDarkMode ? "#ffffff" : "#000000"),
+                  color: opt === value ? T.gold : T.text,
                   fontSize: 12,
                   fontFamily: "inherit",
                   textAlign: "left",
@@ -2633,11 +2642,9 @@ function ScholarshipScout({ onToggleSave, savedIds, isDarkMode }: { onToggleSave
   const [phase,   setPhase]   = useState<Phase>("idle");
   const [results, setResults] = useState<ScoutResult[]>([]);
   const [scanIdx, setScanIdx] = useState(0);
-  const [hist,    setHist]    = useState<HistRec[]>([]);
   const [schFilters, setSchFilters] = useState<ScholarshipFilters>(DEFAULT_SCHOLARSHIP_FILTERS);
   const [schSort, setSchSort] = useState<SortOption>("best-match");
   const [mobileFilterOpen, setMobileFilterOpen] = useState(false);
-  useEffect(() => { setHist(readHist().filter(h => h.type==="scholarship")); }, []);
   useEffect(() => {
     if (phase !== "scanning") return;
     setScanIdx(0);
@@ -2650,9 +2657,7 @@ function ScholarshipScout({ onToggleSave, savedIds, isDarkMode }: { onToggleSave
       const data = await fetchResults("scholarship", { major, country, year, query: query?.trim() ?? "" });
       const final = (data?.length ?? 0) > 0 ? data : MOCK_SCHOLARSHIPS;
       setResults(final);
-      const rec: HistRec = { id:String(Date.now()), label:query?.trim() || major, type:"scholarship", results:final, ts:Date.now() };
-      pushHist(rec);
-      setHist(readHist().filter(h => h.type==="scholarship"));
+
     } catch { setResults(MOCK_SCHOLARSHIPS); }
     setPhase("results");
   };
@@ -2666,15 +2671,15 @@ function ScholarshipScout({ onToggleSave, savedIds, isDarkMode }: { onToggleSave
         <div style={{ display:"flex", flexWrap:"wrap", gap:8, width:"100%", boxSizing:"border-box" }}>
           {/* Major — takes full row width until there is enough space to share */}
           <div style={{ flex:"1 1 180px", minWidth:140 }}>
-            <ScholarshipSelect value={major} options={SCHOLARSHIP_MAJORS as readonly string[]} onChange={setMajor} isDarkMode={isDarkMode} />
+            <ScholarshipSelect value={major} options={SCHOLARSHIP_MAJORS as readonly string[]} onChange={setMajor} />
           </div>
           {/* Year — always visible, fixed minimum */}
           <div style={{ flex:"1 1 110px", minWidth:100 }}>
-            <ScholarshipSelect value={year} options={SCHOLARSHIP_YEARS as readonly string[]} onChange={setYear} isDarkMode={isDarkMode} />
+            <ScholarshipSelect value={year} options={SCHOLARSHIP_YEARS as readonly string[]} onChange={setYear} />
           </div>
           {/* Country — always visible, fixed minimum */}
           <div style={{ flex:"1 1 90px", minWidth:84 }}>
-            <ScholarshipSelect value={country} options={SCHOLARSHIP_COUNTRIES as readonly string[]} onChange={setCountry} isDarkMode={isDarkMode} />
+            <ScholarshipSelect value={country} options={SCHOLARSHIP_COUNTRIES as readonly string[]} onChange={setCountry} />
           </div>
         </div>
         <motion.button whileTap={tapAnim.tap} onClick={handleSearch} disabled={phase==="scanning"}
@@ -2746,7 +2751,7 @@ function ScholarshipScout({ onToggleSave, savedIds, isDarkMode }: { onToggleSave
               <>
                 {/* Sort & Filter Controls */}
                 <motion.div variants={fadeUp} style={{ marginBottom: 16, display: "flex", alignItems: "center", justifyContent: "space-between", flexWrap: "wrap", gap: 12 }}>
-                  <SortDropdown value={schSort} onChange={setSchSort} resultCount={sortedResults.length} isDarkMode={isDarkMode} />
+                  <SortDropdown value={schSort} onChange={setSchSort} resultCount={sortedResults.length} />
                   {hasActiveFilters && (
                     <motion.button
                       whileTap={{ scale: 0.95 }}
