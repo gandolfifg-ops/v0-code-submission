@@ -3009,11 +3009,12 @@ function ScholarshipResults({ phase, results, country, userQuery, schSort, setSc
   );
 }
 
-function ScholarshipScout({ onToggleSave, savedIds, isDarkMode }: { onToggleSave: (item: ScoutResult) => void; savedIds: Set<string>; isDarkMode: boolean }) {
-  
+function ScholarshipScout({ onToggleSave, savedIds, isDarkMode, initialCountry }: { onToggleSave: (item: ScoutResult) => void; savedIds: Set<string>; isDarkMode: boolean; initialCountry?: string }) {
+
   const [query,   setQuery]   = useState("");
   const [major,   setMajor]   = useState<string>(SCHOLARSHIP_MAJORS[0] as string);
-  const [country, setCountry] = useState<string>(SCHOLARSHIP_COUNTRIES[0] as string);
+  // Seed country from global toggle if provided, otherwise default to first option
+  const [country, setCountry] = useState<string>(initialCountry && initialCountry !== "" ? initialCountry : SCHOLARSHIP_COUNTRIES[0] as string);
   const [level,   setLevel]   = useState<string>(SCHOLARSHIP_LEVELS[0] as string);
   const [phase,   setPhase]   = useState<Phase>("idle");
   const [results, setResults] = useState<ScoutResult[]>([]);
@@ -3028,6 +3029,16 @@ function ScholarshipScout({ onToggleSave, savedIds, isDarkMode }: { onToggleSave
   const [hasMore, setHasMore] = useState(false);
   const [nextOffset, setNextOffset] = useState<number | null>(null);
   const [loadingMore, setLoadingMore] = useState(false);
+
+  // Sync with parent's global country toggle whenever it changes
+  useEffect(() => {
+    if (initialCountry && initialCountry !== "") {
+      setCountry(initialCountry);
+      setResults([]);
+      setPhase("idle");
+      setValidationError("");
+    }
+  }, [initialCountry]);
 
   // Clear results whenever the user changes their selections
   const handleMajorChange = (v: string) => { setMajor(v); setResults([]); setPhase("idle"); setValidationError(""); };
@@ -3444,24 +3455,33 @@ useEffect(() => {
       const { data: { subscription: sub } } = supabase.auth.onAuthStateChange(async (event, session) => {
         setUser(session?.user ?? null);
         
-        // Fetch bookmarks immediately when user signs in
+        // Fetch bookmarks immediately when user signs in — merge with any local guest saves
         if (event === "SIGNED_IN" && session?.user) {
-          const bookmarks = await fetchBookmarksFromSupabase(session.user.id);
-          setSavedItems(bookmarks); // Always update, even if empty
-          writeSaved(bookmarks);
+          const [dbBookmarks, localBookmarks] = await Promise.all([
+            fetchBookmarksFromSupabase(session.user.id),
+            Promise.resolve(readSaved()),
+          ]);
+          // Merge: DB items win on conflicts (same id), local-only items are appended
+          const dbIds = new Set(dbBookmarks.map((b: ScoutResult) => b.id));
+          const localOnly = localBookmarks.filter((b: ScoutResult) => !dbIds.has(b.id));
+          const merged = [...dbBookmarks, ...localOnly];
+          setSavedItems(merged);
+          writeSaved(merged);
+          // Upsert any local-only items to Supabase so they're not lost
+          await Promise.all(localOnly.map((b: ScoutResult) => upsertBookmarkToSupabase(session.user!.id, b)));
         }
-        
+
         // Also handle token refresh which keeps the session alive
         if (event === "TOKEN_REFRESHED" && session?.user) {
           const bookmarks = await fetchBookmarksFromSupabase(session.user.id);
           setSavedItems(bookmarks);
           writeSaved(bookmarks);
         }
-        
-        // Clear saved items when user signs out
+
+        // On sign-out: keep items in localStorage so guests don't lose their saves
         if (event === "SIGNED_OUT") {
-          setSavedItems([]);
-          writeSaved([]);
+          // Don't wipe localStorage — just let the user know they're in guest mode
+          // Items remain visible until they manually remove them
         }
       });
       subscription = sub;
@@ -3478,20 +3498,20 @@ useEffect(() => {
   }, []);
   
   const handleToggleSave = useCallback(async (item: ScoutResult) => {
-    // Check if user is logged in
-    if (!user) {
-      setToast("Sign in to save this for later");
-      return;
-    }
-    
-    // Toggle locally first for instant feedback
+    // Toggle locally first for instant feedback — works for guests too
     const current = savedItems;
     const exists = current.some(x => x.id === item.id);
     const updated = exists ? current.filter(x => x.id !== item.id) : [...current, item];
     setSavedItems(updated);
     writeSaved(updated);
-    
-    // Sync with Supabase
+
+    if (!user) {
+      // Guest: save to localStorage only, show a friendly nudge
+      if (!exists) setToast("Saved locally — sign in to sync across devices");
+      return;
+    }
+
+    // Signed-in: sync with Supabase
     if (exists) {
       await deleteBookmarkFromSupabase(user.id, item.id);
     } else {
@@ -3514,14 +3534,17 @@ useEffect(() => {
   const clearChat = useCallback(() => setChatKey(k => k + 1), []);
 
 const handleSignOut = useCallback(async () => {
+    // Clear local state immediately so the UI responds at once
+    setUser(null);
     try {
       const { createClient } = await import("@/lib/supabase/client");
       const supabase = createClient();
       await supabase.auth.signOut();
-      setUser(null);
-      window.location.href = "/";
     } catch (err) {
       console.error("Sign out error:", err);
+    } finally {
+      // Always redirect — even if signOut() threw
+      window.location.href = "/";
     }
   }, []);
   
@@ -3815,7 +3838,7 @@ const hBtn = (active = false): CSSProperties => ({
                   {activeTool==="budget"  && <BudgetTool />}
                   {activeTool==="savings" && <SavingsTool />}
                   {activeTool==="loan"    && <LoanTool onToggleSave={handleToggleSave} savedIds={savedIds} userCountry={country} isDarkMode={isDarkMode} />}
-                  {activeTool==="scholar" && <ScholarshipScout onToggleSave={handleToggleSave} savedIds={savedIds} isDarkMode={isDarkMode} />}
+                  {activeTool==="scholar" && <ScholarshipScout onToggleSave={handleToggleSave} savedIds={savedIds} isDarkMode={isDarkMode} initialCountry={country} />}
                   {activeTool==="saved"   && <SavedItems saved={savedItems} onRemove={handleToggleSave} />}
                 </div>
               </motion.div>
