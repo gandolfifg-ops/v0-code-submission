@@ -185,7 +185,7 @@ const PARTNERS = [
   { name: "EdTech Alliance", desc: "Financial literacy integration" },
 ];
 
-// ─────────────────────────────────────────────────��───���������──��───���─�����─────────────
+// ─────────────────────────────────────────────────  ───         ──  ───   ─     ─────────────
 // SECTION 2 — DESIGN TOKENS (Light/Dark Mode Support)
 // ─────────────────────────────────────────────────────────────────────────────
 
@@ -250,7 +250,7 @@ let T = DARK_THEME;
 
 // ─────────────────────────────────────────────────────────────────────────────
 // SECTION 3 — MOTION VARIANTS
-// ─────────────────────────────────────────────────────────────────────────������───
+// ─────────────────────────────────────────────────────────────────────────      ───
 
 const fadeUp  = { hidden:{opacity:0,y:16}, visible:{opacity:1,y:0,transition:{duration:0.36,ease:[0.22,1,0.36,1] as number[]}} };
 const stagger = { visible:{transition:{staggerChildren:0.065}} };
@@ -402,9 +402,9 @@ async function fetchLoans(): Promise<ScoutResult[]> {
   return MOCK_LOANS;
 }
 
-// ────────────────────────────────────────────────────��───────────────────────��
+// ────────────────────────────────────────────────────  ───────────────────────  
 // SECTION 5 — PRIMITIVE UI COMPONENTS
-// ─────────────────────────────────────────────────────────────────────────��───
+// ─────────────────────────────────────────────────────────────────────────  ───
 
 function Glass({ children, style, glow, onClick }: { children: ReactNode; style?: CSSProperties; glow?: boolean; onClick?: () => void }) {
   const [hov, setHov] = useState(false);
@@ -558,7 +558,7 @@ function GoldCTA({ href, label }: { href: string; label: string }) {
 
 // ─────────────────────────────────────────────────────────────────────────────
 // SECTION 3A — CONSOLIDATED FORMATTING FUNCTIONS (Memoized for performance)
-// ────────────────────────────────�����────────────────────────────────────────────
+// ────────────────────────────────     ────────────────────────────────────────────
 
 // Memoized currency formatter (supports billions properly)
 const formatCurrency = (v: number): string => {
@@ -576,7 +576,7 @@ const formatShortCurrency = (v: number): string => {
 
 // ─────────────────────────────────────────────────────────────────────────────
 // SECTION 3B — SLIDER COMPONENT (Memoized)
-// ────────────────────────────────────────────────────────────────��────────────
+// ────────────────────────────────────────────────────────────────  ────────────
 
 const MAX_CURRENCY = 1_000_000_000;
 const MAX_PERCENT = 100;
@@ -930,7 +930,7 @@ function AuthModal({ onClose }: { onClose: () => void }) {
 const COUNTRY_CONFIG = {
   Canada: {
     code: "CA",
-    flag: "���🇦",
+    flag: "   🇦",
     currency: "CAD",
     symbol: "$",
     tip: "Showing Canadian rates, TFSA/RRSP accounts, and OSAP loan information.",
@@ -1089,7 +1089,7 @@ function ExpandableText({ text, maxLines = 2 }: { text: string; maxLines?: numbe
   );
 }
 
-// ─────────────────────────────────────────────────��────�������──���────────────�������──────
+// ─────────────────────────────────────────────────  ────       ──   ────────────       ──────
 // SECTION 5C-1 — FILTER SIDEBAR (Desktop) & SORT DROPDOWN
 // ─────────────────────────────────────────────────────────────────────────────
 
@@ -1397,7 +1397,7 @@ function ScholarshipFilterSidebar({
 
 // ─────────────────────────────────────────────────────────────────────────────
 // SECTION 5C-2 — FILTER BOTTOM SHEET (Mobile)
-// ─────────────────────────────────────────────────────────────��────���─��────────
+// ─────────────────────────────────────────────────────────────  ────   ─  ────────
 
 function FilterBottomSheet({ 
   isOpen, 
@@ -1557,7 +1557,7 @@ function MobileFilterButton({ onClick, hasFilters }: { onClick: () => void; hasF
   );
 }
 
-// ─────────────────────────────────────────────────���─���─────────────�������───────────
+// ─────────────────────────────────────────────────   ─   ─────────────       ───────────
 // SECTION 5C-3 — LOAN MARKETPLACE HERO (High Conversion)
 // ─────────────────────────────────────────────────────────────────────────────
 
@@ -1885,7 +1885,7 @@ function TopPicksSection({ country }: { country: "Canada" | "USA" }) {
   );
 }
 
-// ����─��──��──���─────���──────���───���───────────────────────────────────────────────────
+//     ─  ──  ──   ─────   ──────   ───   ───────────────────────────────────────────────────
 // SECTION 5E — CREDIT PATH MODAL
 // ─────────────────────────────────────────────────────────────────────────────
 
@@ -2134,7 +2134,7 @@ function CreditPathModal({ onClose, country }: { onClose: () => void; country: s
 
 // ─────────────────────────────────────────────────────────────────────────────
 // SECTION 5F — FOOTER
-// ─��──────────────────────────────────────���────────────────────────────────────
+// ─  ──────────────────────────────────────   ────────────────────────────────────
 
 function Footer() {
   const footerLinks = {
@@ -2275,7 +2275,7 @@ return (
 
 // ─────────────────────────────────────────────────────────────────────────────
 // SECTION 6 — FINANCIAL TOOLS
-// ──────────────────────────────────────────────────────────────────────────���──
+// ──────────────────────────────────────────────────────────────────────────   ──
 
 // ── Budget Tool (Memoized) ────────────────────────────────────────────────────
 const BudgetToolComponent = () => {
@@ -2508,7 +2508,7 @@ const LoanCalculatorComponent = () => {
       {extra > 0 && (
         <Glass style={{ padding:14, border:"1px solid rgba(74,222,128,0.2)" }}>
           <p style={{ fontSize:10, color:T.green, margin:"0 0 8px", letterSpacing:".07em" }}>WITH EXTRA ${extra}/MO</p>
-          {[["Interest saved","$"+Math.round(savedInt).toLocaleString(),true],["Months sooner",savedMo>0?savedMo+" months":"���"],["New payoff",`${Math.floor(mo/12)}y ${mo%12}m`]].map(([l,v,acc]) => (
+          {[["Interest saved","$"+Math.round(savedInt).toLocaleString(),true],["Months sooner",savedMo>0?savedMo+" months":"   "],["New payoff",`${Math.floor(mo/12)}y ${mo%12}m`]].map(([l,v,acc]) => (
             <div key={l as string} style={{ display:"flex", justifyContent:"space-between", padding:"5px 0", borderTop:"1px solid rgba(74,222,128,0.1)" }}>
               <span style={{ fontSize:12, color:T.mid }}>{l}</span>
               <span style={{ fontSize:13, color:acc?T.green:T.mid, fontWeight:acc?700:400 }}>{v as string}</span>
@@ -2523,7 +2523,7 @@ const LoanCalculatorComponent = () => {
 // Memoize LoanCalculator to prevent unnecessary re-renders
 const LoanCalculator = React_memo_compat(LoanCalculatorComponent);
 
-// ── Loan Finder ────��───────────�����──────���───���──────────�������───────────────────────
+// ── Loan Finder ────  ───────────     ──────   ───   ──────────       ───────────────────────
 type Phase = "idle"|"scanning"|"results";
 const SCAN_MSGS = ["Connecting to loan databases...","Scanning live lender rates...","Cross-referencing eligibility...","Compiling best rates for you..."];
 
@@ -2647,7 +2647,7 @@ function LoanFinder({ onToggleSave, savedIds, userCountry, isDarkMode }: { onTog
   );
 }
 
-// ── Loan Tool (tabs) ────────────────���─────────────────────────────────────────
+// ── Loan Tool (tabs) ────────────────   ─────────────────────────────────────────
 function LoanTool({ onToggleSave, savedIds, userCountry, isDarkMode }: { onToggleSave: (item: ScoutResult) => void; savedIds: Set<string>; userCountry: string; isDarkMode: boolean }) {
   
   const [tab, setTab] = useState<"calc"|"finder">("finder");
@@ -2666,7 +2666,7 @@ function LoanTool({ onToggleSave, savedIds, userCountry, isDarkMode }: { onToggl
   );
 }
 
-// ── Scholarship Scout ─────────────────────������������─����──────────────────�����──────────��─
+// ── Scholarship Scout ─────────────────────            ─    ──────────────────     ──────────  ─
 const SCH_SCAN_MSGS = ["Connecting to scholarship databases...","Scanning national award portals...","Cross-referencing eligibility...","Aggregating live results for you..."];
 
 // Custom themed dropdown — replaces native <select> so colors work in both themes
@@ -3233,7 +3233,7 @@ function ScholarshipScout({ onToggleSave, savedIds, isDarkMode, initialCountry }
   );
 }
 
-// ── Saved Items (My Vault) ─────────────────────────���──��───────────────────────
+// ── Saved Items (My Vault) ─────────────────────────   ──  ───────────────────────
 function SavedItems({ saved, onRemove }: { saved: ScoutResult[]; onRemove: (item: ScoutResult) => void }) {
   
   
@@ -3277,9 +3277,9 @@ function SavedItems({ saved, onRemove }: { saved: ScoutResult[]; onRemove: (item
   );
 }
 
-// ─────────────────────────────────────────────────────────��───────────────────
+// ─────────────────────────────────────────────────────────  ───────────────────
 // SECTION 7 — MARKETPLACE
-// ──���──────────────��───────────────────────────────���───────────────────────────
+// ──   ──────────────  ───────────────────────────────   ───────────────────────────
 
 const CREDIT_CARDS = [
   { id: "cap1", icon: "💳", provider: "Capital One", reward: "1.5% Cash Back", color: "#e63946" },
@@ -3374,9 +3374,9 @@ function Marketplace({ country }: { country: string }) {
 // SECTION 8 — INLINE CHAT (moved to app/inline-chat.tsx, imported as InlineChatComponent)
 // ─────────────────────────────────────────────────────────────────────────────
 
-// ────────���───────────��────────────────��────��──────────────────────────────────
+// ────────   ───────────  ────────────────  ────  ──────────────────────────────────
 // SECTION 9 — MAIN PAGE
-// ───────────────────────────��──────���───────────��──────────────────────────────
+// ───────────────────────────  ──────   ───────────  ──────────────────────────────
 
 type ToolId = "budget"|"savings"|"loan"|"scholar"|"saved";
 const NAV_TOOLS: { id: ToolId; label: string; Icon: React.FC<{size?:number}> }[] = [
@@ -3754,7 +3754,7 @@ const hBtn = (active = false): CSSProperties => ({
           </div>
         </header>
 
-        {/* ═══ LOCATION BAR ═════════════════════���══════════════════════════════ */}
+        {/* ═══ LOCATION BAR ═════════════════════   ══════════════════════════════ */}
         <AnimatePresence>
           {!locationBarDismissed && !country && (
             <motion.div
@@ -3836,7 +3836,7 @@ const hBtn = (active = false): CSSProperties => ({
         {/* ═══ BODY ════════════════════════════════════════════════════════════ */}
         <div style={{ flex:1, display:"flex", overflow:"auto" }} className="forge-body">
 
-          {/* ── Main panel ──────────────────────────────────────────────��──────── */}
+          {/* ── Main panel ──────────────────────────────────────────────  ──────── */}
           <div style={{ flex:1, display:"flex", flexDirection:"column", overflow:"hidden", minHeight:0 }} className="forge-main">
 
             {/* Tool view */}
@@ -4000,7 +4000,7 @@ const hBtn = (active = false): CSSProperties => ({
             )}
           </div>
 
-          {/* ═══ SIDEBAR ���═════════════����═══��══════════════��══���══����════════════ */}
+          {/* ═══ SIDEBAR    ═════════════    ═══  ══════════════  ══   ══    ════════════ */}
           {/* Tap-outside overlay — mobile only, shown via CSS */}
           {(sidebarOpen || sidebarClosing) && (
             <div
