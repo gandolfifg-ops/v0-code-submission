@@ -2308,27 +2308,27 @@ const BudgetToolComponent = () => {
   
   return (
     <motion.div variants={fadeUp} initial="hidden" animate="visible" style={{ display:"flex", flexDirection:"column", gap:16 }}>
-      {/* Monthly Income — large numeric input, always high-contrast */}
+      {/* Monthly Income — large numeric input, high-contrast dark theme */}
       <div style={{ display:"flex", flexDirection:"column", gap:6 }}>
-        <label style={{ fontSize:13, fontWeight:800, color:"#1A1A1A", letterSpacing:".01em" }}>
+        <label style={{ fontSize:11, color:T.mid }}>
           Monthly Income
         </label>
         <div style={{
           display: "flex",
           alignItems: "center",
-          border: "2.5px solid #000000",
+          border: `2px solid rgba(201,168,76,0.50)`,
           borderRadius: 10,
-          background: "#ffffff",
+          background: "#181818",
           overflow: "hidden",
-          boxShadow: "0 2px 8px rgba(0,0,0,0.10)",
+          boxShadow: "0 2px 10px rgba(0,0,0,0.35)",
         }}>
           <span style={{
-            padding: "14px 14px 14px 16px",
+            padding: "13px 12px 13px 15px",
             fontSize: 20,
             fontWeight: 800,
-            color: "#000000",
-            background: "#f3f3f3",
-            borderRight: "2px solid #000000",
+            color: T.gold,
+            background: "rgba(201,168,76,0.08)",
+            borderRight: `1px solid rgba(201,168,76,0.22)`,
             lineHeight: 1,
             userSelect: "none",
           }}>$</span>
@@ -2346,11 +2346,11 @@ const BudgetToolComponent = () => {
               flex: 1,
               border: "none",
               outline: "none",
-              padding: "14px 16px",
+              padding: "13px 15px",
               fontSize: 20,
               fontWeight: 700,
-              color: "#000000",
-              background: "#ffffff",
+              color: "#ffffff",
+              background: "transparent",
               fontFamily: "inherit",
               width: "100%",
               boxSizing: "border-box",
@@ -2359,7 +2359,7 @@ const BudgetToolComponent = () => {
             } as React.CSSProperties}
           />
         </div>
-        <p style={{ fontSize:11, color:"#555555", margin:0 }}>Enter your take-home pay per month.</p>
+        <p style={{ fontSize:11, color:T.dim, margin:0 }}>Enter your take-home pay per month.</p>
       </div>
       <Slider label="Needs %"        value={needs}  min={0}  step={1}  onChange={handleNeedsChange}  fmt={v=>v+"%"} maxVal={100} />
       <Slider label="Wants %"        value={wants}  min={0}  step={1}  onChange={handleWantsChange}  fmt={v=>v+"%"} maxVal={100} />
@@ -2410,10 +2410,54 @@ const SavingsToolComponent = () => {
   const C = 2 * Math.PI * 32;
   return (
     <motion.div variants={fadeUp} initial="hidden" animate="visible" style={{ display:"flex", flexDirection:"column", gap:16 }}>
-      <Slider label="Goal Amount"          value={goal}    min={100}  step={100} onChange={handleGoalChange}  fmt={v=>"$"+v.toLocaleString()} maxVal={1_000_000_000} />
-      <Slider label="Already Saved"        value={saved}   min={0}    step={50}  onChange={handleSavedChange} fmt={v=>"$"+v.toLocaleString()} maxVal={goal} />
-      <Slider label="Monthly Contribution" value={monthly} min={10}   step={10}  onChange={setMonthly}        fmt={v=>"$"+v.toLocaleString()} maxVal={1_000_000} />
-      <Slider label="Interest Rate (APY)"  value={rate}    min={0}    step={0.25} onChange={setRate}          fmt={v=>v+"%"} maxVal={50} />
+      {/* Goal Amount — typed number input, no slider */}
+      <div style={{ display:"flex", flexDirection:"column", gap:6 }}>
+        <span style={{ fontSize:11, color:T.mid }}>Goal Amount</span>
+        <div style={{
+          display:"flex", alignItems:"center",
+          border:`2px solid rgba(201,168,76,0.50)`,
+          borderRadius:10,
+          background:"#181818",
+          overflow:"hidden",
+          boxShadow:"0 2px 10px rgba(0,0,0,0.35)",
+        }}>
+          <span style={{
+            padding:"12px 12px 12px 14px",
+            fontSize:18, fontWeight:800,
+            color:T.gold,
+            background:"rgba(201,168,76,0.08)",
+            borderRight:`1px solid rgba(201,168,76,0.22)`,
+            lineHeight:1, userSelect:"none",
+          }}>$</span>
+          <input
+            type="number"
+            min={100}
+            step={100}
+            value={goal === 0 ? "" : goal}
+            placeholder="e.g. 10 000"
+            onChange={e => {
+              const v = parseFloat(e.target.value);
+              handleGoalChange(isNaN(v) || v < 0 ? 0 : v);
+            }}
+            style={{
+              flex:1, border:"none", outline:"none",
+              padding:"12px 14px",
+              fontSize:18, fontWeight:700,
+              color:"#ffffff",
+              background:"transparent",
+              fontFamily:"inherit",
+              width:"100%",
+              boxSizing:"border-box",
+              appearance:"none",
+              MozAppearance:"textfield",
+            } as React.CSSProperties}
+          />
+        </div>
+        <p style={{ fontSize:11, color:T.dim, margin:0 }}>Your target savings amount.</p>
+      </div>
+      <Slider label="Already Saved"        value={saved}   min={0}    step={25}   onChange={handleSavedChange} fmt={v=>"$"+v.toLocaleString()} maxVal={Math.max(goal, 100)} />
+      <Slider label="Monthly Contribution" value={monthly} min={10}   step={25}   onChange={setMonthly}        fmt={v=>"$"+v.toLocaleString()} maxVal={10_000} />
+      <Slider label="Interest Rate (APY)"  value={rate}    min={0}    step={0.1}  onChange={setRate}           fmt={v=>v+"%"}                  maxVal={15} />
       <Glass style={{ padding:16, display:"flex", alignItems:"center", gap:16 }}>
         <svg width="80" height="80" viewBox="0 0 80 80">
           <circle cx="40" cy="40" r="32" fill="none" stroke={T.border} strokeWidth="7"/>
