@@ -124,11 +124,14 @@ export default function HelpPage() {
         <div style={{ display: "flex", flexDirection: "column", gap: 36 }}>
           {FAQS.map(cat => (
             <div key={cat.category}>
+              {/* Category header */}
               <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 16 }}>
                 <span style={{ fontSize: 18 }}>{cat.icon}</span>
                 <h2 style={{ fontSize: 13, fontWeight: 700, color: GOLD, letterSpacing: ".1em", textTransform: "uppercase", margin: 0 }}>{cat.category}</h2>
                 <div style={{ flex: 1, height: 1, background: GOLD_BORDER, marginLeft: 8 }} />
               </div>
+
+              {/* FAQ items */}
               <div style={{ display: "flex", flexDirection: "column", gap: 2 }}>
                 {cat.items.map((item, i) => {
                   const key = `${cat.category}-${i}`;
