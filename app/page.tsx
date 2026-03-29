@@ -532,18 +532,13 @@ function SyncDot() {
 }
 
 function LogoMark({ size = 32 }: { size?: number }) {
-  // Gold "F" shield logo - rendered without background
+  // Inline SVG logo — no external image dependency
   return (
-    <img 
-    src="/images/wealthnutz-logo.png"
-            alt="WealthNutz"
-      width={size} 
-      height={size} 
-      style={{ 
-        objectFit: "contain",
-        filter: "drop-shadow(0 0 8px rgba(201,168,76,0.3))",
-      }} 
-    />
+    <svg width={size} height={size} viewBox="0 0 32 32" fill="none" style={{ filter: "drop-shadow(0 0 6px rgba(201,168,76,0.35))", flexShrink: 0 }}>
+      <polygon points="16,2 30,9 30,23 16,30 2,23 2,9" stroke="#C9A84C" strokeWidth="1.8" fill="none" />
+      <polygon points="16,7 25,11.5 25,20.5 16,25 7,20.5 7,11.5" fill="#C9A84C" opacity="0.15" />
+      <text x="16" y="21" textAnchor="middle" style={{ fontFamily: "Inter, system-ui, sans-serif", fontWeight: 900, fontSize: 11, fill: "#C9A84C" }}>W</text>
+    </svg>
   );
 }
 
@@ -2308,27 +2303,27 @@ const BudgetToolComponent = () => {
   
   return (
     <motion.div variants={fadeUp} initial="hidden" animate="visible" style={{ display:"flex", flexDirection:"column", gap:16 }}>
-      {/* Monthly Income — large numeric input, high-contrast dark theme */}
+      {/* Monthly Income — large numeric input, always high-contrast */}
       <div style={{ display:"flex", flexDirection:"column", gap:6 }}>
-        <label style={{ fontSize:11, color:T.mid }}>
+        <label style={{ fontSize:13, fontWeight:800, color:"#1A1A1A", letterSpacing:".01em" }}>
           Monthly Income
         </label>
         <div style={{
           display: "flex",
           alignItems: "center",
-          border: `2px solid rgba(201,168,76,0.50)`,
+          border: "2.5px solid #000000",
           borderRadius: 10,
-          background: "#181818",
+          background: "#ffffff",
           overflow: "hidden",
-          boxShadow: "0 2px 10px rgba(0,0,0,0.35)",
+          boxShadow: "0 2px 8px rgba(0,0,0,0.10)",
         }}>
           <span style={{
-            padding: "13px 12px 13px 15px",
+            padding: "14px 14px 14px 16px",
             fontSize: 20,
             fontWeight: 800,
-            color: T.gold,
-            background: "rgba(201,168,76,0.08)",
-            borderRight: `1px solid rgba(201,168,76,0.22)`,
+            color: "#000000",
+            background: "#f3f3f3",
+            borderRight: "2px solid #000000",
             lineHeight: 1,
             userSelect: "none",
           }}>$</span>
@@ -2346,11 +2341,11 @@ const BudgetToolComponent = () => {
               flex: 1,
               border: "none",
               outline: "none",
-              padding: "13px 15px",
+              padding: "14px 16px",
               fontSize: 20,
               fontWeight: 700,
-              color: "#ffffff",
-              background: "transparent",
+              color: "#000000",
+              background: "#ffffff",
               fontFamily: "inherit",
               width: "100%",
               boxSizing: "border-box",
@@ -2359,7 +2354,7 @@ const BudgetToolComponent = () => {
             } as React.CSSProperties}
           />
         </div>
-        <p style={{ fontSize:11, color:T.dim, margin:0 }}>Enter your take-home pay per month.</p>
+        <p style={{ fontSize:11, color:"#555555", margin:0 }}>Enter your take-home pay per month.</p>
       </div>
       <Slider label="Needs %"        value={needs}  min={0}  step={1}  onChange={handleNeedsChange}  fmt={v=>v+"%"} maxVal={100} />
       <Slider label="Wants %"        value={wants}  min={0}  step={1}  onChange={handleWantsChange}  fmt={v=>v+"%"} maxVal={100} />
@@ -2410,54 +2405,24 @@ const SavingsToolComponent = () => {
   const C = 2 * Math.PI * 32;
   return (
     <motion.div variants={fadeUp} initial="hidden" animate="visible" style={{ display:"flex", flexDirection:"column", gap:16 }}>
-      {/* Goal Amount — typed number input, no slider */}
+      {/* Goal Amount — typed number input for precision */}
       <div style={{ display:"flex", flexDirection:"column", gap:6 }}>
-        <span style={{ fontSize:11, color:T.mid }}>Goal Amount</span>
-        <div style={{
-          display:"flex", alignItems:"center",
-          border:`2px solid rgba(201,168,76,0.50)`,
-          borderRadius:10,
-          background:"#181818",
-          overflow:"hidden",
-          boxShadow:"0 2px 10px rgba(0,0,0,0.35)",
-        }}>
-          <span style={{
-            padding:"12px 12px 12px 14px",
-            fontSize:18, fontWeight:800,
-            color:T.gold,
-            background:"rgba(201,168,76,0.08)",
-            borderRight:`1px solid rgba(201,168,76,0.22)`,
-            lineHeight:1, userSelect:"none",
-          }}>$</span>
+        <span style={{ fontSize:11, color:T.mid, letterSpacing:".05em", fontWeight:600 }}>GOAL AMOUNT</span>
+        <div style={{ display:"flex", alignItems:"center", border:`2px solid rgba(201,168,76,0.50)`, borderRadius:10, background:"rgba(24,24,24,0.9)", overflow:"hidden", boxShadow:"0 2px 10px rgba(0,0,0,0.35)" }}>
+          <span style={{ padding:"11px 12px 11px 14px", fontSize:16, fontWeight:800, color:T.gold, background:"rgba(201,168,76,0.08)", borderRight:`1px solid rgba(201,168,76,0.22)`, lineHeight:1, userSelect:"none", flexShrink:0 }}>$</span>
           <input
-            type="number"
-            min={100}
-            step={100}
+            type="number" min={100} step={100}
             value={goal === 0 ? "" : goal}
             placeholder="e.g. 10 000"
-            onChange={e => {
-              const v = parseFloat(e.target.value);
-              handleGoalChange(isNaN(v) || v < 0 ? 0 : v);
-            }}
-            style={{
-              flex:1, border:"none", outline:"none",
-              padding:"12px 14px",
-              fontSize:18, fontWeight:700,
-              color:"#ffffff",
-              background:"transparent",
-              fontFamily:"inherit",
-              width:"100%",
-              boxSizing:"border-box",
-              appearance:"none",
-              MozAppearance:"textfield",
-            } as React.CSSProperties}
+            onChange={e => { const v = parseFloat(e.target.value); handleGoalChange(isNaN(v) || v < 0 ? 0 : v); }}
+            style={{ flex:1, border:"none", outline:"none", padding:"11px 14px", fontSize:16, fontWeight:700, color:"#ffffff", background:"transparent", fontFamily:"inherit", width:"100%", boxSizing:"border-box" } as React.CSSProperties}
           />
         </div>
         <p style={{ fontSize:11, color:T.dim, margin:0 }}>Your target savings amount.</p>
       </div>
-      <Slider label="Already Saved"        value={saved}   min={0}    step={25}   onChange={handleSavedChange} fmt={v=>"$"+v.toLocaleString()} maxVal={Math.max(goal, 100)} />
-      <Slider label="Monthly Contribution" value={monthly} min={10}   step={25}   onChange={setMonthly}        fmt={v=>"$"+v.toLocaleString()} maxVal={10_000} />
-      <Slider label="Interest Rate (APY)"  value={rate}    min={0}    step={0.1}  onChange={setRate}           fmt={v=>v+"%"}                  maxVal={15} />
+      <Slider label="Already Saved"        value={saved}   min={0}    step={25}  onChange={handleSavedChange} fmt={v=>"$"+v.toLocaleString()} maxVal={Math.max(goal, 100)} />
+      <Slider label="Monthly Contribution" value={monthly} min={10}   step={25}  onChange={setMonthly}        fmt={v=>"$"+v.toLocaleString()} maxVal={10_000} />
+      <Slider label="Interest Rate (APY)"  value={rate}    min={0}    step={0.1} onChange={setRate}           fmt={v=>v+"%"} maxVal={15} />
       <Glass style={{ padding:16, display:"flex", alignItems:"center", gap:16 }}>
         <svg width="80" height="80" viewBox="0 0 80 80">
           <circle cx="40" cy="40" r="32" fill="none" stroke={T.border} strokeWidth="7"/>
@@ -3057,8 +3022,9 @@ function ScholarshipScout({ onToggleSave, savedIds, isDarkMode, initialCountry }
 
   const [query,   setQuery]   = useState("");
   const [major,   setMajor]   = useState<string>(SCHOLARSHIP_MAJORS[0] as string);
-  // Seed country from global toggle if provided, otherwise default to first option
-  const [country, setCountry] = useState<string>(initialCountry && initialCountry !== "" ? initialCountry : SCHOLARSHIP_COUNTRIES[0] as string);
+  const [country, setCountry] = useState<string>(
+    initialCountry && initialCountry !== "" ? initialCountry : SCHOLARSHIP_COUNTRIES[0] as string
+  );
   const [level,   setLevel]   = useState<string>(SCHOLARSHIP_LEVELS[0] as string);
   const [phase,   setPhase]   = useState<Phase>("idle");
   const [results, setResults] = useState<ScoutResult[]>([]);
@@ -3074,13 +3040,11 @@ function ScholarshipScout({ onToggleSave, savedIds, isDarkMode, initialCountry }
   const [nextOffset, setNextOffset] = useState<number | null>(null);
   const [loadingMore, setLoadingMore] = useState(false);
 
-  // Sync with parent's global country toggle whenever it changes
+  // Sync country when the parent CA/US toggle changes
   useEffect(() => {
     if (initialCountry && initialCountry !== "") {
       setCountry(initialCountry);
-      setResults([]);
-      setPhase("idle");
-      setValidationError("");
+      setResults([]); setPhase("idle"); setValidationError("");
     }
   }, [initialCountry]);
 
@@ -3112,28 +3076,38 @@ function ScholarshipScout({ onToggleSave, savedIds, isDarkMode, initialCountry }
     setNextOffset(null);
     setTotalCount(0);
     try {
-      const response = await fetch("/api/scholarships", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ country, major, level, query: query?.trim() ?? "", offset: 0, limit: 10 }),
-      });
-      const data = await response.json();
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), 10000); // 10-second timeout
+      let response: Response;
+      try {
+        response = await fetch("/api/scholarships", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ country, major, level, query: query?.trim() ?? "", offset: 0, limit: 10 }),
+          signal: controller.signal,
+        });
+      } finally {
+        clearTimeout(timeoutId);
+      }
+      let data: { scholarships?: ScoutResult[]; total?: number; hasMore?: boolean; nextOffset?: number | null; error?: string } = {};
+      try { data = await response.json(); } catch { data = {}; }
       if (!response.ok || !data.scholarships) {
         setError(data.error || "Failed to fetch scholarships. Please try again.");
         setResults([]);
       } else if (data.scholarships.length === 0) {
-        setError(`No scholarships found for ${major} in ${country}. Try adjusting your search.`);
+        setError(`No scholarships found for ${major} in ${country}. Try broadening your search.`);
         setResults([]);
       } else {
         setResults(data.scholarships);
         setTotalCount(data.total || data.scholarships.length);
         setHasMore(data.hasMore || false);
-        setNextOffset(data.nextOffset || null);
+        setNextOffset(data.nextOffset ?? null);
         setError("");
       }
-    } catch (err) {
+    } catch (err: unknown) {
       console.error("[v0] Scholarship search error:", err);
-      setError("Network error: Please check your connection and try again.");
+      const isAbort = err instanceof Error && err.name === "AbortError";
+      setError(isAbort ? "Search timed out — please try again." : "Could not reach the scholarship database. Please check your connection and try again.");
       setResults([]);
     }
     setPhase("results");
@@ -3146,7 +3120,7 @@ function ScholarshipScout({ onToggleSave, savedIds, isDarkMode, initialCountry }
       const response = await fetch("/api/scholarships", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ country, major, year, query: query?.trim() ?? "", offset: nextOffset, limit: 20 }),
+        body: JSON.stringify({ country, major, level, query: query?.trim() ?? "", offset: nextOffset, limit: 20 }),
       });
       const data = await response.json();
       if (response.ok && data.scholarships) {
@@ -3499,20 +3473,22 @@ useEffect(() => {
       const { data: { subscription: sub } } = supabase.auth.onAuthStateChange(async (event, session) => {
         setUser(session?.user ?? null);
         
-        // Fetch bookmarks immediately when user signs in — merge with any local guest saves
+        // Fetch bookmarks immediately when user signs in
         if (event === "SIGNED_IN" && session?.user) {
+          // Merge DB bookmarks with any locally saved (guest) bookmarks
           const [dbBookmarks, localBookmarks] = await Promise.all([
             fetchBookmarksFromSupabase(session.user.id),
             Promise.resolve(readSaved()),
           ]);
-          // Merge: DB items win on conflicts (same id), local-only items are appended
           const dbIds = new Set(dbBookmarks.map((b: ScoutResult) => b.id));
           const localOnly = localBookmarks.filter((b: ScoutResult) => !dbIds.has(b.id));
           const merged = [...dbBookmarks, ...localOnly];
           setSavedItems(merged);
           writeSaved(merged);
-          // Upsert any local-only items to Supabase so they're not lost
-          await Promise.all(localOnly.map((b: ScoutResult) => upsertBookmarkToSupabase(session.user!.id, b)));
+          // Upload any local-only items to Supabase
+          if (localOnly.length > 0) {
+            await Promise.all(localOnly.map((b: ScoutResult) => upsertBookmarkToSupabase(session.user!.id, b)));
+          }
         }
 
         // Also handle token refresh which keeps the session alive
@@ -3522,10 +3498,9 @@ useEffect(() => {
           writeSaved(bookmarks);
         }
 
-        // On sign-out: keep items in localStorage so guests don't lose their saves
+        // On sign out: keep items in localStorage for guest mode — don't wipe them
         if (event === "SIGNED_OUT") {
-          // Don't wipe localStorage — just let the user know they're in guest mode
-          // Items remain visible until they manually remove them
+          setSavedItems(readSaved());
         }
       });
       subscription = sub;
@@ -3542,20 +3517,17 @@ useEffect(() => {
   }, []);
   
   const handleToggleSave = useCallback(async (item: ScoutResult) => {
-    // Toggle locally first for instant feedback — works for guests too
     const current = savedItems;
     const exists = current.some(x => x.id === item.id);
     const updated = exists ? current.filter(x => x.id !== item.id) : [...current, item];
+    // Always persist locally first — works for both guests and signed-in users
     setSavedItems(updated);
     writeSaved(updated);
-
     if (!user) {
-      // Guest: save to localStorage only, show a friendly nudge
       if (!exists) setToast("Saved locally — sign in to sync across devices");
       return;
     }
-
-    // Signed-in: sync with Supabase
+    // Sync with Supabase for signed-in users
     if (exists) {
       await deleteBookmarkFromSupabase(user.id, item.id);
     } else {
@@ -3578,17 +3550,14 @@ useEffect(() => {
   const clearChat = useCallback(() => setChatKey(k => k + 1), []);
 
 const handleSignOut = useCallback(async () => {
-    // Clear local state immediately so the UI responds at once
-    setUser(null);
     try {
       const { createClient } = await import("@/lib/supabase/client");
       const supabase = createClient();
       await supabase.auth.signOut();
+      setUser(null);
+      window.location.href = "/";
     } catch (err) {
       console.error("Sign out error:", err);
-    } finally {
-      // Always redirect — even if signOut() threw
-      window.location.href = "/";
     }
   }, []);
   
@@ -3749,12 +3718,14 @@ const hBtn = (active = false): CSSProperties => ({
             aria-label="Go to home"
             style={{ display:"flex", alignItems:"center", justifyContent:"center", flex:1, background:"none", border:"none", cursor:"pointer", padding:0, outline:"none" }}
           >
-            <img 
-              src="/images/wealthnutz-logo-full.png" 
-              alt="WealthNutz" 
-              style={{ height:"clamp(34px, 8vw, 46px)", width:"auto", objectFit:"contain" }} 
-              className="wealthnutz-logo"
-            />
+            <span style={{ display:"flex", alignItems:"center", gap:7 }}>
+              <svg width="28" height="28" viewBox="0 0 32 32" fill="none" style={{ filter:"drop-shadow(0 0 5px rgba(201,168,76,0.4))", flexShrink:0 }}>
+                <polygon points="16,2 30,9 30,23 16,30 2,23 2,9" stroke="#C9A84C" strokeWidth="1.8" fill="none" />
+                <polygon points="16,7 25,11.5 25,20.5 16,25 7,20.5 7,11.5" fill="#C9A84C" opacity="0.15" />
+                <text x="16" y="21" textAnchor="middle" style={{ fontFamily:"Inter,system-ui,sans-serif", fontWeight:900, fontSize:11, fill:"#C9A84C" }}>W</text>
+              </svg>
+              <span style={{ fontSize:16, fontWeight:900, color:"#C9A84C", letterSpacing:"-0.03em", textTransform:"uppercase" }} className="wealthnutz-logo-text">WealthNutz</span>
+            </span>
           </motion.button>
           
           {/* Right: Theme toggle + MENU button */}
@@ -4133,16 +4104,10 @@ style={{ display:"flex", alignItems:"center", gap:9, padding:"9px 10px", borderR
         letterSpacing: "0.03em",
         boxShadow: isDarkMode ? "none" : "0 1px 3px rgba(0,0,0,0.06)",
       }}>
-      <img 
-        src="/images/wealthnutz-logo-full.png" 
-        alt="" 
-        style={{ 
-          height: 18, 
-          width: "auto", 
-          objectFit: "contain",
-          filter: isDarkMode ? "none" : "brightness(0.25)",
-        }} 
-      />
+      <svg width="16" height="16" viewBox="0 0 32 32" fill="none" style={{ flexShrink:0 }}>
+        <polygon points="16,2 30,9 30,23 16,30 2,23 2,9" stroke="#C9A84C" strokeWidth="2" fill="none" />
+        <text x="16" y="21" textAnchor="middle" style={{ fontFamily:"inherit", fontWeight:900, fontSize:11, fill:"#C9A84C" }}>W</text>
+      </svg>
       Member Sign In
     </motion.button>
   )}
