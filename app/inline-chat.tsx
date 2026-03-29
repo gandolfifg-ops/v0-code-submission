@@ -3,7 +3,7 @@
 import { useState, useEffect, useRef, type FormEvent, useCallback } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Send, RotateCcw } from "lucide-react";
-import ReactMarkdown from "react-markdown";
+// zero-dep inline markdown renderer — no react-markdown needed
 
 // ── Dark theme tokens ────────────────────────────────────────────────────────
 const DARK_T = {
@@ -120,7 +120,6 @@ function Glass({ children, style, glow }: { children: React.ReactNode; style?: R
 function LogoMark({ size = 20 }: { size?: number }) {
   const [imgErr, setImgErr] = useState(false);
   if (imgErr) {
-    // Fallback SVG if image not found
     return (
       <svg width={size} height={size} viewBox="0 0 32 32" fill="none">
         <polygon points="16,2 30,9 30,23 16,30 2,23 2,9" stroke={T.gold} strokeWidth="2" fill="none" />
@@ -164,6 +163,69 @@ function Dots() {
       {[0,1,2].map(i => <span key={i} style={{ width:5, height:5, borderRadius:"50%", background:T.gold, animation:`wf-bounce .8s ${i*0.15}s infinite` }} />)}
     </div>
   );
+}
+
+// ── Zero-dep inline markdown renderer ────────────────────────────────────────
+function renderInlineMarkdown(raw: string, themeTokens: typeof DARK_T): React.ReactNode {
+  function parseInline(text: string): React.ReactNode[] {
+    const out: React.ReactNode[] = [];
+    const re = /(\*\*(.+?)\*\*)|(\*(.+?)\*)|\[([^\]]+)\]\((https?:\/\/[^)]+)\)/g;
+    let lastIdx = 0, m: RegExpExecArray | null;
+    while ((m = re.exec(text)) !== null) {
+      if (m.index > lastIdx) out.push(text.slice(lastIdx, m.index));
+      if (m[1]) {
+        out.push(<strong key={m.index} style={{ fontWeight:700, color: themeTokens.text }}>{m[2]}</strong>);
+      } else if (m[3]) {
+        out.push(<em key={m.index} style={{ fontStyle:"italic" }}>{m[4]}</em>);
+      } else if (m[5]) {
+        out.push(<a key={m.index} href={m[6]} target="_blank" rel="noopener noreferrer" style={{ color:themeTokens.goldHi, textDecoration:"underline" }}>{m[5]}</a>);
+      }
+      lastIdx = m.index + m[0].length;
+    }
+    if (lastIdx < text.length) out.push(text.slice(lastIdx));
+    return out;
+  }
+
+  const lines = raw.split("\n");
+  const nodes: React.ReactNode[] = [];
+  let i = 0;
+
+  while (i < lines.length) {
+    const line = lines[i];
+    if (/^\d+\.\s/.test(line)) {
+      const items: React.ReactNode[] = [];
+      while (i < lines.length && /^\d+\.\s/.test(lines[i])) {
+        items.push(<li key={i} style={{ margin:"3px 0", color:themeTokens.aiText }}>{parseInline(lines[i].replace(/^\d+\.\s/, ""))}</li>);
+        i++;
+      }
+      nodes.push(<ol key={`ol-${i}`} style={{ margin:"6px 0", paddingLeft:22, listStyleType:"decimal", color:themeTokens.aiText }}>{items}</ol>);
+      continue;
+    }
+    if (/^[-*•]\s/.test(line)) {
+      const items: React.ReactNode[] = [];
+      while (i < lines.length && /^[-*•]\s/.test(lines[i])) {
+        items.push(<li key={i} style={{ margin:"3px 0", color:themeTokens.aiText }}>{parseInline(lines[i].replace(/^[-*•]\s/, ""))}</li>);
+        i++;
+      }
+      nodes.push(<ul key={`ul-${i}`} style={{ margin:"6px 0", paddingLeft:22, listStyleType:"disc", color:themeTokens.aiText }}>{items}</ul>);
+      continue;
+    }
+    const headMatch = line.match(/^(#{1,3})\s+(.+)/);
+    if (headMatch) {
+      const level = headMatch[1].length;
+      const sz = level === 1 ? 16 : level === 2 ? 14 : 13;
+      nodes.push(<p key={i} style={{ margin:"8px 0 4px", fontSize:sz, fontWeight:700, color:themeTokens.text }}>{parseInline(headMatch[2])}</p>);
+      i++; continue;
+    }
+    if (/^[-_*]{3,}$/.test(line.trim())) {
+      nodes.push(<hr key={i} style={{ border:"none", borderTop:`1px solid ${themeTokens.border}`, margin:"8px 0" }} />);
+      i++; continue;
+    }
+    if (line.trim() === "") { i++; continue; }
+    nodes.push(<p key={i} style={{ margin:"0 0 6px", color:themeTokens.aiText, lineHeight:1.6 }}>{parseInline(line)}</p>);
+    i++;
+  }
+  return nodes;
 }
 
 // ── MsgText with link detection ───────────────────────────────────────────────
@@ -242,7 +304,6 @@ function LoanMarketplaceHero({ country }: { country: "Canada"|"USA" }) {
 
 // ── Main InlineChat export ────────────────────────────────────────────────────
 export default function InlineChat({ country, isDarkMode = true }: { country: string; isDarkMode?: boolean }) {
-  // Update theme based on prop
   T = isDarkMode ? DARK_T : LIGHT_T;
   
   const [msgs, setMsgs] = useState<{ role: "user" | "assistant"; content: string }[]>([]);
@@ -251,15 +312,13 @@ export default function InlineChat({ country, isDarkMode = true }: { country: st
   const bottomRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLTextAreaElement>(null);
   
-  // Auto-resize textarea callback
   const autoResize = useCallback((el: HTMLTextAreaElement | null) => {
     if (el) {
       el.style.height = "auto";
-      el.style.height = Math.min(el.scrollHeight, 140) + "px"; // Max ~5-6 lines
+      el.style.height = Math.min(el.scrollHeight, 140) + "px";
     }
   }, []);
   
-  // Clear chat handler - resets messages, input, and textarea height
   const clearChat = useCallback(() => {
     setMsgs([]);
     setInput("");
@@ -269,7 +328,7 @@ export default function InlineChat({ country, isDarkMode = true }: { country: st
     }
   }, []);
   
-  // Smooth scroll — only fires when loading finishes (message complete), not during streaming
+  // Smooth scroll — only fires when loading finishes (message complete)
   useEffect(() => {
     if (!loading && msgs.length > 0) {
       bottomRef.current?.scrollIntoView({ behavior: "smooth", block: "nearest" });
@@ -378,20 +437,8 @@ export default function InlineChat({ country, isDarkMode = true }: { country: st
               <div style={{ maxWidth: "85%", padding: "8px 12px", borderRadius: m.role === "user" ? "12px 12px 4px 12px" : "4px 12px 12px 12px", background: m.role === "user" ? "rgba(201,168,76,0.1)" : T.cardBg, border: `1px solid ${m.role === "user" ? "rgba(201,168,76,0.18)" : T.cardBorder}`, backdropFilter: T.blur, fontSize: 13, lineHeight: 1.55, color: m.role === "user" ? (isDarkMode ? "#d4c080" : "#78350F") : T.aiText }}>
                 {m.role === "assistant" ? (
                   <>
-                    <div className="prose prose-sm max-w-none" style={{ color: T.aiText }}>
-                      <ReactMarkdown
-                        components={{
-                          p: ({ children }) => <p style={{ margin: "0 0 6px", color: T.aiText }}>{children}</p>,
-                          strong: ({ children }) => <strong style={{ fontWeight: 700, color: T.text }}>{children}</strong>,
-                          em: ({ children }) => <em style={{ fontStyle: "italic" }}>{children}</em>,
-                  ul: ({ children }) => <ul style={{ margin: "8px 0", paddingLeft: "24px", listStyleType: "disc", color: T.aiText }}>{children}</ul>,
-                  ol: ({ children }) => <ol style={{ margin: "8px 0", paddingLeft: "24px", listStyleType: "decimal", color: T.aiText }}>{children}</ol>,
-                  li: ({ children }) => <li style={{ margin: "4px 0", color: T.aiText, display: "list-item" }}>{children}</li>,
-                          a: ({ href, children }) => <a href={href} target="_blank" rel="noopener noreferrer" style={{ color: T.goldHi, textDecoration: "underline" }}>{children}</a>,
-                        }}
-                      >
-                        {m.content ?? ""}
-                      </ReactMarkdown>
+                    <div style={{ color: T.aiText }}>
+                      {renderInlineMarkdown(m.content ?? "", T)}
                     </div>
                     {loading && i === msgs.length - 1 && <span style={{ display: "inline-block", width: 2, height: 12, background: T.gold, marginLeft: 2, verticalAlign: "middle", animation: "wf-cur .65s steps(1) infinite" }} />}
                   </>
@@ -445,7 +492,7 @@ export default function InlineChat({ country, isDarkMode = true }: { country: st
                 fontSize: 14, 
                 lineHeight: 1.6, 
                 minHeight: 24,
-                maxHeight: 140, // ~5-6 lines
+                maxHeight: 140,
                 overflowY: "auto", 
                 padding: 0, 
                 resize: "none",
