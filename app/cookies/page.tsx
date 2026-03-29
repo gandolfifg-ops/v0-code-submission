@@ -19,7 +19,7 @@ export default function CookiesPage() {
         {/* Back link */}
         <Link href="/" style={{ display: "inline-flex", alignItems: "center", gap: 8, color: T.gold, textDecoration: "none", marginBottom: 32, fontSize: 14 }}>
           <ArrowLeft size={16} />
-          Back to Forge
+          Back to WealthNutz
         </Link>
 
         {/* Header */}
@@ -33,7 +33,7 @@ export default function CookiesPage() {
         {/* Content */}
         <div style={{ lineHeight: 1.8, fontSize: 16, color: T.text }}>
           <p style={{ marginBottom: 24 }}>
-            Forge Finances uses cookies to improve user experience and track affiliate referrals. These cookies allow us to recognize your browser and remember certain information.
+            WealthNutz uses cookies to improve user experience and track affiliate referrals. These cookies allow us to recognize your browser and remember certain information.
           </p>
           
           <p style={{ marginBottom: 24 }}>
