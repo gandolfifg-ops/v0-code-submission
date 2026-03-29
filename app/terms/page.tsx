@@ -19,7 +19,7 @@ export default function TermsPage() {
         {/* Back link */}
         <Link href="/" style={{ display: "inline-flex", alignItems: "center", gap: 8, color: T.gold, textDecoration: "none", marginBottom: 32, fontSize: 14 }}>
           <ArrowLeft size={16} />
-          Back to Forge
+          Back to WealthNutz
         </Link>
 
         {/* Header */}
@@ -33,7 +33,7 @@ export default function TermsPage() {
         {/* Content */}
         <div style={{ lineHeight: 1.8, fontSize: 16, color: T.text }}>
           <p style={{ marginBottom: 24 }}>
-            By using Forge Finances, you agree that our AI-generated insights are for educational purposes only and do not constitute professional financial advice. We are an independent affiliate site.
+            By using WealthNutz, you agree that our AI-generated insights are for educational purposes only and do not constitute professional financial advice. We are an independent affiliate site.
           </p>
           
           <p style={{ marginBottom: 24 }}>
@@ -44,7 +44,7 @@ export default function TermsPage() {
             Use of Service
           </h2>
           <p style={{ marginBottom: 24 }}>
-            Forge Finances provides AI-powered financial education tools designed to help users understand personal finance concepts. Our tools analyze general scenarios and provide educational information based on publicly available data.
+            WealthNutz provides AI-powered financial education tools designed to help users understand personal finance concepts. Our tools analyze general scenarios and provide educational information based on publicly available data.
           </p>
 
           <h2 style={{ fontSize: 20, fontWeight: 700, color: T.gold, marginTop: 40, marginBottom: 16 }}>
@@ -58,14 +58,14 @@ export default function TermsPage() {
             Affiliate Relationships
           </h2>
           <p style={{ marginBottom: 24 }}>
-            Forge Finances may receive compensation from third-party financial institutions when users apply for products through our affiliate links. This compensation does not influence the educational content or AI-generated insights provided on our platform.
+            WealthNutz may receive compensation from third-party financial institutions when users apply for products through our affiliate links. This compensation does not influence the educational content or AI-generated insights provided on our platform.
           </p>
 
           <h2 style={{ fontSize: 20, fontWeight: 700, color: T.gold, marginTop: 40, marginBottom: 16 }}>
             Limitation of Liability
           </h2>
           <p style={{ marginBottom: 24 }}>
-            Forge Finances shall not be liable for any direct, indirect, incidental, consequential, or punitive damages arising from your use of our services or reliance on information provided through our platform.
+            WealthNutz shall not be liable for any direct, indirect, incidental, consequential, or punitive damages arising from your use of our services or reliance on information provided through our platform.
           </p>
 
           <h2 style={{ fontSize: 20, fontWeight: 700, color: T.gold, marginTop: 40, marginBottom: 16 }}>
