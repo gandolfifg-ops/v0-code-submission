@@ -1,11 +1,12 @@
 "use client";
-
-import { useState, useEffect, useRef, type FormEvent } from "react";
+/* build:v201 — squirrel logo, smooth scroll on completion, clear chat */
+import { useState, useEffect, useRef, type FormEvent, useCallback } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Send } from "lucide-react";
+import { Send, RotateCcw } from "lucide-react";
+import ReactMarkdown from "react-markdown";
 
-// ── Shared constants duplicated here to avoid circular imports ────────────────
-const T = {
+// ── Dark theme tokens ────────────────────────────────────────────────────────
+const DARK_T = {
   bg:       "#07090d",
   text:     "#e8dcc8",
   mid:      "#9a8f7e",
@@ -20,10 +21,40 @@ const T = {
   glassHi:  "rgba(255,255,255,0.06)",
   cardBg:   "rgba(255,255,255,0.025)",
   cardBorder:"rgba(255,255,255,0.10)",
+  inputBg:  "rgba(0,0,0,0)",
+  inputPlaceholder: "#9a8f7e",
+  aiText:   "#c0b8a8",
   blur:     "blur(12px)",
   r:        12,
   rsm:      8,
 };
+
+// ── Light theme tokens ────────────────────────────────────────────────────────
+const LIGHT_T = {
+  bg:       "#F9FAFB",
+  text:     "#0F172A",
+  mid:      "#475569",
+  dim:      "#94A3B8",
+  gold:     "#C9A84C",
+  goldHi:   "#E8C97A",
+  goldDim:  "#8B6914",
+  green:    "#16a34a",
+  red:      "#dc2626",
+  border:   "rgba(0,0,0,0.08)",
+  glass:    "rgba(255,255,255,0.9)",
+  glassHi:  "rgba(255,255,255,1)",
+  cardBg:   "#FFFFFF",
+  cardBorder:"#E2E8F0",
+  inputBg:  "#F3F4F6",
+  inputPlaceholder: "#6B7280",
+  aiText:   "#1A1A1A",
+  blur:     "blur(12px)",
+  r:        12,
+  rsm:      8,
+};
+
+// Default to dark
+let T = DARK_T;
 
 const COUNTRY_CONFIG = {
   Canada: { flag:"🍁", currency:"CAD", tip:"Showing Canadian scholarships, OSAP, NSLSC loans, and high-interest savings accounts." },
@@ -31,7 +62,7 @@ const COUNTRY_CONFIG = {
 } as const;
 type CountryKey = keyof typeof COUNTRY_CONFIG;
 
-const SYSTEM_PROMPT = `You are the Forge Intelligence Co-Pilot — a world-class Quantitative Financial Advisor and AI Wealth Intelligence Engine for students in Canada and the USA. You are highly analytical, data-driven, and objective. Your mission is to help students optimize for the highest Net Worth through smart financial arbitrage.
+const SYSTEM_PROMPT = `You are the WealthNutz Intelligence Co-Pilot — a world-class Quantitative Financial Advisor and AI Wealth Intelligence Engine for students in Canada and the USA. You are highly analytical, data-driven, and objective. Your mission is to help students optimize for the highest Net Worth through smart financial arbitrage.
 
 CORE PHILOSOPHY:
 You treat personal finance as a game of quantitative optimization. You always recommend the highest-yield, lowest-risk path. You are direct, specific, and never vague.
@@ -87,12 +118,25 @@ function Glass({ children, style, glow }: { children: React.ReactNode; style?: R
 }
 
 function LogoMark({ size = 20 }: { size?: number }) {
+  const [imgErr, setImgErr] = useState(false);
+  if (imgErr) {
+    // Fallback SVG if image not found
+    return (
+      <svg width={size} height={size} viewBox="0 0 32 32" fill="none">
+        <polygon points="16,2 30,9 30,23 16,30 2,23 2,9" stroke={T.gold} strokeWidth="2" fill="none" />
+        <text x="16" y="21" textAnchor="middle" style={{ fontFamily:"inherit", fontWeight:900, fontSize:11, fill:T.gold }}>W</text>
+      </svg>
+    );
+  }
   return (
-    <svg width={size} height={size} viewBox="0 0 32 32" fill="none">
-      <polygon points="16,3 29,10 29,22 16,29 3,22 3,10" stroke={T.gold} strokeWidth="2" fill="none" />
-      <polygon points="16,8 24,12.5 24,19.5 16,24 8,19.5 8,12.5" fill={T.gold} opacity="0.18" />
-      <text x="16" y="21" textAnchor="middle" style={{ fontFamily:"inherit", fontWeight:900, fontSize:12, fill:T.gold }}>F</text>
-    </svg>
+    <img
+      src="/images/wealthnutz-logo.png"
+      alt="WealthNutz"
+      width={size}
+      height={size}
+      onError={() => setImgErr(true)}
+      style={{ objectFit: "contain", display: "block" }}
+    />
   );
 }
 
@@ -110,7 +154,7 @@ function GoldCTA({ href, label }: { href: string; label: string }) {
 }
 
 function AffNote() {
-  return <p style={{ fontSize:9, color:"#c4b594", textAlign:"center", marginTop:10, lineHeight:1.5 }}>Forge may earn a referral commission if you open an account through our links. This never affects our recommendations.</p>;
+  return <p style={{ fontSize:9, color:"#c4b594", textAlign:"center", marginTop:10, lineHeight:1.5 }}>WealthNutz may earn a referral commission if you open an account through our links. This never affects our recommendations.</p>;
 }
 
 // ── Dots typing indicator ─────────────────────────────────────────────────────
@@ -196,43 +240,41 @@ function LoanMarketplaceHero({ country }: { country: "Canada"|"USA" }) {
   );
 }
 
-// ── TopPicksSection ───────────────────────────────────────────────────────────
-function TopPicksSection({ country }: { country: "Canada"|"USA" }) {
-  const countryCode = country === "Canada" ? "CA" : "US";
-  const picks = AFFILIATE_PRODUCTS.filter(p => p.country === countryCode).slice(0, 3);
-  return (
-    <motion.div variants={stagger} initial="hidden" animate="visible" style={{ marginBottom:20 }}>
-      <motion.div variants={fadeUp} style={{ display:"flex", alignItems:"center", gap:8, marginBottom:12 }}>
-        <span style={{ fontSize:16 }}>⭐</span>
-        <h3 style={{ fontSize:13, fontWeight:700, color:T.text, margin:0 }}>Top Picks for You</h3>
-      </motion.div>
-      <div style={{ display:"flex", flexDirection:"column", gap:8 }}>
-        {picks.map(p => (
-          <motion.a key={p.id} variants={fadeUp} href={p.href} target="_blank" rel="noopener noreferrer"
-            style={{ display:"flex", alignItems:"center", gap:12, padding:"10px 12px", borderRadius:T.rsm, background:T.glass, border:`1px solid ${T.border}`, textDecoration:"none", transition:"all 0.2s" }}
-            whileHover={{ borderColor:T.gold, background:T.glassHi }}>
-            <span style={{ fontSize:20 }}>{p.logo}</span>
-            <div style={{ flex:1 }}>
-              <p style={{ fontSize:12, fontWeight:600, color:T.text, margin:0 }}>{p.name}</p>
-              <p style={{ fontSize:10, color:T.mid, margin:0 }}>{p.highlight}</p>
-            </div>
-            {p.badge && <span style={{ fontSize:9, background:T.gold, color:"#07090d", padding:"2px 6px", borderRadius:4, fontWeight:700 }}>{p.badge}</span>}
-          </motion.a>
-        ))}
-      </div>
-    </motion.div>
-  );
-}
-
 // ── Main InlineChat export ────────────────────────────────────────────────────
-export default function InlineChat({ country }: { country: string }) {
+export default function InlineChat({ country, isDarkMode = true }: { country: string; isDarkMode?: boolean }) {
+  // Update theme based on prop
+  T = isDarkMode ? DARK_T : LIGHT_T;
+  
   const [msgs, setMsgs] = useState<{ role: "user" | "assistant"; content: string }[]>([]);
   const [input, setInput] = useState("");
   const [loading, setLoading] = useState(false);
   const bottomRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLTextAreaElement>(null);
-
-  useEffect(() => { bottomRef.current?.scrollIntoView({ behavior: "smooth" }); }, [msgs, loading]);
+  
+  // Auto-resize textarea callback
+  const autoResize = useCallback((el: HTMLTextAreaElement | null) => {
+    if (el) {
+      el.style.height = "auto";
+      el.style.height = Math.min(el.scrollHeight, 140) + "px"; // Max ~5-6 lines
+    }
+  }, []);
+  
+  // Clear chat handler - resets messages, input, and textarea height
+  const clearChat = useCallback(() => {
+    setMsgs([]);
+    setInput("");
+    if (inputRef.current) {
+      inputRef.current.style.height = "auto";
+      inputRef.current.value = "";
+    }
+  }, []);
+  
+  // Smooth scroll — only fires when loading finishes (message complete), not during streaming
+  useEffect(() => {
+    if (!loading && msgs.length > 0) {
+      bottomRef.current?.scrollIntoView({ behavior: "smooth", block: "nearest" });
+    }
+  }, [loading]);
 
   const submitForm = async (e: FormEvent) => {
     e.preventDefault();
@@ -284,49 +326,83 @@ export default function InlineChat({ country }: { country: string }) {
 
   return (
     <>
+      {/* Chat Controls Bar */}
+      <div style={{ 
+        display: "flex", 
+        justifyContent: "flex-end", 
+        gap: 8, 
+        padding: "8px 16px", 
+        borderBottom: `1px solid ${T.border}`,
+        background: isDarkMode ? "#0a0a0a" : "#ffffff",
+      }}>
+        {msgs.length > 0 && (
+          <motion.button
+            whileHover={{ scale: 1.05 }}
+            whileTap={{ scale: 0.95 }}
+            onClick={clearChat}
+            style={{
+              display: "flex",
+              alignItems: "center",
+              gap: 5,
+              padding: "5px 10px",
+              borderRadius: 6,
+              border: `1px solid ${T.border}`,
+              background: T.glass,
+              color: T.mid,
+              fontSize: 11,
+              fontWeight: 600,
+              cursor: "pointer",
+            }}
+          >
+            <RotateCcw size={12} /> Clear
+          </motion.button>
+        )}
+      </div>
+
       <div style={{ flex: 1, overflowY: "auto", display: "flex", flexDirection: "column" }}>
         {msgs.length === 0 && (
-          <div style={{ padding: "20px 20px 0", maxWidth: 900, margin: "0 auto", width: "100%" }}>
-            <AnimatePresence mode="wait">
-              {(country === "Canada" || country === "USA") && (
-                <motion.div key={country}
-                  initial={{ opacity: 0, y: -8, height: 0 }}
-                  animate={{ opacity: 1, y: 0, height: "auto" }}
-                  exit={{ opacity: 0, y: -8, height: 0 }}
-                  style={{ marginBottom: 14, padding: "9px 14px", borderRadius: T.rsm, background: "rgba(201,168,76,0.07)", border: "1px solid rgba(201,168,76,0.22)", display: "flex", alignItems: "center", gap: 10, overflow: "hidden" }}>
-                  <span style={{ fontSize: 20 }}>{COUNTRY_CONFIG[country as CountryKey].flag}</span>
-                  <p style={{ fontSize: 11, color: T.mid, margin: 0, lineHeight: 1.5 }}>
-                    <span style={{ color: T.gold, fontWeight: 700 }}>{COUNTRY_CONFIG[country as CountryKey].currency} Mode —</span>{" "}
-                    {COUNTRY_CONFIG[country as CountryKey].tip}
-                  </p>
-                </motion.div>
-              )}
-            </AnimatePresence>
+          <div style={{ padding: "16px 20px 0", maxWidth: 900, margin: "0 auto", width: "100%" }}>
             <LoanMarketplaceHero country={countryVal} />
-            <TopPicksSection country={countryVal} />
           </div>
         )}
         {msgs.length === 0 && <TypewriterGreeting />}
-        <div style={{ flex: 1, padding: "10px 20px", display: "flex", flexDirection: "column", gap: 14, maxWidth: 720, margin: "0 auto", width: "100%" }}>
+        <div style={{ flex: 1, padding: "8px 16px", display: "flex", flexDirection: "column", gap: 8, maxWidth: 720, margin: "0 auto", width: "100%" }}>
           {msgs.map((m, i) => (
-            <motion.div key={i} initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }}
+            <motion.div key={i} initial={{ opacity: 0, y: 6 }} animate={{ opacity: 1, y: 0 }}
               style={{ display: "flex", justifyContent: m.role === "user" ? "flex-end" : "flex-start", alignItems: "flex-start" }}>
               {m.role === "assistant" && (
-                <div style={{ width: 24, height: 24, borderRadius: 6, backgroundImage: `linear-gradient(135deg,${T.gold},${T.goldDim})`, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0, marginRight: 8, marginTop: 2 }}>
-                  <LogoMark size={14} />
+                <div style={{ width: 22, height: 22, borderRadius: 5, background: `linear-gradient(135deg,${T.gold},${T.goldDim})`, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0, marginRight: 6, marginTop: 2 }}>
+                  <LogoMark size={12} />
                 </div>
               )}
-              <div style={{ maxWidth: "78%", padding: "10px 14px", borderRadius: m.role === "user" ? "14px 14px 4px 14px" : "4px 14px 14px 14px", background: m.role === "user" ? "rgba(201,168,76,0.1)" : T.cardBg, border: `1px solid ${m.role === "user" ? "rgba(201,168,76,0.18)" : T.cardBorder}`, backdropFilter: T.blur, fontSize: 14, lineHeight: 1.7, color: m.role === "user" ? "#d4c080" : "#c0b8a8" }}>
+              <div style={{ maxWidth: "85%", padding: "8px 12px", borderRadius: m.role === "user" ? "12px 12px 4px 12px" : "4px 12px 12px 12px", background: m.role === "user" ? "rgba(201,168,76,0.1)" : T.cardBg, border: `1px solid ${m.role === "user" ? "rgba(201,168,76,0.18)" : T.cardBorder}`, backdropFilter: T.blur, fontSize: 13, lineHeight: 1.55, color: m.role === "user" ? (isDarkMode ? "#d4c080" : "#78350F") : T.aiText }}>
                 {m.role === "assistant" ? (
-                  <><MsgText text={m.content ?? ""} />{loading && i === msgs.length - 1 && <span style={{ display: "inline-block", width: 2, height: 13, background: T.gold, marginLeft: 2, verticalAlign: "middle", animation: "wf-cur .65s steps(1) infinite" }} />}</>
+                  <>
+                    <div className="prose prose-sm max-w-none" style={{ color: T.aiText }}>
+                      <ReactMarkdown
+                        components={{
+                          p: ({ children }) => <p style={{ margin: "0 0 6px", color: T.aiText }}>{children}</p>,
+                          strong: ({ children }) => <strong style={{ fontWeight: 700, color: T.text }}>{children}</strong>,
+                          em: ({ children }) => <em style={{ fontStyle: "italic" }}>{children}</em>,
+                  ul: ({ children }) => <ul style={{ margin: "8px 0", paddingLeft: "24px", listStyleType: "disc", color: T.aiText }}>{children}</ul>,
+                  ol: ({ children }) => <ol style={{ margin: "8px 0", paddingLeft: "24px", listStyleType: "decimal", color: T.aiText }}>{children}</ol>,
+                  li: ({ children }) => <li style={{ margin: "4px 0", color: T.aiText, display: "list-item" }}>{children}</li>,
+                          a: ({ href, children }) => <a href={href} target="_blank" rel="noopener noreferrer" style={{ color: T.goldHi, textDecoration: "underline" }}>{children}</a>,
+                        }}
+                      >
+                        {m.content ?? ""}
+                      </ReactMarkdown>
+                    </div>
+                    {loading && i === msgs.length - 1 && <span style={{ display: "inline-block", width: 2, height: 12, background: T.gold, marginLeft: 2, verticalAlign: "middle", animation: "wf-cur .65s steps(1) infinite" }} />}
+                  </>
                 ) : (m.content ?? "")}
               </div>
             </motion.div>
           ))}
           {loading && msgs[msgs.length - 1]?.role !== "assistant" && (
             <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} style={{ display: "flex", alignItems: "flex-start" }}>
-              <div style={{ width: 24, height: 24, borderRadius: 6, backgroundImage: `linear-gradient(135deg,${T.gold},${T.goldDim})`, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0, marginRight: 8 }}><LogoMark size={14} /></div>
-              <div style={{ padding: "10px 14px", background: T.cardBg, border: `1px solid ${T.cardBorder}`, borderRadius: "4px 14px 14px 14px", backdropFilter: T.blur }}><Dots /></div>
+              <div style={{ width: 22, height: 22, borderRadius: 5, background: `linear-gradient(135deg,${T.gold},${T.goldDim})`, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0, marginRight: 6 }}><LogoMark size={12} /></div>
+              <div style={{ padding: "8px 12px", background: T.cardBg, border: `1px solid ${T.cardBorder}`, borderRadius: "4px 12px 12px 12px", backdropFilter: T.blur }}><Dots /></div>
             </motion.div>
           )}
           <div ref={bottomRef} />
@@ -334,17 +410,52 @@ export default function InlineChat({ country }: { country: string }) {
       </div>
       <div style={{ padding: "10px 20px", flexShrink: 0 }}>
         <form onSubmit={submitForm} style={{ maxWidth: 680, margin: "0 auto" }}>
-          <Glass style={{ display: "flex", gap: 9, alignItems: "flex-end", padding: "10px 12px" }}>
-            <textarea ref={inputRef} value={input ?? ""} onChange={e => setInput(e.target.value ?? "")}
-              onKeyDown={e => { if (e.key === "Enter" && !e.shiftKey) { e.preventDefault(); if ((input?.trim() ?? "").length > 0) e.currentTarget.form?.requestSubmit(); } }}
-              placeholder="Tell me your situation — I'll tell you exactly what to do..."
+          <div style={{ 
+            display: "flex", 
+            gap: 9, 
+            alignItems: "flex-end", 
+            padding: "12px 14px", 
+            background: T.inputBg, 
+            border: `1px solid ${T.cardBorder}`, 
+            borderRadius: T.r,
+            boxShadow: isDarkMode ? "none" : "0 1px 3px rgba(0,0,0,0.06)",
+          }}>
+            <textarea 
+              ref={inputRef} 
+              value={input ?? ""} 
+              onChange={e => {
+                setInput(e.target.value ?? "");
+                autoResize(e.target);
+              }}
+              onKeyDown={e => { 
+                if (e.key === "Enter" && !e.shiftKey) { 
+                  e.preventDefault(); 
+                  if ((input?.trim() ?? "").length > 0) e.currentTarget.form?.requestSubmit(); 
+                } 
+              }}
+              placeholder="Tell me your situation - I will tell you exactly what to do..."
               rows={1}
-              style={{ flex: 1, background: "transparent", border: "none", outline: "none", color: T.text, fontSize: 14, lineHeight: 1.6, maxHeight: 90, overflowY: "auto", padding: 0, resize: "none" }} />
+              className={isDarkMode ? "chat-input-dark" : "chat-input-light"}
+              style={{ 
+                flex: 1, 
+                background: "rgba(0,0,0,0)", 
+                border: "none", 
+                outline: "none", 
+                color: T.text, 
+                fontSize: 14, 
+                lineHeight: 1.6, 
+                minHeight: 24,
+                maxHeight: 140, // ~5-6 lines
+                overflowY: "auto", 
+                padding: 0, 
+                resize: "none",
+              }} 
+            />
             <motion.button type="submit" whileTap={tapAnim.tap} disabled={!(input?.trim()) || loading}
-              style={{ width: 33, height: 33, borderRadius: 8, border: "none", cursor: (input?.trim() && !loading) ? "pointer" : "not-allowed", flexShrink: 0, display: "flex", alignItems: "center", justifyContent: "center", transition: "all .2s", background: (input?.trim() && !loading) ? undefined : T.glassHi, backgroundImage: (input?.trim() && !loading) ? `linear-gradient(135deg,${T.gold},${T.goldDim})` : undefined, color: (input?.trim() && !loading) ? "#07090d" : T.dim }}>
+              style={{ width: 33, height: 33, borderRadius: 8, border: "none", cursor: (input?.trim() && !loading) ? "pointer" : "not-allowed", flexShrink: 0, display: "flex", alignItems: "center", justifyContent: "center", transition: "all .2s", background: (input?.trim() && !loading) ? `linear-gradient(135deg,${T.gold},${T.goldDim})` : T.glassHi, color: (input?.trim() && !loading) ? "#07090d" : T.dim }}>
               <Send size={15} />
             </motion.button>
-          </Glass>
+          </div>
         </form>
       </div>
     </>
