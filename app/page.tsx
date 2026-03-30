@@ -185,7 +185,7 @@ const PARTNERS = [
   { name: "EdTech Alliance", desc: "Financial literacy integration" },
 ];
 
-// ─────────────────────────────────────────────────  ───         ──  ───   ─     ─────────────
+// ─────────────────────────────────────────────────��───���������──��───���─�����─────────────
 // SECTION 2 — DESIGN TOKENS (Light/Dark Mode Support)
 // ─────────────────────────────────────────────────────────────────────────────
 
@@ -250,7 +250,7 @@ let T = DARK_THEME;
 
 // ─────────────────────────────────────────────────────────────────────────────
 // SECTION 3 — MOTION VARIANTS
-// ─────────────────────────────────────────────────────────────────────────      ───
+// ─────────────────────────────────────────────────────────────────────────������───
 
 const fadeUp  = { hidden:{opacity:0,y:16}, visible:{opacity:1,y:0,transition:{duration:0.36,ease:[0.22,1,0.36,1] as number[]}} };
 const stagger = { visible:{transition:{staggerChildren:0.065}} };
@@ -402,9 +402,9 @@ async function fetchLoans(): Promise<ScoutResult[]> {
   return MOCK_LOANS;
 }
 
-// ────────────────────────────────────────────────────  ───────────────────────  
+// ────────────────────────────────────────────────────��───────────────────────��
 // SECTION 5 — PRIMITIVE UI COMPONENTS
-// ─────────────────────────────────────────────────────────────────────────  ───
+// ─────────────────────────────────────────────────────────────────────────��───
 
 function Glass({ children, style, glow, onClick }: { children: ReactNode; style?: CSSProperties; glow?: boolean; onClick?: () => void }) {
   const [hov, setHov] = useState(false);
@@ -532,13 +532,25 @@ function SyncDot() {
 }
 
 function LogoMark({ size = 32 }: { size?: number }) {
-  // Inline SVG logo — no external image dependency
+  // Squirrel + acorn brand image, SVG fallback if image missing
+  const [imgErr, setImgErr] = React.useState(false);
+  if (imgErr) {
+    return (
+      <svg width={size} height={size} viewBox="0 0 32 32" fill="none" style={{ flexShrink: 0 }}>
+        <polygon points="16,2 30,9 30,23 16,30 2,23 2,9" stroke="#C9A84C" strokeWidth="1.8" fill="none" />
+        <text x="16" y="21" textAnchor="middle" style={{ fontFamily: "inherit", fontWeight: 900, fontSize: 11, fill: "#C9A84C" }}>W</text>
+      </svg>
+    );
+  }
   return (
-    <svg width={size} height={size} viewBox="0 0 32 32" fill="none" style={{ filter: "drop-shadow(0 0 6px rgba(201,168,76,0.35))", flexShrink: 0 }}>
-      <polygon points="16,2 30,9 30,23 16,30 2,23 2,9" stroke="#C9A84C" strokeWidth="1.8" fill="none" />
-      <polygon points="16,7 25,11.5 25,20.5 16,25 7,20.5 7,11.5" fill="#C9A84C" opacity="0.15" />
-      <text x="16" y="21" textAnchor="middle" style={{ fontFamily: "Inter, system-ui, sans-serif", fontWeight: 900, fontSize: 11, fill: "#C9A84C" }}>W</text>
-    </svg>
+    <img
+      src="/images/wealthnutz-logo.png"
+      alt="WealthNutz"
+      width={size}
+      height={size}
+      onError={() => setImgErr(true)}
+      style={{ objectFit: "contain", filter: "drop-shadow(0 0 8px rgba(201,168,76,0.3))", flexShrink: 0 }}
+    />
   );
 }
 
@@ -558,7 +570,7 @@ function GoldCTA({ href, label }: { href: string; label: string }) {
 
 // ─────────────────────────────────────────────────────────────────────────────
 // SECTION 3A — CONSOLIDATED FORMATTING FUNCTIONS (Memoized for performance)
-// ────────────────────────────────     ────────────────────────────────────────────
+// ────────────────────────────────�����────────────────────────────────────────────
 
 // Memoized currency formatter (supports billions properly)
 const formatCurrency = (v: number): string => {
@@ -576,7 +588,7 @@ const formatShortCurrency = (v: number): string => {
 
 // ─────────────────────────────────────────────────────────────────────────────
 // SECTION 3B — SLIDER COMPONENT (Memoized)
-// ────────────────────────────────────────────────────────────────  ────────────
+// ────────────────────────────────────────────────────────────────��────────────
 
 const MAX_CURRENCY = 1_000_000_000;
 const MAX_PERCENT = 100;
@@ -930,7 +942,7 @@ function AuthModal({ onClose }: { onClose: () => void }) {
 const COUNTRY_CONFIG = {
   Canada: {
     code: "CA",
-    flag: "   🇦",
+    flag: "���🇦",
     currency: "CAD",
     symbol: "$",
     tip: "Showing Canadian rates, TFSA/RRSP accounts, and OSAP loan information.",
@@ -1089,7 +1101,7 @@ function ExpandableText({ text, maxLines = 2 }: { text: string; maxLines?: numbe
   );
 }
 
-// ─────────────────────────────────────────────────  ────       ──   ────────────       ──────
+// ─────────────────────────────────────────────────��────�������──���────────────�������──────
 // SECTION 5C-1 — FILTER SIDEBAR (Desktop) & SORT DROPDOWN
 // ─────────────────────────────────────────────────────────────────────────────
 
@@ -1397,7 +1409,7 @@ function ScholarshipFilterSidebar({
 
 // ─────────────────────────────────────────────────────────────────────────────
 // SECTION 5C-2 — FILTER BOTTOM SHEET (Mobile)
-// ─────────────────────────────────────────────────────────────  ────   ─  ────────
+// ─────────────────────────────────────────────────────────────��────���─��────────
 
 function FilterBottomSheet({ 
   isOpen, 
@@ -1557,7 +1569,7 @@ function MobileFilterButton({ onClick, hasFilters }: { onClick: () => void; hasF
   );
 }
 
-// ─────────────────────────────────────────────────   ─   ─────────────       ───────────
+// ─────────────────────────────────────────────────���─���─────────────�������───────────
 // SECTION 5C-3 — LOAN MARKETPLACE HERO (High Conversion)
 // ─────────────────────────────────────────────────────────────────────────────
 
@@ -1885,7 +1897,7 @@ function TopPicksSection({ country }: { country: "Canada" | "USA" }) {
   );
 }
 
-//     ─  ──  ──   ─────   ──────   ───   ───────────────────────────────────────────────────
+// ����─��──��──���─────���──────���───���───────────────────────────────────────────────────
 // SECTION 5E — CREDIT PATH MODAL
 // ─────────────────────────────────────────────────────────────────────────────
 
@@ -2134,7 +2146,7 @@ function CreditPathModal({ onClose, country }: { onClose: () => void; country: s
 
 // ─────────────────────────────────────────────────────────────────────────────
 // SECTION 5F — FOOTER
-// ─  ──────────────────────────────────────   ────────────────────────────────────
+// ─��──────────────────────────────────────���────────────────────────────────────
 
 function Footer() {
   const footerLinks = {
@@ -2275,7 +2287,7 @@ return (
 
 // ─────────────────────────────────────────────────────────────────────────────
 // SECTION 6 — FINANCIAL TOOLS
-// ──────────────────────────────────────────────────────────────────────────   ──
+// ──────────────────────────────────────────────────────────────────────────���──
 
 // ── Budget Tool (Memoized) ────────────────────────────────────────────────────
 const BudgetToolComponent = () => {
@@ -2508,7 +2520,7 @@ const LoanCalculatorComponent = () => {
       {extra > 0 && (
         <Glass style={{ padding:14, border:"1px solid rgba(74,222,128,0.2)" }}>
           <p style={{ fontSize:10, color:T.green, margin:"0 0 8px", letterSpacing:".07em" }}>WITH EXTRA ${extra}/MO</p>
-          {[["Interest saved","$"+Math.round(savedInt).toLocaleString(),true],["Months sooner",savedMo>0?savedMo+" months":"   "],["New payoff",`${Math.floor(mo/12)}y ${mo%12}m`]].map(([l,v,acc]) => (
+          {[["Interest saved","$"+Math.round(savedInt).toLocaleString(),true],["Months sooner",savedMo>0?savedMo+" months":"���"],["New payoff",`${Math.floor(mo/12)}y ${mo%12}m`]].map(([l,v,acc]) => (
             <div key={l as string} style={{ display:"flex", justifyContent:"space-between", padding:"5px 0", borderTop:"1px solid rgba(74,222,128,0.1)" }}>
               <span style={{ fontSize:12, color:T.mid }}>{l}</span>
               <span style={{ fontSize:13, color:acc?T.green:T.mid, fontWeight:acc?700:400 }}>{v as string}</span>
@@ -2523,7 +2535,7 @@ const LoanCalculatorComponent = () => {
 // Memoize LoanCalculator to prevent unnecessary re-renders
 const LoanCalculator = React_memo_compat(LoanCalculatorComponent);
 
-// ── Loan Finder ────  ───────────     ──────   ───   ──────────       ───────────────────────
+// ── Loan Finder ────��───────────�����──────���───���──────────�������───────────────────────
 type Phase = "idle"|"scanning"|"results";
 const SCAN_MSGS = ["Connecting to loan databases...","Scanning live lender rates...","Cross-referencing eligibility...","Compiling best rates for you..."];
 
@@ -2647,7 +2659,7 @@ function LoanFinder({ onToggleSave, savedIds, userCountry, isDarkMode }: { onTog
   );
 }
 
-// ── Loan Tool (tabs) ────────────────   ─────────────────────────────────────────
+// ── Loan Tool (tabs) ────────────────���─────────────────────────────────────────
 function LoanTool({ onToggleSave, savedIds, userCountry, isDarkMode }: { onToggleSave: (item: ScoutResult) => void; savedIds: Set<string>; userCountry: string; isDarkMode: boolean }) {
   
   const [tab, setTab] = useState<"calc"|"finder">("finder");
@@ -2666,7 +2678,7 @@ function LoanTool({ onToggleSave, savedIds, userCountry, isDarkMode }: { onToggl
   );
 }
 
-// ── Scholarship Scout ─────────────────────            ─    ──────────────────     ──────────  ─
+// ── Scholarship Scout ─────────────────────������������─����──────────────────�����──────────��─
 const SCH_SCAN_MSGS = ["Connecting to scholarship databases...","Scanning national award portals...","Cross-referencing eligibility...","Aggregating live results for you..."];
 
 // Custom themed dropdown — replaces native <select> so colors work in both themes
@@ -3233,7 +3245,7 @@ function ScholarshipScout({ onToggleSave, savedIds, isDarkMode, initialCountry }
   );
 }
 
-// ── Saved Items (My Vault) ─────────────────────────   ──  ───────────────────────
+// ── Saved Items (My Vault) ─────────────────────────���──��───────────────────────
 function SavedItems({ saved, onRemove }: { saved: ScoutResult[]; onRemove: (item: ScoutResult) => void }) {
   
   
@@ -3277,9 +3289,9 @@ function SavedItems({ saved, onRemove }: { saved: ScoutResult[]; onRemove: (item
   );
 }
 
-// ─────────────────────────────────────────────────────────  ───────────────────
+// ─────────────────────────────────────────────────────────��───────────────────
 // SECTION 7 — MARKETPLACE
-// ──   ──────────────  ───────────────────────────────   ───────────────────────────
+// ──���──────────────��───────────────────────────────���───────────────────────────
 
 const CREDIT_CARDS = [
   { id: "cap1", icon: "💳", provider: "Capital One", reward: "1.5% Cash Back", color: "#e63946" },
@@ -3374,9 +3386,9 @@ function Marketplace({ country }: { country: string }) {
 // SECTION 8 — INLINE CHAT (moved to app/inline-chat.tsx, imported as InlineChatComponent)
 // ─────────────────────────────────────────────────────────────────────────────
 
-// ────────   ───────────  ────────────────  ────  ──────────────────────────────────
+// ────────���───────────��────────────────��────��──────────────────────────────────
 // SECTION 9 — MAIN PAGE
-// ───────────────────────────  ──────   ───────────  ──────────────────────────────
+// ───────────────────────────��──────���───────────��──────────────────────────────
 
 type ToolId = "budget"|"savings"|"loan"|"scholar"|"saved";
 const NAV_TOOLS: { id: ToolId; label: string; Icon: React.FC<{size?:number}> }[] = [
@@ -3398,7 +3410,7 @@ export default function WealthNutzPage() {
   const [showAuth,   setShowAuth]   = useState(false);
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [sidebarClosing, setSidebarClosing] = useState(false);
-  const [isDarkMode, setIsDarkMode] = useState(true);
+  const [isDarkMode, setIsDarkMode] = useState(false);
   
   // Update theme tokens when mode changes
   T = isDarkMode ? DARK_THEME : LIGHT_THEME;
@@ -3718,12 +3730,20 @@ const hBtn = (active = false): CSSProperties => ({
             aria-label="Go to home"
             style={{ display:"flex", alignItems:"center", justifyContent:"center", flex:1, background:"none", border:"none", cursor:"pointer", padding:0, outline:"none" }}
           >
-            <span style={{ display:"flex", alignItems:"center", gap:7 }}>
-              <svg width="28" height="28" viewBox="0 0 32 32" fill="none" style={{ filter:"drop-shadow(0 0 5px rgba(201,168,76,0.4))", flexShrink:0 }}>
-                <polygon points="16,2 30,9 30,23 16,30 2,23 2,9" stroke="#C9A84C" strokeWidth="1.8" fill="none" />
-                <polygon points="16,7 25,11.5 25,20.5 16,25 7,20.5 7,11.5" fill="#C9A84C" opacity="0.15" />
-                <text x="16" y="21" textAnchor="middle" style={{ fontFamily:"Inter,system-ui,sans-serif", fontWeight:900, fontSize:11, fill:"#C9A84C" }}>W</text>
-              </svg>
+            <img
+              src="/images/wealthnutz-logo-full.png"
+              alt="WealthNutz"
+              style={{ height:"clamp(32px, 8vw, 44px)", width:"auto", objectFit:"contain" }}
+              className="wealthnutz-logo"
+              onError={e => {
+                // Fallback to text logo if image missing
+                const el = e.currentTarget as HTMLImageElement;
+                el.style.display = "none";
+                const next = el.nextElementSibling as HTMLElement | null;
+                if (next) next.style.display = "flex";
+              }}
+            />
+            <span style={{ display:"none", alignItems:"center", gap:6 }}>
               <span style={{ fontSize:16, fontWeight:900, color:"#C9A84C", letterSpacing:"-0.03em", textTransform:"uppercase" }} className="wealthnutz-logo-text">WealthNutz</span>
             </span>
           </motion.button>
@@ -3754,7 +3774,7 @@ const hBtn = (active = false): CSSProperties => ({
           </div>
         </header>
 
-        {/* ═══ LOCATION BAR ═════════════════════   ══════════════════════════════ */}
+        {/* ═══ LOCATION BAR ═════════════════════���══════════════════════════════ */}
         <AnimatePresence>
           {!locationBarDismissed && !country && (
             <motion.div
@@ -3836,7 +3856,7 @@ const hBtn = (active = false): CSSProperties => ({
         {/* ═══ BODY ════════════════════════════════════════════════════════════ */}
         <div style={{ flex:1, display:"flex", overflow:"auto" }} className="forge-body">
 
-          {/* ── Main panel ──────────────────────────────────────────────  ──────── */}
+          {/* ── Main panel ──────────────────────────────────────────────��──────── */}
           <div style={{ flex:1, display:"flex", flexDirection:"column", overflow:"hidden", minHeight:0 }} className="forge-main">
 
             {/* Tool view */}
@@ -3896,47 +3916,6 @@ const hBtn = (active = false): CSSProperties => ({
       {TAGLINE}
     </p>
 
-    {/* ── Trust Banner ── */}
-    <motion.div
-      initial={{ opacity: 0, y: 8 }}
-      animate={{ opacity: 1, y: 0 }}
-      transition={{ delay: 0.35, duration: 0.45 }}
-      style={{
-        display: "inline-flex",
-        alignItems: "center",
-        gap: 10,
-        marginTop: 22,
-        padding: "9px 18px",
-        borderRadius: 30,
-        background: isDarkMode ? "rgba(201,168,76,0.08)" : "rgba(201,168,76,0.07)",
-        border: `1px solid rgba(201,168,76,0.22)`,
-        flexWrap: "wrap",
-        justifyContent: "center",
-      }}
-    >
-      {/* Facepile */}
-      <div style={{ display:"flex", alignItems:"center" }}>
-        {["#6366f1","#ec4899","#14b8a6","#f59e0b"].map((c, i) => (
-          <div key={c} style={{
-            width:22, height:22, borderRadius:"50%",
-            background: c,
-            border: `2px solid ${isDarkMode ? "#050505" : "#F9FAFB"}`,
-            marginLeft: i === 0 ? 0 : -7,
-            display:"flex", alignItems:"center", justifyContent:"center",
-            fontSize:10, fontWeight:700, color:"#fff",
-          }}>
-            {["A","B","C","D"][i]}
-          </div>
-        ))}
-      </div>
-      <span style={{ fontSize:12, color:T.text, fontWeight:600 }}>
-        Trusted by <span style={{ color:T.gold }}>5,000+</span> students
-      </span>
-      <span style={{ fontSize:10, color:T.mid }}>|</span>
-      <span style={{ display:"inline-flex", alignItems:"center", gap:4, fontSize:11, color:"#22c55e", fontWeight:600 }}>
-        <Check size={11} strokeWidth={3} /> Zero fees, always
-      </span>
-    </motion.div>
 
     {/* ── Centrepiece MENU button (mobile only) ── */}
     <div style={{ marginTop: 28, justifyContent: "center" }} className="flex md:hidden">
@@ -4000,7 +3979,7 @@ const hBtn = (active = false): CSSProperties => ({
             )}
           </div>
 
-          {/* ═══ SIDEBAR    ═════════════    ═══  ══════════════  ══   ══    ════════════ */}
+          {/* ═══ SIDEBAR ���═════════════����═══��══════════════��══���══����════════════ */}
           {/* Tap-outside overlay — mobile only, shown via CSS */}
           {(sidebarOpen || sidebarClosing) && (
             <div
@@ -4104,10 +4083,7 @@ style={{ display:"flex", alignItems:"center", gap:9, padding:"9px 10px", borderR
         letterSpacing: "0.03em",
         boxShadow: isDarkMode ? "none" : "0 1px 3px rgba(0,0,0,0.06)",
       }}>
-      <svg width="16" height="16" viewBox="0 0 32 32" fill="none" style={{ flexShrink:0 }}>
-        <polygon points="16,2 30,9 30,23 16,30 2,23 2,9" stroke="#C9A84C" strokeWidth="2" fill="none" />
-        <text x="16" y="21" textAnchor="middle" style={{ fontFamily:"inherit", fontWeight:900, fontSize:11, fill:"#C9A84C" }}>W</text>
-      </svg>
+      <img src="/images/wealthnutz-logo.png" alt="" width={16} height={16} style={{ objectFit:"contain", flexShrink:0 }} onError={e => { (e.currentTarget as HTMLImageElement).style.display = "none"; }} />
       Member Sign In
     </motion.button>
   )}
