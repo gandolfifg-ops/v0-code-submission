@@ -4131,34 +4131,7 @@ style={{ display:"flex", alignItems:"center", gap:9, padding:"9px 10px", borderR
         <LogOut size={14} /> Sign Out
       </motion.button>
     </>
-  ) : (
-    <motion.button 
-      variants={fadeUp} 
-      whileTap={{ scale: 0.97 }} 
-      whileHover={{ scale: 1.02, boxShadow: isDarkMode ? "0 0 14px rgba(201,168,76,0.35)" : "0 2px 12px rgba(0,0,0,0.12)" }}
-      onClick={() => { setShowAuth(true); closeSidebar(); }}
-      style={{ 
-        display:"flex", 
-        alignItems:"center", 
-        justifyContent:"center", 
-        gap:8, 
-        padding:"12px 0", 
-        borderRadius:T.rsm, 
-        cursor:"pointer", 
-        fontFamily:"inherit", 
-        fontSize:11, 
-        fontWeight:700, 
-        border: isDarkMode ? `1.5px solid ${T.gold}` : `1px solid ${T.cardBorder}`, 
-        background: isDarkMode ? "rgba(201,168,76,0.1)" : "#FFFFFF", 
-        color: isDarkMode ? T.gold : "#0F172A", 
-        transition:"all .25s ease",
-        letterSpacing: "0.03em",
-        boxShadow: isDarkMode ? "none" : "0 1px 3px rgba(0,0,0,0.06)",
-      }}>
-      <img src="/images/wealthnutz-logo.png" alt="" width={16} height={16} style={{ objectFit:"contain", flexShrink:0 }} onError={e => { (e.currentTarget as HTMLImageElement).style.display = "none"; }} />
-      Member Sign In
-    </motion.button>
-  )}
+  ) : null}
                   
                   <div style={{ height:1, background:T.border, margin:"12px 2px" }} />
                   
@@ -4228,25 +4201,7 @@ style={{ display:"flex", alignItems:"center", gap:9, padding:"9px 10px", borderR
               </>
             ) : (
               <>
-                <LogIn size={16} color={T.gold} />
                 <span style={{ fontSize: 13, color: T.text, fontWeight: 500 }}>{toast}</span>
-                <motion.button
-                  whileTap={{ scale: 0.9 }}
-                  onClick={() => { setToast(null); setShowAuth(true); }}
-                  style={{
-                    background: T.gold,
-                    border: "none",
-                    borderRadius: 6,
-                    padding: "6px 12px",
-                    fontSize: 11,
-                    fontWeight: 700,
-                    color: "#07090d",
-                    cursor: "pointer",
-                    fontFamily: "inherit",
-                  }}
-                >
-                  Sign In
-                </motion.button>
               </>
             )}
           </motion.div>
