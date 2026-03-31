@@ -3608,7 +3608,7 @@ useEffect(() => {
     setSavedItems(updated);
     writeSaved(updated);
     if (!user) {
-      if (!exists) setToast("Saved locally — sign in to sync across devices");
+      if (!exists) setToast("Saved locally on this device");
       return;
     }
     // Sync with Supabase for signed-in users
