@@ -91,7 +91,7 @@ export async function POST(req: Request) {
         // University searches skip domain filter so the school's own site can appear
         ...(universitySearch ? {} : {
           include_domains: type === "scholarship"
-            ? ["scholarships.com", "fastweb.com", "bold.org", "scholarshipowl.com", "unigo.com", "cappex.com", "niche.com", "goingmerry.com", "studentaid.gov", "collegeboard.org"]
+            ? ["scholarships.com", "fastweb.com", "bold.org", "scholarshipowl.com", "unigo.com", "cappex.com", "niche.com", "studentaid.gov", "collegeboard.org", "scholarshipamerica.org"]
             : ["studentaid.gov", "nerdwallet.com", "bankrate.com", "credible.com", "sofi.com", "earnest.com", "collegeavestudentloans.com", "salliemae.com"],
         }),
         max_results: 10,
