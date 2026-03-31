@@ -3033,6 +3033,8 @@ function ScholarshipResults({ phase, results, country, userQuery, schSort, setSc
 function ScholarshipScout({ onToggleSave, savedIds, isDarkMode, initialCountry }: { onToggleSave: (item: ScoutResult) => void; savedIds: Set<string>; isDarkMode: boolean; initialCountry?: string }) {
 
   const [query,   setQuery]   = useState("");
+  const [university, setUniversity] = useState("");
+  const [universityResults, setUniversityResults] = useState<Array<{ id: string; title: string; amount: string; eligibility: string; url: string; provider: string }>>([]);
   const [major,   setMajor]   = useState<string>(SCHOLARSHIP_MAJORS[0] as string);
   const [country, setCountry] = useState<string>(
     initialCountry && initialCountry !== "" ? initialCountry : SCHOLARSHIP_COUNTRIES[0] as string
@@ -3082,11 +3084,45 @@ function ScholarshipScout({ onToggleSave, savedIds, isDarkMode, initialCountry }
     }
     setValidationError("");
     setResults([]);
+    setUniversityResults([]);
     setPhase("scanning");
     setError("");
     setHasMore(false);
     setNextOffset(null);
     setTotalCount(0);
+
+    // University-specific Tavily search (runs in parallel with DB search)
+    if (university.trim()) {
+      fetch("/api/search", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          type: "scholarship",
+          universitySearch: true, // bypasses domain filter so university sites are included
+          filters: {
+            query: `${university.trim()} scholarships bursaries financial aid apply ${country !== "Any Country" ? country : ""}`.trim(),
+          },
+        }),
+      })
+        .then(r => r.json())
+        .then(data => {
+          if (data?.results?.length) {
+            setUniversityResults(
+              (data.results as Array<{ title?: string; amount?: string; eligibility?: string; url?: string }>)
+                .map((r, i) => ({
+                  id: `uni-${i}`,
+                  title: r.title ?? "Scholarship",
+                  amount: r.amount ?? "Varies",
+                  eligibility: r.eligibility ?? "",
+                  url: r.url ?? "",
+                  provider: university.trim(),
+                }))
+            );
+          }
+        })
+        .catch(() => { /* silent fail — university search is bonus */ });
+    }
+
     try {
       const controller = new AbortController();
       const timeoutId = setTimeout(() => controller.abort(), 10000); // 10-second timeout
@@ -3148,9 +3184,12 @@ function ScholarshipScout({ onToggleSave, savedIds, isDarkMode, initialCountry }
   return (
     <motion.div variants={fadeUp} initial="hidden" animate="visible" style={{ display:"flex", flexDirection:"column", gap:14, width:"100%", maxWidth:"90vw", boxSizing:"border-box", marginTop:40 }}>
       <Glass glow style={{ padding:18, display:"flex", flexDirection:"column", gap:11, width:"100%", boxSizing:"border-box" }}>
-        <p style={{ fontSize:10, color:T.mid, margin:0, letterSpacing:".08em" }}>AI SCHOLARSHIP SCOUT</p>
+        <p style={{ fontSize:10, color:T.mid, margin:0, letterSpacing:".08em" }}>AI SCHOLARSHIP FINDER</p>
         <input value={query} onChange={e => setQuery(e.target.value ?? "")} onKeyDown={e => e.key==="Enter" && handleSearch()}
-          placeholder="Tell us about yourself"
+          placeholder="Tell us about yourself — e.g. 3.8 GPA, female, first-generation, studying nursing, Canadian citizen..."
+          style={{ width:"100%", padding:"10px 13px", background:T.glassHi, border:`1px solid ${T.border}`, borderRadius:T.rsm, color:T.text, fontSize:13, outline:"none", fontFamily:"inherit", boxSizing:"border-box" }} />
+        <input value={university} onChange={e => setUniversity(e.target.value ?? "")} onKeyDown={e => e.key==="Enter" && handleSearch()}
+          placeholder="🎓 University name (optional) — e.g. University of Toronto, McGill, UBC..."
           style={{ width:"100%", padding:"10px 13px", background:T.glassHi, border:`1px solid ${T.border}`, borderRadius:T.rsm, color:T.text, fontSize:13, outline:"none", fontFamily:"inherit", boxSizing:"border-box" }} />
         <div style={{ display:"flex", flexWrap:"wrap", gap:8, width:"100%", boxSizing:"border-box" }}>
           {/* Major — takes full row width until there is enough space to share */}
@@ -3222,6 +3261,30 @@ function ScholarshipScout({ onToggleSave, savedIds, isDarkMode, initialCountry }
           )}
         </AnimatePresence>
       </Glass>
+      {/* University-specific results */}
+      <AnimatePresence>
+        {universityResults.length > 0 && (
+          <motion.div key="uni-results" initial={{ opacity:0, y:10 }} animate={{ opacity:1, y:0 }} exit={{ opacity:0, y:10 }}>
+            <Glass glow style={{ padding:16, display:"flex", flexDirection:"column", gap:10 }}>
+              <p style={{ fontSize:10, color:T.gold, margin:0, letterSpacing:".08em", fontWeight:700 }}>🎓 {university.trim().toUpperCase()} — SPECIFIC FUNDING</p>
+              {universityResults.map(r => (
+                <div key={r.id} style={{ padding:"12px 14px", borderRadius:T.rsm, background:T.glassHi, border:`1px solid ${T.border}`, display:"flex", flexDirection:"column", gap:6 }}>
+                  <p style={{ fontSize:13, fontWeight:700, color:T.text, margin:0, letterSpacing:"-0.01em" }}>{r.title}</p>
+                  {r.amount && r.amount !== "N/A" && <p style={{ fontSize:11, color:T.gold, margin:0, fontWeight:600 }}>{r.amount}</p>}
+                  {r.eligibility && r.eligibility !== "N/A" && <p style={{ fontSize:11, color:T.mid, margin:0, lineHeight:1.5 }}>{r.eligibility}</p>}
+                  {r.url && (
+                    <a href={r.url} target="_blank" rel="noopener noreferrer"
+                      style={{ fontSize:11, color:T.gold, fontWeight:700, textDecoration:"none", marginTop:2, display:"inline-flex", alignItems:"center", gap:4 }}>
+                      Apply directly → <span style={{ fontSize:10, color:T.mid, fontWeight:400, wordBreak:"break-all" }}>{r.url.replace(/^https?:\/\//, "").split("/")[0]}</span>
+                    </a>
+                  )}
+                </div>
+              ))}
+            </Glass>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
       {/* Results section — computed vars hoisted out of IIFE to avoid regex parse errors */}
       <ScholarshipResults
         phase={phase}
@@ -3395,7 +3458,7 @@ const NAV_TOOLS: { id: ToolId; label: string; Icon: React.FC<{size?:number}> }[]
   { id:"budget",  label:"Budget",       Icon: ({size=15}) => <BarChart2  size={size} /> },
   { id:"savings", label:"Savings",      Icon: ({size=15}) => <PiggyBank  size={size} /> },
   { id:"loan",    label:"Loan Tools",   Icon: ({size=15}) => <DollarSign size={size} /> },
-  { id:"scholar", label:"Scholarships", Icon: ({size=15}) => <BookOpen   size={size} /> },
+  { id:"scholar", label:"Scholarship Finder", Icon: ({size=15}) => <BookOpen   size={size} /> },
   { id:"saved",   label:"My Saved",     Icon: ({size=15}) => <Bookmark   size={size} /> },
 ];
 
