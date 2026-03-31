@@ -3107,17 +3107,26 @@ function ScholarshipScout({ onToggleSave, savedIds, isDarkMode, initialCountry }
         .then(r => r.json())
         .then(data => {
           if (data?.results?.length) {
-            setUniversityResults(
-              (data.results as Array<{ title?: string; amount?: string; eligibility?: string; url?: string }>)
-                .map((r, i) => ({
-                  id: `uni-${i}`,
-                  title: r.title ?? "Scholarship",
-                  amount: r.amount ?? "Varies",
-                  eligibility: r.eligibility ?? "",
-                  url: r.url ?? "",
-                  provider: university.trim(),
-                }))
-            );
+            const seenDomains = new Set<string>();
+            const deduped = (data.results as Array<{ title?: string; amount?: string; eligibility?: string; url?: string }>)
+              .filter(r => {
+                if (!r.url) return false;
+                try {
+                  const domain = new URL(r.url).hostname.replace("www.", "");
+                  if (seenDomains.has(domain)) return false;
+                  seenDomains.add(domain);
+                  return true;
+                } catch { return false; }
+              })
+              .map((r, i) => ({
+                id: `uni-${i}`,
+                title: r.title ?? "Scholarship",
+                amount: r.amount ?? "Varies",
+                eligibility: r.eligibility ?? "",
+                url: r.url ?? "",
+                provider: university.trim(),
+              }));
+            if (deduped.length) setUniversityResults(deduped);
           }
         })
         .catch(() => { /* silent fail — university search is bonus */ });
