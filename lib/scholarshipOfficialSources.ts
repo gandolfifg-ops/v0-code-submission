@@ -10,6 +10,10 @@ const SOCIAL_DOMAINS = [
 ] as const
 
 const AGGREGATOR_DOMAINS = [
+  "medium.com",
+  "wordpress.com",
+  "blogspot.com",
+  "substack.com",
   "studygreen.com",
   "fundmycourse.com",
   "scholarship-positions.com",
@@ -20,10 +24,40 @@ const AGGREGATOR_DOMAINS = [
   "scholarships.com",
   "scholarship-portal.com",
   "grantme.ca",
+  "scholarships360.org",
+  "unigo.com",
+  "goingmerry.com",
+  "scholarshipowl.com",
+  "cappex.com",
 ] as const
 
 /** Social + aggregator hosts for Tavily `exclude_domains` and URL post-filtering. */
 export const TAVILY_SCHOLARSHIP_EXCLUDE_DOMAINS = [...SOCIAL_DOMAINS, ...AGGREGATOR_DOMAINS]
+
+const OFFICIAL_FOUNDATION_HOSTS = [
+  "loranscholar.ca",
+  "schulichleaders.com",
+  "horatioalger.ca",
+  "horatioalger.org",
+  "terryfox.org",
+  "terryfoxawards.ca",
+  "indspire.ca",
+  "univcan.ca",
+  "coca-colascholarsfoundation.org",
+  "thegatesscholarship.org",
+  "jkcf.org",
+  "nationalmerit.org",
+] as const
+
+const LISTICLE_TITLE = /\b(top\s*\d+|best scholarships|list of|guide to|how to apply)\b/i
+const LISTICLE_URL =
+  /\/blog\/|\/article\/|\/news\/|top[-_]?\d+|best[-_]?scholarships|list[-_]?of|guide[-_]?to/i
+
+export function isScholarshipListicle(title: string, url: string): boolean {
+  if (LISTICLE_TITLE.test(title)) return true
+  if (LISTICLE_URL.test(url.toLowerCase())) return true
+  return false
+}
 
 type SchoolHint = { name: string; domain: string }
 
@@ -86,36 +120,34 @@ export function schoolFocusedScholarshipQuery(filters: {
   university: string
 }): string {
   return [
-    "scholarship bursary 2026 apply",
+    filters.university.trim()
+      ? universitySearchTerms(filters.university)
+      : "university official scholarship awards",
     filters.country,
     filters.major !== "Any major" ? filters.major : "",
     filters.level !== "Any level" ? filters.level : "",
     filters.query.trim(),
-    universitySearchTerms(filters.university) ?? "",
   ]
     .filter(Boolean)
     .join(" ")
 }
 
-export function nationalAwardsScholarshipQuery(filters: {
-  country: string
-  major: string
-  level: string
-}): string {
-  const levelLabel = filters.level !== "Any level" ? filters.level : "post-secondary"
-  const named =
-    filters.country === "Canada"
-      ? "Loran Scholars Schulich Leader Scholarships TD Scholarships for Community Leadership Terry Fox Humanitarian Award Government of Canada awards"
-      : "Coca-Cola Scholars Gates Scholarship Jack Kent Cooke National Merit federal scholarships"
-  const major = filters.major !== "Any major" ? filters.major : ""
+/** Named foundations only — never “major national scholarships in Canada”. */
+export function nationalFoundationQueries(country: string): string[] {
+  if (country === "USA") {
+    return [
+      "Horatio Alger Scholarship official horatioalger.org",
+      "Coca-Cola Scholars Foundation official",
+      "Gates Scholarship official thegatesscholarship.org",
+    ]
+  }
   return [
-    `Major national scholarships for ${levelLabel} students in ${filters.country}`,
-    major,
-    named,
-    "2026 apply",
+    "Loran Scholars Foundation official loranscholar.ca",
+    "Schulich Leader Scholarships official schulichleaders.com",
+    "TD Scholarships for Community Leadership official",
+    "Terry Fox Humanitarian Award official",
+    "Horatio Alger Scholarship official Canada",
   ]
-    .filter(Boolean)
-    .join(" ")
 }
 
 /** Drop social and known aggregator hosts (hostname match or hostname substring in the URL). */
@@ -128,11 +160,32 @@ export function isBlockedScholarshipUrl(url: string): boolean {
   })
 }
 
+function isFoundationHost(hostname: string): boolean {
+  return OFFICIAL_FOUNDATION_HOSTS.some((domain) => hostMatches(hostname, domain))
+}
+
+/** Official university/government/foundation pages only — not generic .com blogs. */
+export function isOfficialScholarshipDestination(url: string): boolean {
+  const host = hostnameOf(url)
+  if (!host || isBlockedScholarshipUrl(url)) return false
+  if (isFoundationHost(host)) return true
+  if (host.endsWith(".edu") || host.endsWith(".gov") || host.endsWith(".gc.ca")) return true
+  if (host.endsWith(".ca")) return true
+  return false
+}
+
+export function shouldKeepScholarshipHit(url: string, title = ""): boolean {
+  if (isBlockedScholarshipUrl(url)) return false
+  if (isScholarshipListicle(title, url)) return false
+  return isOfficialScholarshipDestination(url)
+}
+
 /** Lower is better: education/government TLDs before generic .com/.org. */
 export function officialSourceRank(url: string): number {
   const host = hostnameOf(url)
   if (!host) return 99
   if (host.endsWith(".gc.ca") || host.endsWith(".edu") || host.endsWith(".gov")) return 0
+  if (isFoundationHost(host)) return 0
   if (host.endsWith(".ca")) return 1
   return 2
 }

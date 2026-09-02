@@ -7,9 +7,9 @@ import {
 } from "@/lib/liveResultText"
 import {
   compareScholarshipResults,
-  isBlockedScholarshipUrl,
-  nationalAwardsScholarshipQuery,
+  nationalFoundationQueries,
   schoolFocusedScholarshipQuery,
+  shouldKeepScholarshipHit,
   TAVILY_SCHOLARSHIP_EXCLUDE_DOMAINS,
 } from "@/lib/scholarshipOfficialSources"
 
@@ -58,7 +58,7 @@ function canonicalUrl(url: string): string {
   }
 }
 
-async function tavilySearch(apiKey: string, query: string): Promise<TavilyHit[]> {
+async function tavilySearch(apiKey: string, query: string, maxResults = 6): Promise<TavilyHit[]> {
   const tavilyResponse = await fetch("https://api.tavily.com/search", {
     method: "POST",
     headers: { "Content-Type": "application/json" },
@@ -68,7 +68,7 @@ async function tavilySearch(apiKey: string, query: string): Promise<TavilyHit[]>
       search_depth: "advanced",
       exclude_domains: [...TAVILY_SCHOLARSHIP_EXCLUDE_DOMAINS],
       include_raw_content: true,
-      max_results: 8,
+      max_results: maxResults,
     }),
   })
   if (!tavilyResponse.ok) return []
@@ -83,7 +83,7 @@ function mapLiveResults(hits: TavilyHit[]): ScholarshipResult[] {
       if (!r.url || !isValidHttpUrl(r.url)) return false
       if (r.url.includes("404") || r.url.includes("not-found")) return false
       if (typeof r.score === "number" && r.score < 0.3) return false
-      if (isBlockedScholarshipUrl(r.url)) return false
+      if (!shouldKeepScholarshipHit(r.url, r.title ?? "")) return false
       const key = canonicalUrl(r.url)
       if (seen.has(key)) return false
       seen.add(key)
@@ -129,18 +129,18 @@ export async function POST(req: Request) {
   if (apiKey) {
     try {
       const schoolQuery = schoolFocusedScholarshipQuery(filters)
-      const nationalQuery = nationalAwardsScholarshipQuery(filters)
-      const [schoolHits, nationalHits] = await Promise.all([
-        tavilySearch(apiKey, schoolQuery),
-        tavilySearch(apiKey, nationalQuery),
+      const foundationQueries = nationalFoundationQueries(filters.country)
+      const hitSets = await Promise.all([
+        tavilySearch(apiKey, schoolQuery, 6),
+        ...foundationQueries.map((query) => tavilySearch(apiKey, query, 3)),
       ])
-      const live = mapLiveResults([...nationalHits, ...schoolHits])
+      const live = mapLiveResults(hitSets.flat())
 
       if (live.length > 0) {
         return Response.json({
           source: "live",
           notice:
-            "These are live web search results from public scholarship pages, including school listings and major national awards. Amounts and deadlines may be incomplete — always confirm on the official page.",
+            "These are live results from university, government, and official foundation pages. Amounts and deadlines may be incomplete — always confirm on the official page.",
           results: live,
         })
       }
