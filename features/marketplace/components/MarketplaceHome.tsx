@@ -55,7 +55,10 @@ export function MarketplaceHome() {
           {copy.name}
         </span>
       </h1>
-      <p className="mt-3 max-w-2xl text-base leading-relaxed text-muted-foreground">
+      <p className="mt-3 max-w-2xl text-base font-medium leading-relaxed text-foreground">
+        WealthNutz helps students in Canada and the US compare official banking, scholarship, and loan options — then go apply on the provider’s site.
+      </p>
+      <p className="mt-2 max-w-2xl text-base leading-relaxed text-muted-foreground">
         {copy.intro} These are curated links to official sites — not a live rate
         database. Always confirm fees and eligibility with the provider.
       </p>
