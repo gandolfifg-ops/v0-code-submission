@@ -3,6 +3,7 @@
 import { useEffect, useRef, useState, type FormEvent } from "react"
 import Link from "next/link"
 import { Send } from "lucide-react"
+import { ChatMarkdown } from "@/features/chat/components/ChatMarkdown"
 import { CHAT_SYSTEM_PROMPT, SUGGESTIONS } from "@/features/chat/constants"
 
 type Role = "user" | "assistant"
@@ -199,7 +200,17 @@ export function StudentChat() {
                     : "bg-muted text-foreground"
                 }`}
               >
-                {m.content || (loading && i === msgs.length - 1 ? "…" : "")}
+                {m.role === "assistant" ? (
+                  m.content ? (
+                    <ChatMarkdown content={m.content} />
+                  ) : loading && i === msgs.length - 1 ? (
+                    "…"
+                  ) : (
+                    ""
+                  )
+                ) : (
+                  m.content
+                )}
               </div>
             ))}
             <div ref={bottomRef} />
