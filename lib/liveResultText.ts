@@ -142,7 +142,6 @@ function collectDeadlineDates(content: string, now: Date): FoundDeadline[] {
   const text = content.replace(/\r\n/g, "\n")
   const found: FoundDeadline[] = []
   const seen = new Set<number>()
-  const pageHasDeadlineWord = DEADLINE_WORD.test(text)
 
   const monthDayYear = new RegExp(
     `\\b(${MONTH_TOKEN})\\.?\\s+(\\d{1,2})(?:st|nd|rd|th)?(?:\\s*,\\s*|\\s+)(20\\d{2})\\b`,
@@ -191,22 +190,18 @@ function collectDeadlineDates(content: string, now: Date): FoundDeadline[] {
 
   while ((match = monthDay.exec(text))) {
     if (shouldSkip(text, match.index)) continue
-    const labeled = isLabeled(text, match.index)
-    if (!labeled && !pageHasDeadlineWord) continue
     const month = monthIndex(match[1])
     if (month === undefined) continue
     const year = inferYear(text, match.index, match.index + match[0].length, month, null, now)
-    addFound(found, seen, utcDay(year, month, Number(match[2])), labeled)
+    addFound(found, seen, utcDay(year, month, Number(match[2])), isLabeled(text, match.index))
   }
 
   while ((match = dayMonth.exec(text))) {
     if (shouldSkip(text, match.index)) continue
-    const labeled = isLabeled(text, match.index)
-    if (!labeled && !pageHasDeadlineWord) continue
     const month = monthIndex(match[2])
     if (month === undefined) continue
     const year = inferYear(text, match.index, match.index + match[0].length, month, null, now)
-    addFound(found, seen, utcDay(year, month, Number(match[1])), labeled)
+    addFound(found, seen, utcDay(year, month, Number(match[1])), isLabeled(text, match.index))
   }
 
   while ((match = numeric.exec(text))) {
@@ -241,16 +236,11 @@ function formatDeadline(date: Date): string {
   })
 }
 
-function pickDeadline(found: FoundDeadline[], now: Date): Date | null {
-  if (found.length === 0) return null
-  const labeled = found.filter((item) => item.labeled)
-  const pool = labeled.length > 0 ? labeled : found
+function soonestOnOrAfter(found: FoundDeadline[], now: Date): Date | null {
   const today = startOfUtcDay(now)
-  const upcoming = pool.filter((item) => startOfUtcDay(item.date) >= today)
-  if (upcoming.length > 0) {
-    return upcoming.reduce((a, b) => (startOfUtcDay(a.date) <= startOfUtcDay(b.date) ? a : b)).date
-  }
-  return pool.reduce((a, b) => (startOfUtcDay(a.date) >= startOfUtcDay(b.date) ? a : b)).date
+  const upcoming = found.filter((item) => startOfUtcDay(item.date) >= today)
+  if (upcoming.length === 0) return null
+  return upcoming.reduce((a, b) => (startOfUtcDay(a.date) <= startOfUtcDay(b.date) ? a : b)).date
 }
 
 /** Returns a UTC calendar date if the string is a real date; otherwise null. */
@@ -298,9 +288,23 @@ export function parseDeadlineDate(raw: string, now = new Date()): Date | null {
 export const UNLISTED_DEADLINE = "Deadline not listed — check official page"
 
 export function extractDeadlineFromSnippet(content: string, now = new Date()): string {
-  const picked = pickDeadline(collectDeadlineDates(content, now), now)
-  if (!picked) return UNLISTED_DEADLINE
-  return formatDeadline(picked)
+  return evaluateScholarshipDeadlines(content, now).deadline
+}
+
+/** Keep/drop from every date found in listing text — not a single labeled match. */
+export function evaluateScholarshipDeadlines(
+  content: string,
+  now = new Date(),
+): { keep: boolean; deadline: string } {
+  const found = collectDeadlineDates(content, now)
+  if (found.length === 0) {
+    return { keep: true, deadline: UNLISTED_DEADLINE }
+  }
+  const soonest = soonestOnOrAfter(found, now)
+  if (!soonest) {
+    return { keep: false, deadline: UNLISTED_DEADLINE }
+  }
+  return { keep: true, deadline: formatDeadline(soonest) }
 }
 
 export function resolveScholarshipDeadline(

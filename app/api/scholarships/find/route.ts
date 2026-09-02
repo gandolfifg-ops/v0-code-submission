@@ -2,8 +2,7 @@ import { CURATED_SCHOLARSHIPS } from "@/features/scholarships/data/curated"
 import type { ScholarshipFilters, ScholarshipResult } from "@/features/scholarships/types"
 import {
   cleanDisplayText,
-  extractDeadlineFromSnippet,
-  resolveScholarshipDeadline,
+  evaluateScholarshipDeadlines,
 } from "@/lib/liveResultText"
 
 export const dynamic = "force-dynamic"
@@ -113,8 +112,7 @@ export async function POST(req: Request) {
             const rawPage = r.raw_content ?? r.rawContent ?? ""
             const deadlineSource = [r.title ?? "", content, rawPage].filter(Boolean).join("\n")
             const amountMatch = content.match(/\$[\d,]+(?:\s*-\s*\$[\d,]+)?|\$[\d,]+\+?/)
-            const extracted = extractDeadlineFromSnippet(deadlineSource)
-            const { keep, deadline } = resolveScholarshipDeadline(extracted)
+            const { keep, deadline } = evaluateScholarshipDeadlines(deadlineSource)
             if (!keep) return null
             return {
               id: `live-${i}-${hostname}`,
