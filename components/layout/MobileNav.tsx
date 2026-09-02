@@ -3,6 +3,7 @@
 import Link from "next/link"
 import { usePathname } from "next/navigation"
 import { ALL_NAV, isActivePath } from "@/lib/constants/nav"
+import { NAV_ICONS } from "@/lib/constants/navIcons"
 import { X } from "lucide-react"
 
 type MobileNavProps = {
@@ -38,17 +39,21 @@ export function MobileNav({ open, onClose }: MobileNavProps) {
         <nav className="flex flex-1 flex-col gap-1 overflow-y-auto p-3">
           {ALL_NAV.map((link) => {
             const active = isActivePath(pathname, link.href)
+            const Icon = NAV_ICONS[link.href]
             return (
               <Link
                 key={link.href}
                 href={link.href}
                 onClick={onClose}
-                className={`block rounded-lg px-4 py-3 text-base font-medium transition-colors ${
+                className={`inline-flex items-center gap-2 rounded-lg px-4 py-3 text-base font-medium transition-colors ${
                   active
                     ? "bg-[#C9A84C]/15 text-[#C9A84C]"
                     : "text-foreground hover:bg-muted"
                 }`}
               >
+                {Icon && (
+                  <Icon className="h-4 w-4 shrink-0 text-[#C9A84C]" strokeWidth={1.75} aria-hidden="true" />
+                )}
                 {link.label}
               </Link>
             )

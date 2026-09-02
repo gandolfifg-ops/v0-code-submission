@@ -1,4 +1,5 @@
-import { Star } from "lucide-react"
+import { GraduationCap, Star } from "lucide-react"
+import { CreamIcon } from "@/components/CreamIcon"
 import { ExpandableText } from "@/components/ExpandableText"
 import type { ScholarshipResult } from "@/features/scholarships/types"
 import { SCHOLARSHIP_CHECKLIST } from "@/features/student-profile/checklists"
@@ -19,7 +20,9 @@ export function ResultCard({ result }: ResultCardProps) {
           : "border border-border bg-card"
       }`}
     >
-      <div className="mb-3 flex flex-wrap gap-2">
+      <div className="mb-3 flex items-start gap-3">
+        <CreamIcon icon={GraduationCap} />
+        <div className="flex min-w-0 flex-1 flex-wrap gap-2">
         {featured ? (
           <span className="inline-flex items-center gap-1 rounded-full bg-[#C9A84C] px-2.5 py-1 text-[11px] font-bold text-[#07090d]">
             <Star className="h-3 w-3" fill="currentColor" aria-hidden="true" />
@@ -33,6 +36,7 @@ export function ResultCard({ result }: ResultCardProps) {
         <span className="rounded-full border border-border px-2.5 py-1 text-[11px] text-muted-foreground">
           {result.provider}
         </span>
+        </div>
       </div>
       <h3 className="text-base font-semibold text-foreground">{result.title}</h3>
       <div className="mt-2">

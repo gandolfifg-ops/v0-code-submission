@@ -1,8 +1,15 @@
-import { Star } from "lucide-react"
+import { Banknote, Car, GraduationCap, Star } from "lucide-react"
+import { CreamIcon } from "@/components/CreamIcon"
 import { ExpandableText } from "@/components/ExpandableText"
-import type { LoanResult } from "@/features/loans/types"
+import type { LoanResult, LoanType } from "@/features/loans/types"
 import { LOAN_CHECKLISTS } from "@/features/student-profile/checklists"
 import { FollowThrough } from "@/features/student-profile/components/FollowThrough"
+
+const LOAN_ICONS: Record<LoanType, typeof GraduationCap> = {
+  Student: GraduationCap,
+  Personal: Banknote,
+  Auto: Car,
+}
 
 export function LenderCard({ lender }: { lender: LoanResult }) {
   const featured = lender.source === "live"
@@ -15,7 +22,9 @@ export function LenderCard({ lender }: { lender: LoanResult }) {
           : "border border-border bg-card"
       }`}
     >
-      <div className="mb-3 flex flex-wrap gap-2">
+      <div className="mb-3 flex items-start gap-3">
+        <CreamIcon icon={LOAN_ICONS[lender.loanType]} />
+        <div className="flex min-w-0 flex-1 flex-wrap gap-2">
         {featured ? (
           <span className="inline-flex items-center gap-1 rounded-full bg-[#C9A84C] px-2.5 py-1 text-[11px] font-bold text-[#07090d]">
             <Star className="h-3 w-3" fill="currentColor" aria-hidden="true" />
@@ -29,6 +38,7 @@ export function LenderCard({ lender }: { lender: LoanResult }) {
         <span className="rounded-full border border-border px-2.5 py-1 text-[11px] text-muted-foreground">
           {lender.loanType}
         </span>
+        </div>
       </div>
       <h3 className="text-base font-semibold text-foreground">{lender.name}</h3>
       <p className="mt-1 text-sm font-medium text-[#8B6914] dark:text-[#C9A84C]">{lender.tagline}</p>

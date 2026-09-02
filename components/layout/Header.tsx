@@ -6,24 +6,29 @@ import { useState } from "react"
 import { Menu } from "lucide-react"
 import { Logo } from "@/components/Logo"
 import { PRIMARY_NAV, SECONDARY_NAV, isActivePath } from "@/lib/constants/nav"
+import { NAV_ICONS } from "@/lib/constants/navIcons"
 import { MobileNav } from "@/components/layout/MobileNav"
 import { ThemeToggle } from "@/components/layout/ThemeToggle"
 
 function DesktopNavLink({ href, label }: { href: string; label: string }) {
   const pathname = usePathname()
   const active = isActivePath(pathname, href)
+  const Icon = NAV_ICONS[href]
 
   return (
     <Link
       href={href}
-      className={`rounded-md px-3 py-2 text-sm font-medium transition-colors ${
+      className={`inline-flex items-center gap-1.5 rounded-md px-2.5 py-2 text-sm font-medium transition-colors ${
         active ? "text-[#C9A84C]" : "text-muted-foreground hover:text-foreground"
       }`}
     >
-      {label}
-      {active && (
-        <span className="mt-0.5 block h-0.5 rounded-full bg-[#C9A84C]" aria-hidden="true" />
-      )}
+      {Icon && <Icon className="h-3.5 w-3.5 shrink-0 text-[#C9A84C]" strokeWidth={1.75} aria-hidden="true" />}
+      <span className="flex flex-col">
+        {label}
+        {active && (
+          <span className="mt-0.5 block h-0.5 rounded-full bg-[#C9A84C]" aria-hidden="true" />
+        )}
+      </span>
     </Link>
   )
 }
