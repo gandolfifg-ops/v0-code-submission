@@ -5,8 +5,7 @@ import {
   evaluateScholarshipDeadlines,
 } from "@/lib/liveResultText"
 import {
-  isOfficialScholarshipUrl,
-  officialScholarshipSiteQuery,
+  isSocialScholarshipUrl,
   TAVILY_SCHOLARSHIP_EXCLUDE_DOMAINS,
 } from "@/lib/scholarshipOfficialSources"
 
@@ -56,7 +55,6 @@ export async function POST(req: Request) {
     filters.level !== "Any level" ? filters.level : "",
     filters.query.trim(),
     universitySearch ? `${filters.university.trim()} university scholarships` : "",
-    officialScholarshipSiteQuery(filters.university, filters.country),
   ].filter(Boolean)
 
   if (apiKey) {
@@ -81,7 +79,7 @@ export async function POST(req: Request) {
             if (!r.url || !isValidHttpUrl(r.url)) return false
             if (r.url.includes("404") || r.url.includes("not-found")) return false
             if (typeof r.score === "number" && r.score < 0.3) return false
-            if (!isOfficialScholarshipUrl(r.url)) return false
+            if (isSocialScholarshipUrl(r.url)) return false
             return true
           })
           .map(
@@ -122,7 +120,7 @@ export async function POST(req: Request) {
           return Response.json({
             source: "live",
             notice:
-              "These are live results from official education and government sites. Amounts and deadlines may be incomplete — always confirm on the official page.",
+              "These are live web search results from public scholarship pages. Amounts and deadlines may be incomplete — always confirm on the official page.",
             results: live,
           })
         }
