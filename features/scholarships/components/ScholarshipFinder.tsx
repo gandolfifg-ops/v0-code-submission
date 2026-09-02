@@ -180,7 +180,7 @@ export function ScholarshipFinder() {
           {results.length > 0 && (
             <section className={notice || error ? "mt-4" : ""}>
               <SectionHeading icon={ListChecks}>Results</SectionHeading>
-              <div className="mt-3 grid gap-3 sm:grid-cols-2">
+              <div className="mt-3 grid grid-cols-1 gap-3 md:grid-cols-2">
                 {results.map((result) => (
                   <ResultCard key={result.id} result={result} />
                 ))}

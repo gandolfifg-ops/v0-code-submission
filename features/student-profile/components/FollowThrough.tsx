@@ -10,20 +10,25 @@ type FollowThroughProps = {
   cta: string
   checklist: readonly string[]
   item: SavedItem
+  requirementsLabel?: string
 }
 
-export function FollowThrough({ href, cta, checklist, item }: FollowThroughProps) {
+export function FollowThrough({
+  href,
+  cta,
+  checklist,
+  item,
+  requirementsLabel = "Common requirements:",
+}: FollowThroughProps) {
   const [opened, setOpened] = useState(false)
   const { ids } = useSavedItems()
   const saved = ids.has(item.id)
 
   return (
-    <div className="mt-4 space-y-3">
-      <div>
-        <p className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
-          Likely documents
-        </p>
-        <ul className="mt-1.5 list-disc space-y-1 pl-5 text-xs text-muted-foreground">
+    <div className="mt-4 min-w-0 space-y-3">
+      <div className="min-w-0">
+        <p className="text-sm font-medium text-muted-foreground">{requirementsLabel}</p>
+        <ul className="mt-1.5 list-disc space-y-1 break-words pl-5 text-sm text-muted-foreground">
           {checklist.map((line) => (
             <li key={line}>{line}</li>
           ))}

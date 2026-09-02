@@ -26,7 +26,7 @@ export function ExpandableText({ text, className = "" }: ExpandableTextProps) {
     <div>
       <p
         ref={ref}
-        className={`${className} ${expanded ? "" : "line-clamp-3"}`}
+        className={`${className} break-words ${expanded ? "" : "line-clamp-3"}`}
       >
         {text}
       </p>
