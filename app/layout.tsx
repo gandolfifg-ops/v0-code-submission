@@ -1,13 +1,15 @@
-// Layout v54 — Full module graph reset via file deletion and recreation
-import type { Metadata } from 'next'
-import { Inter } from 'next/font/google'
-import './globals.css'
+import type { Metadata } from "next"
+import { Inter } from "next/font/google"
+import { ThemeProvider } from "@/components/theme-provider"
+import { SiteShell } from "@/components/layout/SiteShell"
+import "./globals.css"
 
-const inter = Inter({ subsets: ['latin'] })
+const inter = Inter({ subsets: ["latin"] })
 
 export const metadata: Metadata = {
-  title: 'WealthNutz — Finding the Best Loans, Scholarships & Credit Cards for everyone across North America',
-  description: 'Stop searching and start finding. We simplify the complex world of North American finance by matching young people with the best loans, scholarships, and cards, in combination with high level simulations and our own financial AI, all in one smart platform ',
+  title: "WealthNutz — Student Finance for North America",
+  description:
+    "Find scholarships, compare loans, and discover student-friendly banking products across the US and Canada.",
 }
 
 export default function RootLayout({
@@ -16,8 +18,12 @@ export default function RootLayout({
   children: React.ReactNode
 }) {
   return (
-    <html lang="en">
-      <body className={inter.className}>{children}</body>
+    <html lang="en" suppressHydrationWarning>
+      <body className={`${inter.className} antialiased`}>
+        <ThemeProvider attribute="class" defaultTheme="light" enableSystem={false}>
+          <SiteShell>{children}</SiteShell>
+        </ThemeProvider>
+      </body>
     </html>
   )
 }

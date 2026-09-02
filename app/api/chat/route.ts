@@ -18,7 +18,24 @@ function getAnthropicClient() {
   return new Anthropic({ apiKey });
 }
 
+export async function GET() {
+  const apiKey = process.env.ANTHROPIC_API_KEY?.trim()
+  const configured = Boolean(apiKey && apiKey.startsWith("sk-"))
+  return Response.json({ configured })
+}
+
 export async function POST(req: Request) {
+  const apiKey = process.env.ANTHROPIC_API_KEY?.trim()
+  if (!apiKey || !apiKey.startsWith("sk-")) {
+    return Response.json(
+      {
+        error:
+          "Chat is unavailable because ANTHROPIC_API_KEY is missing or invalid. Add the key in your environment to enable the assistant.",
+      },
+      { status: 503 },
+    )
+  }
+
   const body = await req.json().catch(() => ({}));
   const messages = body?.messages ?? [];
   const system = body?.system ?? "";
