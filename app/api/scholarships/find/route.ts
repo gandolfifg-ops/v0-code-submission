@@ -80,7 +80,9 @@ export async function POST(req: Request) {
           api_key: apiKey,
           query: queryParts.join(" "),
           search_depth: "advanced",
-          ...(universitySearch ? {} : { include_domains: SCHOLARSHIP_DOMAINS }),
+          ...(universitySearch
+            ? { include_raw_content: "text" }
+            : { include_domains: SCHOLARSHIP_DOMAINS }),
           max_results: 10,
         }),
       })
@@ -94,12 +96,24 @@ export async function POST(req: Request) {
             if (typeof r.score === "number" && r.score < 0.3) return false
             return true
           })
-          .map((r: { title?: string; url: string; content?: string }, i: number) => {
+          .map(
+            (
+              r: {
+                title?: string
+                url: string
+                content?: string
+                raw_content?: string
+                rawContent?: string
+              },
+              i: number,
+            ) => {
             const hostname = new URL(r.url).hostname.replace(/^www\./, "")
             const provider = hostname.split(".")[0] ?? "Source"
             const content = r.content ?? ""
+            const rawPage = r.raw_content ?? r.rawContent ?? ""
+            const deadlineSource = [r.title ?? "", content, rawPage].filter(Boolean).join("\n")
             const amountMatch = content.match(/\$[\d,]+(?:\s*-\s*\$[\d,]+)?|\$[\d,]+\+?/)
-            const extracted = extractDeadlineFromSnippet(content)
+            const extracted = extractDeadlineFromSnippet(deadlineSource)
             const { keep, deadline } = resolveScholarshipDeadline(extracted)
             if (!keep) return null
             return {
