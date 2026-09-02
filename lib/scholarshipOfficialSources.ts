@@ -78,6 +78,46 @@ export function universitySearchTerms(university: string): string | null {
   return `${text} official scholarship awards`
 }
 
+export function schoolFocusedScholarshipQuery(filters: {
+  country: string
+  major: string
+  level: string
+  query: string
+  university: string
+}): string {
+  return [
+    "scholarship bursary 2026 apply",
+    filters.country,
+    filters.major !== "Any major" ? filters.major : "",
+    filters.level !== "Any level" ? filters.level : "",
+    filters.query.trim(),
+    universitySearchTerms(filters.university) ?? "",
+  ]
+    .filter(Boolean)
+    .join(" ")
+}
+
+export function nationalAwardsScholarshipQuery(filters: {
+  country: string
+  major: string
+  level: string
+}): string {
+  const levelLabel = filters.level !== "Any level" ? filters.level : "post-secondary"
+  const named =
+    filters.country === "Canada"
+      ? "Loran Scholars Schulich Leader Scholarships TD Scholarships for Community Leadership Terry Fox Humanitarian Award Government of Canada awards"
+      : "Coca-Cola Scholars Gates Scholarship Jack Kent Cooke National Merit federal scholarships"
+  const major = filters.major !== "Any major" ? filters.major : ""
+  return [
+    `Major national scholarships for ${levelLabel} students in ${filters.country}`,
+    major,
+    named,
+    "2026 apply",
+  ]
+    .filter(Boolean)
+    .join(" ")
+}
+
 /** Drop social and known aggregator hosts (hostname match or hostname substring in the URL). */
 export function isBlockedScholarshipUrl(url: string): boolean {
   const lower = url.toLowerCase()

@@ -3,16 +3,27 @@ import type { ScholarshipFilters, ScholarshipResult } from "@/features/scholarsh
 import {
   cleanDisplayText,
   evaluateScholarshipDeadlines,
+  extractScholarshipAmount,
 } from "@/lib/liveResultText"
 import {
   compareScholarshipResults,
   isBlockedScholarshipUrl,
+  nationalAwardsScholarshipQuery,
+  schoolFocusedScholarshipQuery,
   TAVILY_SCHOLARSHIP_EXCLUDE_DOMAINS,
-  universitySearchTerms,
 } from "@/lib/scholarshipOfficialSources"
 
 export const dynamic = "force-dynamic"
 export const maxDuration = 30
+
+type TavilyHit = {
+  title?: string
+  url?: string
+  content?: string
+  score?: number
+  raw_content?: string
+  rawContent?: string
+}
 
 function isValidHttpUrl(url: string): boolean {
   try {
@@ -37,6 +48,72 @@ function filterCurated(filters: ScholarshipFilters): ScholarshipResult[] {
   return CURATED_SCHOLARSHIPS.filter((item) => item.id.startsWith(isCanada ? "ca-" : "us-"))
 }
 
+function canonicalUrl(url: string): string {
+  try {
+    const parsed = new URL(url)
+    parsed.hash = ""
+    return parsed.href.replace(/\/$/, "")
+  } catch {
+    return url
+  }
+}
+
+async function tavilySearch(apiKey: string, query: string): Promise<TavilyHit[]> {
+  const tavilyResponse = await fetch("https://api.tavily.com/search", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({
+      api_key: apiKey,
+      query,
+      search_depth: "advanced",
+      exclude_domains: [...TAVILY_SCHOLARSHIP_EXCLUDE_DOMAINS],
+      include_raw_content: true,
+      max_results: 8,
+    }),
+  })
+  if (!tavilyResponse.ok) return []
+  const tavilyData = await tavilyResponse.json()
+  return tavilyData.results ?? []
+}
+
+function mapLiveResults(hits: TavilyHit[]): ScholarshipResult[] {
+  const seen = new Set<string>()
+  return hits
+    .filter((r) => {
+      if (!r.url || !isValidHttpUrl(r.url)) return false
+      if (r.url.includes("404") || r.url.includes("not-found")) return false
+      if (typeof r.score === "number" && r.score < 0.3) return false
+      if (isBlockedScholarshipUrl(r.url)) return false
+      const key = canonicalUrl(r.url)
+      if (seen.has(key)) return false
+      seen.add(key)
+      return true
+    })
+    .sort(compareScholarshipResults)
+    .map((r, i) => {
+      const hostname = new URL(r.url!).hostname.replace(/^www\./, "")
+      const provider = hostname.split(".")[0] ?? "Source"
+      const content = r.content ?? ""
+      const rawPage = r.raw_content ?? r.rawContent ?? ""
+      const deadlineSource = [r.title ?? "", content, rawPage].filter(Boolean).join("\n")
+      const { keep, deadline } = evaluateScholarshipDeadlines(deadlineSource)
+      if (!keep) return null
+      return {
+        id: `live-${i}-${hostname}`,
+        title: cleanDisplayText(r.title ?? "Scholarship listing").slice(0, 100),
+        provider: provider.charAt(0).toUpperCase() + provider.slice(1),
+        amount: extractScholarshipAmount(deadlineSource),
+        deadline,
+        lastChecked: formatCheckedToday(),
+        eligibility:
+          cleanDisplayText(content) || "See the official listing for eligibility details.",
+        url: r.url!,
+        source: "live" as const,
+      }
+    })
+    .filter((item): item is ScholarshipResult => item !== null)
+}
+
 export async function POST(req: Request) {
   const body = await req.json().catch(() => ({}))
   const filters: ScholarshipFilters = {
@@ -49,83 +126,23 @@ export async function POST(req: Request) {
 
   const apiKey = process.env.TAVILY_API_KEY?.trim()
 
-  const queryParts = [
-    "scholarship bursary 2026 apply",
-    filters.country,
-    filters.major !== "Any major" ? filters.major : "",
-    filters.level !== "Any level" ? filters.level : "",
-    filters.query.trim(),
-    universitySearchTerms(filters.university) ?? "",
-  ].filter(Boolean)
-
   if (apiKey) {
     try {
-      const tavilyResponse = await fetch("https://api.tavily.com/search", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          api_key: apiKey,
-          query: queryParts.join(" "),
-          search_depth: "advanced",
-          exclude_domains: [...TAVILY_SCHOLARSHIP_EXCLUDE_DOMAINS],
-          include_raw_content: true,
-          max_results: 10,
-        }),
-      })
+      const schoolQuery = schoolFocusedScholarshipQuery(filters)
+      const nationalQuery = nationalAwardsScholarshipQuery(filters)
+      const [schoolHits, nationalHits] = await Promise.all([
+        tavilySearch(apiKey, schoolQuery),
+        tavilySearch(apiKey, nationalQuery),
+      ])
+      const live = mapLiveResults([...nationalHits, ...schoolHits])
 
-      if (tavilyResponse.ok) {
-        const tavilyData = await tavilyResponse.json()
-        const live: ScholarshipResult[] = (tavilyData.results ?? [])
-          .filter((r: { url?: string; score?: number; title?: string }) => {
-            if (!r.url || !isValidHttpUrl(r.url)) return false
-            if (r.url.includes("404") || r.url.includes("not-found")) return false
-            if (typeof r.score === "number" && r.score < 0.3) return false
-            if (isBlockedScholarshipUrl(r.url)) return false
-            return true
-          })
-          .sort(compareScholarshipResults)
-          .map(
-            (
-              r: {
-                title?: string
-                url: string
-                content?: string
-                raw_content?: string
-                rawContent?: string
-              },
-              i: number,
-            ) => {
-            const hostname = new URL(r.url).hostname.replace(/^www\./, "")
-            const provider = hostname.split(".")[0] ?? "Source"
-            const content = r.content ?? ""
-            const rawPage = r.raw_content ?? r.rawContent ?? ""
-            const deadlineSource = [r.title ?? "", content, rawPage].filter(Boolean).join("\n")
-            const amountMatch = content.match(/\$[\d,]+(?:\s*-\s*\$[\d,]+)?|\$[\d,]+\+?/)
-            const { keep, deadline } = evaluateScholarshipDeadlines(deadlineSource)
-            if (!keep) return null
-            return {
-              id: `live-${i}-${hostname}`,
-              title: cleanDisplayText(r.title ?? "Scholarship listing").slice(0, 100),
-              provider: provider.charAt(0).toUpperCase() + provider.slice(1),
-              amount: amountMatch?.[0] ?? "See listing",
-              deadline,
-              lastChecked: formatCheckedToday(),
-              eligibility:
-                cleanDisplayText(content) || "See the official listing for eligibility details.",
-              url: r.url,
-              source: "live" as const,
-            }
-          })
-          .filter((item): item is ScholarshipResult => item !== null)
-
-        if (live.length > 0) {
-          return Response.json({
-            source: "live",
-            notice:
-              "These are live web search results from public scholarship pages. Amounts and deadlines may be incomplete — always confirm on the official page.",
-            results: live,
-          })
-        }
+      if (live.length > 0) {
+        return Response.json({
+          source: "live",
+          notice:
+            "These are live web search results from public scholarship pages, including school listings and major national awards. Amounts and deadlines may be incomplete — always confirm on the official page.",
+          results: live,
+        })
       }
     } catch (error) {
       console.error("[scholarships] Live search failed:", error)

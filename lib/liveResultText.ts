@@ -323,3 +323,51 @@ export function isExpiredDeadline(raw: string, now = new Date()): boolean {
   if (!parsed) return false
   return startOfUtcDay(parsed) < startOfUtcDay(now)
 }
+
+const MIN_SCHOLARSHIP_AMOUNT = 100
+
+function parseMoneyToken(raw: string): number | null {
+  const n = Number(raw.replace(/,/g, ""))
+  if (!Number.isFinite(n)) return null
+  return n
+}
+
+function prettyMoneyPhrase(match: string): string {
+  return match.replace(/\s+/g, " ").trim()
+}
+
+/** Skip $1/$5 page artifacts; keep hundreds/thousands or tuition phrases. */
+export function extractScholarshipAmount(text: string): string {
+  const phrase = text.match(/\bfull[\s-]*(tuition|ride)\b|\btuition\s+waiver\b/i)
+  if (phrase) {
+    const raw = phrase[0].toLowerCase()
+    if (raw.includes("ride")) return "Full ride"
+    if (raw.includes("waiver")) return "Tuition waiver"
+    return "Full tuition"
+  }
+
+  const moneyPattern =
+    /\$\s*([\d,]+)(?:\.\d{1,2})?(?:\s*[-–—]\s*\$?\s*([\d,]+)(?:\.\d{1,2})?)?(\+)?/g
+  const viable: { value: number; display: string }[] = []
+  let match: RegExpExecArray | null
+  while ((match = moneyPattern.exec(text))) {
+    const low = parseMoneyToken(match[1])
+    if (low === null) continue
+    const high = match[2] ? parseMoneyToken(match[2]) : null
+    const best = Math.max(low, high ?? low)
+    if (best < MIN_SCHOLARSHIP_AMOUNT) continue
+    let display = prettyMoneyPhrase(match[0])
+    if (low < MIN_SCHOLARSHIP_AMOUNT && high !== null && high >= MIN_SCHOLARSHIP_AMOUNT) {
+      display = `$${match[2]}${match[3] ?? ""}`
+    }
+    viable.push({ value: best, display })
+  }
+
+  if (viable.length > 0) {
+    viable.sort((a, b) => b.value - a.value)
+    return viable[0].display
+  }
+
+  if (/\bvaries\b/i.test(text)) return "Varies"
+  return "Varies"
+}
