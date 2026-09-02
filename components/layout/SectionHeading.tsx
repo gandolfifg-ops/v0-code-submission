@@ -1,0 +1,19 @@
+import type { LucideIcon } from "lucide-react"
+import type { ReactNode } from "react"
+
+type SectionHeadingProps = {
+  icon: LucideIcon
+  children: ReactNode
+  className?: string
+}
+
+export function SectionHeading({ icon: Icon, children, className = "" }: SectionHeadingProps) {
+  return (
+    <h2 className={`flex items-center gap-2.5 text-lg font-semibold text-foreground ${className}`}>
+      <span className="inline-flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-[#C9A84C]/15 text-[#8B6914] dark:text-[#C9A84C]">
+        <Icon className="h-4 w-4" aria-hidden="true" />
+      </span>
+      {children}
+    </h2>
+  )
+}

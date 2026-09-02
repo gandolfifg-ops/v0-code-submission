@@ -1,6 +1,8 @@
 "use client"
 
 import { useMemo, useState } from "react"
+import { Calculator } from "lucide-react"
+import { SectionHeading } from "@/components/layout/SectionHeading"
 
 const AMOUNT_MIN = 1
 const AMOUNT_MAX = 500_000
@@ -73,7 +75,7 @@ export function PaymentCalculator() {
 
   return (
     <section className="rounded-2xl border border-border bg-card p-4 sm:p-6">
-      <h2 className="text-lg font-semibold text-foreground">Payment estimator</h2>
+      <SectionHeading icon={Calculator}>Payment estimator</SectionHeading>
       <p className="mt-1 text-sm text-muted-foreground">
         Example only. Enter an APR from a lender’s site to estimate a payment. This is not
         an offer or a credit decision.

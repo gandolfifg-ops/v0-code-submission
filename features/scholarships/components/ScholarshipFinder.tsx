@@ -1,8 +1,12 @@
 "use client"
 
 import { useState, type FormEvent } from "react"
+import { GraduationCap, ListChecks, Search } from "lucide-react"
 import { CountryToggle } from "@/components/CountryToggle"
+import { SectionHeading } from "@/components/layout/SectionHeading"
 import { ResultCard } from "@/features/scholarships/components/ResultCard"
+import { StudentProfileBox } from "@/features/student-profile/components/StudentProfileBox"
+import { isProfileFilled, type StudentProfile } from "@/features/student-profile/types"
 import {
   SCHOLARSHIP_LEVELS,
   SCHOLARSHIP_MAJORS,
@@ -30,12 +34,22 @@ export function ScholarshipFinder() {
   const [source, setSource] = useState<"live" | "curated" | null>(null)
   const [results, setResults] = useState<ScholarshipResult[]>([])
   const [error, setError] = useState<string | null>(null)
+  const [hasSearched, setHasSearched] = useState(false)
+
+  function applyProfile(profile: StudentProfile | null) {
+    if (!isProfileFilled(profile) || !profile) return
+    setCountry(profile.country)
+    if (profile.major) setMajor(profile.major)
+    if (profile.level) setLevel(profile.level)
+    if (profile.school.trim()) setUniversity(profile.school.trim())
+  }
 
   async function onSubmit(e: FormEvent) {
     e.preventDefault()
     setLoading(true)
     setError(null)
     setNotice(null)
+    setHasSearched(true)
     try {
       const res = await fetch("/api/scholarships/find", {
         method: "POST",
@@ -57,114 +71,139 @@ export function ScholarshipFinder() {
   }
 
   return (
-    <div className="mx-auto max-w-6xl px-4 py-8 sm:px-6 sm:py-12">
+    <div className="mx-auto max-w-6xl px-4 py-6 sm:px-6 lg:py-8">
       <p className="text-xs font-semibold uppercase tracking-widest text-[#C9A84C]">
         Scholarships
       </p>
       <h1 className="mt-2 text-3xl font-bold tracking-tight text-foreground sm:text-4xl">
         Scholarship Finder
       </h1>
-      <p className="mt-3 max-w-2xl text-base leading-relaxed text-muted-foreground">
+      <p className="mt-3 max-w-2xl text-sm leading-relaxed text-muted-foreground sm:text-base">
         Search public scholarship sites for Canada or the US. This is web search plus a
         short curated list — not a government awards database. Confirm every deadline
         on the official page.
       </p>
 
-      <form
-        onSubmit={onSubmit}
-        className="mt-8 space-y-3 rounded-2xl border border-border bg-card p-4 sm:p-6"
-      >
-        <CountryToggle
-          value={country}
-          onChange={setCountry}
-          options={[
-            { value: "Canada", flag: "CA", label: "Canada" },
-            { value: "USA", flag: "US", label: "United States" },
-          ]}
-        />
+      <div className="mt-6 grid gap-4 lg:grid-cols-[minmax(0,22rem)_minmax(0,1fr)] lg:items-start">
+        <div className="space-y-4 lg:sticky lg:top-20">
+          <StudentProfileBox onProfileChange={applyProfile} />
 
-        <label className="block text-xs font-medium text-muted-foreground">
-          Major
-          <select className={`${selectClass} mt-1`} value={major} onChange={(e) => setMajor(e.target.value)}>
-            {SCHOLARSHIP_MAJORS.map((m) => (
-              <option key={m} value={m}>
-                {m}
-              </option>
-            ))}
-          </select>
-        </label>
+          <form
+            onSubmit={onSubmit}
+            className="space-y-3 rounded-2xl border border-border bg-card p-4 sm:p-5"
+          >
+            <SectionHeading icon={Search}>Search awards</SectionHeading>
+            <CountryToggle
+              value={country}
+              onChange={setCountry}
+              options={[
+                { value: "Canada", flag: "CA", label: "Canada" },
+                { value: "USA", flag: "US", label: "United States" },
+              ]}
+            />
 
-        <label className="block text-xs font-medium text-muted-foreground">
-          School level
-          <select className={`${selectClass} mt-1`} value={level} onChange={(e) => setLevel(e.target.value)}>
-            {SCHOLARSHIP_LEVELS.map((l) => (
-              <option key={l} value={l}>
-                {l}
-              </option>
-            ))}
-          </select>
-        </label>
+            <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-1">
+              <label className="block text-xs font-medium text-muted-foreground">
+                Major
+                <select className={`${selectClass} mt-1`} value={major} onChange={(e) => setMajor(e.target.value)}>
+                  {SCHOLARSHIP_MAJORS.map((m) => (
+                    <option key={m} value={m}>
+                      {m}
+                    </option>
+                  ))}
+                </select>
+              </label>
 
-        <label className="block text-xs font-medium text-muted-foreground">
-          Keywords
-          <input
-            className={`${selectClass} mt-1`}
-            value={query}
-            onChange={(e) => setQuery(e.target.value)}
-            placeholder="e.g. first-generation, nursing, Indigenous"
-          />
-        </label>
+              <label className="block text-xs font-medium text-muted-foreground">
+                School level
+                <select className={`${selectClass} mt-1`} value={level} onChange={(e) => setLevel(e.target.value)}>
+                  {SCHOLARSHIP_LEVELS.map((l) => (
+                    <option key={l} value={l}>
+                      {l}
+                    </option>
+                  ))}
+                </select>
+              </label>
+            </div>
 
-        <label className="block text-xs font-medium text-muted-foreground">
-          School name (optional)
-          <input
-            className={`${selectClass} mt-1`}
-            value={university}
-            onChange={(e) => setUniversity(e.target.value)}
-            placeholder="e.g. University of Toronto, UCLA"
-          />
-        </label>
+            <label className="block text-xs font-medium text-muted-foreground">
+              Keywords
+              <input
+                className={`${selectClass} mt-1`}
+                value={query}
+                onChange={(e) => setQuery(e.target.value)}
+                placeholder="e.g. first-generation, nursing, Indigenous"
+              />
+            </label>
 
-        <button
-          type="submit"
-          disabled={loading}
-          className="min-h-11 w-full rounded-xl bg-[#C9A84C] text-sm font-bold text-[#07090d] transition-colors hover:bg-[#b8973f] disabled:opacity-60"
-        >
-          {loading ? "Searching…" : "Find scholarships"}
-        </button>
-      </form>
+            <label className="block text-xs font-medium text-muted-foreground">
+              School name (optional)
+              <input
+                className={`${selectClass} mt-1`}
+                value={university}
+                onChange={(e) => setUniversity(e.target.value)}
+                placeholder="e.g. University of Toronto, UCLA"
+              />
+            </label>
 
-      {error && (
-        <p className="mt-6 rounded-xl border border-red-300 bg-red-50 px-4 py-3 text-sm text-red-700 dark:border-red-900 dark:bg-red-950/40 dark:text-red-300">
-          {error}
-        </p>
-      )}
-
-      {notice && (
-        <p
-          className={`mt-6 rounded-xl border px-4 py-3 text-sm break-words ${
-            source === "live"
-              ? "border-emerald-200 bg-emerald-50 text-emerald-900 dark:border-emerald-900 dark:bg-emerald-950/30 dark:text-emerald-200"
-              : "border-[#C9A84C]/40 bg-[#C9A84C]/10 text-foreground"
-          }`}
-        >
-          {notice}
-        </p>
-      )}
-
-      {results.length > 0 && (
-        <div className="mt-6 grid gap-4 sm:grid-cols-2">
-          {results.map((result) => (
-            <ResultCard key={result.id} result={result} />
-          ))}
+            <button
+              type="submit"
+              disabled={loading}
+              className="min-h-11 w-full rounded-xl bg-[#C9A84C] text-sm font-bold text-[#07090d] transition-colors hover:bg-[#b8973f] disabled:opacity-60"
+            >
+              {loading ? "Searching…" : "Find scholarships"}
+            </button>
+          </form>
         </div>
-      )}
 
-      {!loading && source && results.length === 0 && !error && (
-        <p className="mt-6 text-sm text-muted-foreground">
-          No listings matched this search. Try a broader major or fewer keywords.
-        </p>
-      )}
+        <div>
+          {error && (
+            <p className="rounded-xl border border-red-300 bg-red-50 px-4 py-3 text-sm text-red-700 dark:border-red-900 dark:bg-red-950/40 dark:text-red-300">
+              {error}
+            </p>
+          )}
+
+          {notice && (
+            <p
+              className={`break-words rounded-xl border px-4 py-3 text-sm ${
+                source === "live"
+                  ? "border-emerald-200 bg-emerald-50 text-emerald-900 dark:border-emerald-900 dark:bg-emerald-950/30 dark:text-emerald-200"
+                  : "border-[#C9A84C]/40 bg-[#C9A84C]/10 text-foreground"
+              }`}
+            >
+              {notice}
+            </p>
+          )}
+
+          {results.length > 0 && (
+            <section className={notice || error ? "mt-4" : ""}>
+              <SectionHeading icon={ListChecks}>Results</SectionHeading>
+              <div className="mt-3 grid gap-3 sm:grid-cols-2">
+                {results.map((result) => (
+                  <ResultCard key={result.id} result={result} />
+                ))}
+              </div>
+            </section>
+          )}
+
+          {!loading && source && results.length === 0 && !error && (
+            <p className="text-sm text-muted-foreground">
+              No listings matched this search. Try a broader major or fewer keywords.
+            </p>
+          )}
+
+          {!hasSearched && !loading && (
+            <section className="rounded-2xl border border-dashed border-border bg-muted/30 p-4 sm:p-5">
+              <SectionHeading icon={GraduationCap}>How it works</SectionHeading>
+              <ol className="mt-3 list-decimal space-y-2 pl-5 text-sm text-muted-foreground">
+                <li>Save your student profile (optional) so filters start filled in.</li>
+                <li>Search public sites — we do not apply for you.</li>
+                <li>Open the official page, then Save the listing to track it here.</li>
+              </ol>
+            </section>
+          )}
+        </div>
+      </div>
     </div>
   )
 }

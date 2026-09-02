@@ -1,23 +1,29 @@
+import { Star } from "lucide-react"
 import type { MarketplaceProduct } from "@/features/marketplace/types"
-import { CATEGORY_LABELS } from "@/features/marketplace/data/products"
 
 type ProductCardProps = {
   product: MarketplaceProduct
 }
 
 export function ProductCard({ product }: ProductCardProps) {
+  const featured = Boolean(product.featured)
+
   return (
-    <article className="interactive-card flex flex-col rounded-2xl border border-border bg-card p-5 shadow-sm">
+    <article
+      className={`interactive-card flex flex-col rounded-2xl p-4 sm:p-5 ${
+        featured
+          ? "border-2 border-[#C9A84C] bg-[#C9A84C]/10 shadow-sm lg:col-span-2"
+          : "border border-border bg-card"
+      }`}
+    >
       <div className="mb-3 flex flex-wrap items-center gap-2">
-        <span className="rounded-full bg-muted px-2.5 py-1 text-[11px] font-semibold uppercase tracking-wide text-muted-foreground">
-          {CATEGORY_LABELS[product.category]}
-        </span>
-        {product.featured && (
-          <span className="rounded-full bg-[#C9A84C]/15 px-2.5 py-1 text-[11px] font-semibold text-[#8B6914] dark:text-[#E8C97A]">
+        {featured && (
+          <span className="inline-flex items-center gap-1 rounded-full bg-[#C9A84C] px-2.5 py-1 text-[11px] font-bold text-[#07090d]">
+            <Star className="h-3 w-3" fill="currentColor" aria-hidden="true" />
             Featured
           </span>
         )}
-        <span className="rounded-full border border-border px-2.5 py-1 text-[11px] font-medium text-muted-foreground">
+        <span className="rounded-full border border-border bg-background/70 px-2.5 py-1 text-[11px] font-medium text-muted-foreground">
           {product.source === "official" ? "Official site" : "Curated pick"}
         </span>
       </div>

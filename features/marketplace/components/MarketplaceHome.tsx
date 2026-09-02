@@ -2,15 +2,17 @@
 
 import { useMemo, useState } from "react"
 import Link from "next/link"
+import { Building2, CreditCard, GraduationCap, Landmark, PiggyBank, Search } from "lucide-react"
 import { CountryFlag } from "@/components/CountryFlag"
 import { CountryToggle } from "@/components/CountryToggle"
+import { SectionHeading } from "@/components/layout/SectionHeading"
 import { ProductCard } from "@/features/marketplace/components/ProductCard"
 import {
   CATEGORY_LABELS,
   CATEGORY_ORDER,
   MARKETPLACE_PRODUCTS,
 } from "@/features/marketplace/data/products"
-import type { Country } from "@/features/marketplace/types"
+import type { Country, ProductCategory } from "@/features/marketplace/types"
 
 const COUNTRY_COPY: Record<Country, { name: string; intro: string }> = {
   CA: {
@@ -23,6 +25,13 @@ const COUNTRY_COPY: Record<Country, { name: string; intro: string }> = {
     intro:
       "Student banking, Roth IRAs, FAFSA, and credit-building cards for U.S. students.",
   },
+}
+
+const CATEGORY_ICONS: Record<ProductCategory, typeof Landmark> = {
+  banking: Landmark,
+  investing: PiggyBank,
+  "student-aid": GraduationCap,
+  credit: CreditCard,
 }
 
 export function MarketplaceHome() {
@@ -44,41 +53,53 @@ export function MarketplaceHome() {
   )
 
   return (
-    <div className="mx-auto max-w-6xl px-4 py-8 sm:px-6 sm:py-12">
-      <p className="text-xs font-semibold uppercase tracking-widest text-[#C9A84C]">
-        Marketplace
-      </p>
-      <h1 className="mt-2 flex max-w-2xl flex-wrap items-center gap-2 text-3xl font-bold tracking-tight text-foreground sm:text-4xl">
-        <span>Student money products,</span>
-        <span className="inline-flex items-center gap-2">
-          <CountryFlag code={country} className="h-5 w-8 rounded-sm" />
-          {copy.name}
-        </span>
-      </h1>
-      <p className="mt-3 max-w-2xl text-base font-medium leading-relaxed text-foreground">
-        WealthNutz helps students in Canada and the US compare official banking, scholarship, and loan options — then go apply on the provider’s site.
-      </p>
-      <p className="mt-2 max-w-2xl text-base leading-relaxed text-muted-foreground">
-        {copy.intro} These are curated links to official sites — not a live rate
-        database. Always confirm fees and eligibility with the provider.
-      </p>
-
-      <CountryToggle
-        className="mt-6 grid grid-cols-2 gap-2"
-        value={country}
-        onChange={setCountry}
-        options={[
-          { value: "CA", flag: "CA", label: "Canada" },
-          { value: "US", flag: "US", label: "United States" },
-        ]}
-      />
+    <div className="mx-auto max-w-6xl px-4 py-6 sm:px-6 lg:py-8">
+      <div className="flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
+        <div className="min-w-0 max-w-2xl">
+          <p className="text-xs font-semibold uppercase tracking-widest text-[#C9A84C]">
+            Marketplace
+          </p>
+          <h1 className="mt-2 flex flex-wrap items-center gap-2 text-3xl font-bold tracking-tight text-foreground sm:text-4xl">
+            <span>Student money products,</span>
+            <span className="inline-flex items-center gap-2">
+              <CountryFlag code={country} className="h-5 w-8 rounded-sm" />
+              {copy.name}
+            </span>
+          </h1>
+          <p className="mt-3 text-base font-medium leading-relaxed text-foreground">
+            WealthNutz helps students in Canada and the US compare official banking, scholarship, and loan options — then go apply on the provider’s site.
+          </p>
+          <p className="mt-2 text-sm leading-relaxed text-muted-foreground sm:text-base">
+            {copy.intro} These are curated links to official sites — not a live rate
+            database. Always confirm fees and eligibility with the provider.
+          </p>
+          <p className="mt-2 text-sm">
+            <Link
+              href="/scholarships#student-profile"
+              className="font-medium text-[#8B6914] underline dark:text-[#C9A84C]"
+            >
+              Set your student profile
+            </Link>
+            <span className="text-muted-foreground"> — optional, saved in this browser.</span>
+          </p>
+        </div>
+        <CountryToggle
+          className="grid w-full grid-cols-2 gap-2 lg:w-[22rem] lg:shrink-0"
+          value={country}
+          onChange={setCountry}
+          options={[
+            { value: "CA", flag: "CA", label: "Canada" },
+            { value: "US", flag: "US", label: "United States" },
+          ]}
+        />
+      </div>
 
       {grouped.map((group) => (
-        <section key={group.category} className="mt-10">
-          <h2 className="text-lg font-semibold text-foreground">
+        <section key={group.category} className="mt-7 lg:mt-8">
+          <SectionHeading icon={CATEGORY_ICONS[group.category]}>
             {CATEGORY_LABELS[group.category]}
-          </h2>
-          <div className="mt-4 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+          </SectionHeading>
+          <div className="mt-3 grid gap-3 sm:grid-cols-2 lg:grid-cols-3 lg:gap-4">
             {group.items.map((product) => (
               <ProductCard key={product.id} product={product} />
             ))}
@@ -86,28 +107,38 @@ export function MarketplaceHome() {
         </section>
       ))}
 
-      <section className="mt-12 grid gap-4 sm:grid-cols-2">
+      <section className="mt-8 grid gap-3 sm:grid-cols-2 lg:mt-10">
         <Link
           href="/scholarships"
-          className="interactive-card rounded-2xl border border-border bg-card p-5"
+          className="interactive-card flex items-start gap-3 rounded-2xl border border-border bg-card p-4 sm:p-5"
         >
-          <h2 className="font-semibold text-foreground">Scholarship Finder</h2>
-          <p className="mt-1 text-sm text-muted-foreground">
-            Search awards by country and major →
-          </p>
+          <span className="inline-flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-[#C9A84C]/15 text-[#8B6914]">
+            <Search className="h-4 w-4" aria-hidden="true" />
+          </span>
+          <div>
+            <h2 className="font-semibold text-foreground">Scholarship Finder</h2>
+            <p className="mt-1 text-sm text-muted-foreground">
+              Search awards by country and major →
+            </p>
+          </div>
         </Link>
         <Link
           href="/loans"
-          className="interactive-card rounded-2xl border border-border bg-card p-5"
+          className="interactive-card flex items-start gap-3 rounded-2xl border border-border bg-card p-4 sm:p-5"
         >
-          <h2 className="font-semibold text-foreground">Loan Tools</h2>
-          <p className="mt-1 text-sm text-muted-foreground">
-            Compare lenders and estimate payments →
-          </p>
+          <span className="inline-flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-[#C9A84C]/15 text-[#8B6914]">
+            <Building2 className="h-4 w-4" aria-hidden="true" />
+          </span>
+          <div>
+            <h2 className="font-semibold text-foreground">Loan Tools</h2>
+            <p className="mt-1 text-sm text-muted-foreground">
+              Compare lenders and estimate payments →
+            </p>
+          </div>
         </Link>
       </section>
 
-      <p className="mt-10 max-w-3xl text-xs leading-relaxed text-muted-foreground">
+      <p className="mt-8 max-w-3xl text-xs leading-relaxed text-muted-foreground">
         WealthNutz may earn a referral commission if you open an account through
         a link marked “Affiliate link.” That never changes which products we list.
         Government pages (FAFSA, StudentAid.gov, NSLSC) are official — not

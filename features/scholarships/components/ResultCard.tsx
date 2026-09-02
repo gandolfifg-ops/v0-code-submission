@@ -1,23 +1,34 @@
+import { Star } from "lucide-react"
 import type { ScholarshipResult } from "@/features/scholarships/types"
-import { SaveButton } from "@/features/saved/components/SaveButton"
+import { SCHOLARSHIP_CHECKLIST } from "@/features/student-profile/checklists"
+import { FollowThrough } from "@/features/student-profile/components/FollowThrough"
 
 type ResultCardProps = {
   result: ScholarshipResult
 }
 
 export function ResultCard({ result }: ResultCardProps) {
+  const featured = result.source === "live"
+
   return (
-    <article className="interactive-card flex flex-col rounded-2xl border border-border bg-card p-5">
+    <article
+      className={`interactive-card flex flex-col rounded-2xl p-4 sm:p-5 ${
+        featured
+          ? "border-2 border-[#C9A84C] bg-[#C9A84C]/10 shadow-sm"
+          : "border border-border bg-card"
+      }`}
+    >
       <div className="mb-3 flex flex-wrap gap-2">
-        <span
-          className={`rounded-full px-2.5 py-1 text-[11px] font-semibold ${
-            result.source === "live"
-              ? "bg-emerald-500/10 text-emerald-700 dark:text-emerald-400"
-              : "bg-[#C9A84C]/15 text-[#8B6914] dark:text-[#E8C97A]"
-          }`}
-        >
-          {result.source === "live" ? "Live web result" : "Curated pick"}
-        </span>
+        {featured ? (
+          <span className="inline-flex items-center gap-1 rounded-full bg-[#C9A84C] px-2.5 py-1 text-[11px] font-bold text-[#07090d]">
+            <Star className="h-3 w-3" fill="currentColor" aria-hidden="true" />
+            Live web result
+          </span>
+        ) : (
+          <span className="rounded-full bg-muted px-2.5 py-1 text-[11px] font-semibold text-muted-foreground">
+            Curated pick
+          </span>
+        )}
         <span className="rounded-full border border-border px-2.5 py-1 text-[11px] text-muted-foreground">
           {result.provider}
         </span>
@@ -34,26 +45,19 @@ export function ResultCard({ result }: ResultCardProps) {
           <dd className="font-medium text-foreground">{result.deadline}</dd>
         </div>
       </dl>
-      <a
+      <FollowThrough
         href={result.url}
-        target="_blank"
-        rel="noopener noreferrer"
-        className="mt-4 inline-flex min-h-11 w-full items-center justify-center rounded-xl bg-[#C9A84C] px-4 text-sm font-bold text-[#07090d] transition-colors hover:bg-[#b8973f]"
-      >
-        Open official site
-      </a>
-      <div className="mt-2">
-        <SaveButton
-          item={{
-            id: `scholarship:${result.id}`,
-            kind: "scholarship",
-            title: result.title,
-            href: result.url,
-            subtitle: `${result.provider} · ${result.amount}`,
-            savedAt: Date.now(),
-          }}
-        />
-      </div>
+        cta="Open official site"
+        checklist={SCHOLARSHIP_CHECKLIST}
+        item={{
+          id: `scholarship:${result.id}`,
+          kind: "scholarship",
+          title: result.title,
+          href: result.url,
+          subtitle: `${result.provider} · ${result.amount}`,
+          savedAt: Date.now(),
+        }}
+      />
     </article>
   )
 }
