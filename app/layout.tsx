@@ -23,8 +23,8 @@ export default function RootLayout({
       <body className={`${inter.className} antialiased`}>
         <ThemeProvider attribute="class" defaultTheme="light" enableSystem={false}>
           <SiteShell>{children}</SiteShell>
-          <Analytics />
         </ThemeProvider>
+        <Analytics />
       </body>
     </html>
   )
