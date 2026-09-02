@@ -1,6 +1,6 @@
 
 import {
-  isSocialScholarshipUrl,
+  isBlockedScholarshipUrl,
   TAVILY_SCHOLARSHIP_EXCLUDE_DOMAINS,
 } from "@/lib/scholarshipOfficialSources"
 
@@ -94,7 +94,7 @@ export async function POST(req: Request) {
         query: searchQuery,
         search_depth: "advanced",
         ...(type === "scholarship"
-          ? { exclude_domains: TAVILY_SCHOLARSHIP_EXCLUDE_DOMAINS }
+          ? { exclude_domains: [...TAVILY_SCHOLARSHIP_EXCLUDE_DOMAINS] }
           : {
               include_domains: [
                 "studentaid.gov",
@@ -137,7 +137,7 @@ export async function POST(req: Request) {
         if (!isValidUrl(r.url)) return false;
         if (r.url.includes("404") || r.url.includes("error") || r.url.includes("not-found")) return false;
         if (r.score < 0.3) return false; // Low relevance
-        if (type === "scholarship" && isSocialScholarshipUrl(r.url)) return false;
+        if (type === "scholarship" && isBlockedScholarshipUrl(r.url)) return false;
 
         // Hard negative keyword enforcement — if ANY negative term appears in title or content, discard
         if (negativeTerms.length > 0) {

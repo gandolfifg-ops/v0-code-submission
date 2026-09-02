@@ -5,8 +5,10 @@ import {
   evaluateScholarshipDeadlines,
 } from "@/lib/liveResultText"
 import {
-  isSocialScholarshipUrl,
+  compareScholarshipResults,
+  isBlockedScholarshipUrl,
   TAVILY_SCHOLARSHIP_EXCLUDE_DOMAINS,
+  universitySearchTerms,
 } from "@/lib/scholarshipOfficialSources"
 
 export const dynamic = "force-dynamic"
@@ -46,7 +48,6 @@ export async function POST(req: Request) {
   }
 
   const apiKey = process.env.TAVILY_API_KEY?.trim()
-  const universitySearch = filters.university.trim().length > 0
 
   const queryParts = [
     "scholarship bursary 2026 apply",
@@ -54,7 +55,7 @@ export async function POST(req: Request) {
     filters.major !== "Any major" ? filters.major : "",
     filters.level !== "Any level" ? filters.level : "",
     filters.query.trim(),
-    universitySearch ? `${filters.university.trim()} university scholarships` : "",
+    universitySearchTerms(filters.university) ?? "",
   ].filter(Boolean)
 
   if (apiKey) {
@@ -66,8 +67,8 @@ export async function POST(req: Request) {
           api_key: apiKey,
           query: queryParts.join(" "),
           search_depth: "advanced",
-          exclude_domains: TAVILY_SCHOLARSHIP_EXCLUDE_DOMAINS,
-          ...(universitySearch ? { include_raw_content: "text" } : {}),
+          exclude_domains: [...TAVILY_SCHOLARSHIP_EXCLUDE_DOMAINS],
+          include_raw_content: true,
           max_results: 10,
         }),
       })
@@ -79,9 +80,10 @@ export async function POST(req: Request) {
             if (!r.url || !isValidHttpUrl(r.url)) return false
             if (r.url.includes("404") || r.url.includes("not-found")) return false
             if (typeof r.score === "number" && r.score < 0.3) return false
-            if (isSocialScholarshipUrl(r.url)) return false
+            if (isBlockedScholarshipUrl(r.url)) return false
             return true
           })
+          .sort(compareScholarshipResults)
           .map(
             (
               r: {
