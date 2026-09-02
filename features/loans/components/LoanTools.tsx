@@ -1,6 +1,7 @@
 "use client"
 
 import { useState, type FormEvent } from "react"
+import Link from "next/link"
 import { ListChecks, Search } from "lucide-react"
 import { CountryToggle } from "@/components/CountryToggle"
 import { SectionHeading } from "@/components/layout/SectionHeading"
@@ -69,6 +70,16 @@ export function LoanTools() {
         advertised on public pages — not live guaranteed quotes. Always confirm APR,
         fees, and eligibility on the official site.
       </p>
+      {country === "Canada" && (
+        <p className="mt-2 text-sm">
+          <Link
+            href="/guides/osap-vs-private-loans"
+            className="font-medium text-[#8B6914] underline dark:text-[#C9A84C]"
+          >
+            OSAP vs private loans
+          </Link>
+        </p>
+      )}
 
       <div className="mt-6 grid gap-4 lg:grid-cols-2 lg:items-start">
         <div className="space-y-4">

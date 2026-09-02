@@ -23,6 +23,11 @@ export const FOOTER_NAV: NavLink[] = [
   { href: "/cookies", label: "Cookies" },
 ]
 
+export const GUIDE_NAV: NavLink[] = [
+  { href: "/guides/best-student-bank-canada", label: "Best student bank accounts (Canada)" },
+  { href: "/guides/osap-vs-private-loans", label: "OSAP vs private loans" },
+]
+
 export const ALL_NAV: NavLink[] = [...PRIMARY_NAV, ...SECONDARY_NAV]
 
 export function isActivePath(pathname: string, href: string): boolean {

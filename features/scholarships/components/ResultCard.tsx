@@ -54,6 +54,10 @@ export function ResultCard({ result }: ResultCardProps) {
           <dt className="text-muted-foreground">Deadline</dt>
           <dd className="font-medium text-foreground">{result.deadline}</dd>
         </div>
+        <div className="col-span-2">
+          <dt className="text-muted-foreground">Last checked</dt>
+          <dd className="font-medium text-foreground">{result.lastChecked}</dd>
+        </div>
       </dl>
       <FollowThrough
         href={result.url}

@@ -7,6 +7,11 @@ import { CountryFlag } from "@/components/CountryFlag"
 import { CountryToggle } from "@/components/CountryToggle"
 import { SectionHeading } from "@/components/layout/SectionHeading"
 import { ProductCard } from "@/features/marketplace/components/ProductCard"
+import { ComparisonTable } from "@/features/marketplace/components/ComparisonTable"
+import {
+  CANADA_COMPARISON,
+  US_COMPARISON,
+} from "@/features/marketplace/data/comparison"
 import {
   CATEGORY_LABELS,
   CATEGORY_ORDER,
@@ -82,6 +87,16 @@ export function MarketplaceHome() {
             </Link>
             <span className="text-muted-foreground"> — optional, saved in this browser.</span>
           </p>
+          {country === "CA" && (
+            <p className="mt-2 text-sm">
+              <Link
+                href="/guides/best-student-bank-canada"
+                className="font-medium text-[#8B6914] underline dark:text-[#C9A84C]"
+              >
+                Read the 2026 student bank guide
+              </Link>
+            </p>
+          )}
         </div>
         <CountryToggle
           className="grid w-full grid-cols-2 gap-2 lg:w-[22rem] lg:shrink-0"
@@ -93,6 +108,11 @@ export function MarketplaceHome() {
           ]}
         />
       </div>
+
+      <ComparisonTable
+        rows={country === "CA" ? CANADA_COMPARISON : US_COMPARISON}
+        title={country === "CA" ? "Canada banking snapshot" : "United States snapshot"}
+      />
 
       {grouped.map((group) => (
         <section key={group.category} className="mt-7 lg:mt-8">

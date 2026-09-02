@@ -30,6 +30,27 @@ function isValidHttpUrl(url: string): boolean {
   }
 }
 
+function extractDeadlineFromSnippet(content: string): string {
+  const labeled = content.match(
+    /(?:deadline|due|closes?|ends?)(?:\s*:?\s*)([A-Za-z]+\s+\d{1,2},?\s*\d{4}|\d{1,2}\/\d{1,2}\/\d{4})/i,
+  )
+  if (labeled?.[1]) return labeled[1]
+  const anyDate = content.match(
+    /\b(?:January|February|March|April|May|June|July|August|September|October|November|December)\s+\d{1,2},?\s+\d{4}\b|\b\d{1,2}\/\d{1,2}\/\d{4}\b/,
+  )
+  if (anyDate?.[0]) return anyDate[0]
+  return "Deadline not listed — check official page"
+}
+
+function formatCheckedToday(): string {
+  return new Date().toLocaleDateString("en-US", {
+    year: "numeric",
+    month: "long",
+    day: "numeric",
+    timeZone: "UTC",
+  })
+}
+
 function filterCurated(filters: ScholarshipFilters): ScholarshipResult[] {
   const isCanada = filters.country === "Canada"
   return CURATED_SCHOLARSHIPS.filter((item) => item.id.startsWith(isCanada ? "ca-" : "us-"))
@@ -85,15 +106,13 @@ export async function POST(req: Request) {
             const provider = hostname.split(".")[0] ?? "Source"
             const content = r.content ?? ""
             const amountMatch = content.match(/\$[\d,]+(?:\s*-\s*\$[\d,]+)?|\$[\d,]+\+?/)
-            const deadlineMatch = content.match(
-              /(?:deadline|due|closes?|ends?)(?:\s*:?\s*)([A-Za-z]+\s+\d{1,2},?\s*\d{4}|\d{1,2}\/\d{1,2}\/\d{4})/i,
-            )
             return {
               id: `live-${i}-${hostname}`,
               title: (r.title ?? "Scholarship listing").slice(0, 100),
               provider: provider.charAt(0).toUpperCase() + provider.slice(1),
               amount: amountMatch?.[0] ?? "See listing",
-              deadline: deadlineMatch?.[1] ?? "Check website",
+              deadline: extractDeadlineFromSnippet(content),
+              lastChecked: formatCheckedToday(),
               eligibility: content.trim() || "See the official listing for eligibility details.",
               url: r.url,
               source: "live" as const,

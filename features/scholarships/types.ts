@@ -8,6 +8,7 @@ export type ScholarshipResult = {
   provider: string
   amount: string
   deadline: string
+  lastChecked: string
   eligibility: string
   url: string
   source: ScholarshipSource
