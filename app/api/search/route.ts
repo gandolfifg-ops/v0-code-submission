@@ -1,5 +1,12 @@
-export const dynamic = "force-dynamic";
-export const maxDuration = 30;
+
+import {
+  isOfficialScholarshipUrl,
+  officialScholarshipSiteQuery,
+  TAVILY_SCHOLARSHIP_EXCLUDE_DOMAINS,
+} from "@/lib/scholarshipOfficialSources"
+
+export const dynamic = "force-dynamic"
+export const maxDuration = 30
 
 interface TavilyResult {
   title: string;
@@ -75,7 +82,15 @@ export async function POST(req: Request) {
   // Append Tavily-style negative constraints using "-term" prefix (hard exclude)
   const negativeConstraints = negativeTerms.map(t => `-${t}`).join(" ");
 
-  const searchQuery = (queryParts.join(" ") + " application open deadline " + negativeConstraints).trim();
+  const country = filters.country === "Canada" ? "Canada" : "USA"
+  const university = typeof filters.university === "string" ? filters.university : ""
+
+  const searchQuery = (
+    queryParts.join(" ") +
+    " application open deadline " +
+    negativeConstraints +
+    (type === "scholarship" ? ` ${officialScholarshipSiteQuery(university, country)}` : "")
+  ).trim()
   
   try {
     const tavilyResponse = await fetch("https://api.tavily.com/search", {
@@ -87,9 +102,20 @@ export async function POST(req: Request) {
         api_key: apiKey,
         query: searchQuery,
         search_depth: "advanced",
-        include_domains: type === "scholarship" 
-          ? ["scholarships.com", "fastweb.com", "bold.org", "scholarshipowl.com", "unigo.com", "cappex.com", "niche.com", "goingmerry.com", "studentaid.gov", "collegeboard.org"]
-          : ["studentaid.gov", "nerdwallet.com", "bankrate.com", "credible.com", "sofi.com", "earnest.com", "collegeavestudentloans.com", "salliemae.com"],
+        ...(type === "scholarship"
+          ? { exclude_domains: TAVILY_SCHOLARSHIP_EXCLUDE_DOMAINS }
+          : {
+              include_domains: [
+                "studentaid.gov",
+                "nerdwallet.com",
+                "bankrate.com",
+                "credible.com",
+                "sofi.com",
+                "earnest.com",
+                "collegeavestudentloans.com",
+                "salliemae.com",
+              ],
+            }),
         max_results: 10,
       }),
     });
@@ -120,6 +146,7 @@ export async function POST(req: Request) {
         if (!isValidUrl(r.url)) return false;
         if (r.url.includes("404") || r.url.includes("error") || r.url.includes("not-found")) return false;
         if (r.score < 0.3) return false; // Low relevance
+        if (type === "scholarship" && !isOfficialScholarshipUrl(r.url)) return false;
 
         // Hard negative keyword enforcement — if ANY negative term appears in title or content, discard
         if (negativeTerms.length > 0) {

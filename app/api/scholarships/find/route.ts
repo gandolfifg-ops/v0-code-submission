@@ -4,26 +4,14 @@ import {
   cleanDisplayText,
   evaluateScholarshipDeadlines,
 } from "@/lib/liveResultText"
+import {
+  isOfficialScholarshipUrl,
+  officialScholarshipSiteQuery,
+  TAVILY_SCHOLARSHIP_EXCLUDE_DOMAINS,
+} from "@/lib/scholarshipOfficialSources"
 
 export const dynamic = "force-dynamic"
 export const maxDuration = 30
-
-const SCHOLARSHIP_DOMAINS = [
-  "scholarships.com",
-  "fastweb.com",
-  "bold.org",
-  "unigo.com",
-  "niche.com",
-  "goingmerry.com",
-  "studentaid.gov",
-  "collegeboard.org",
-  "scholarshipamerica.org",
-  "univcan.ca",
-  "loranscholar.ca",
-  "indspire.ca",
-  "scholarshipscanada.com",
-  "yconic.com",
-]
 
 function isValidHttpUrl(url: string): boolean {
   try {
@@ -68,6 +56,7 @@ export async function POST(req: Request) {
     filters.level !== "Any level" ? filters.level : "",
     filters.query.trim(),
     universitySearch ? `${filters.university.trim()} university scholarships` : "",
+    officialScholarshipSiteQuery(filters.university, filters.country),
   ].filter(Boolean)
 
   if (apiKey) {
@@ -79,9 +68,8 @@ export async function POST(req: Request) {
           api_key: apiKey,
           query: queryParts.join(" "),
           search_depth: "advanced",
-          ...(universitySearch
-            ? { include_raw_content: "text" }
-            : { include_domains: SCHOLARSHIP_DOMAINS }),
+          exclude_domains: TAVILY_SCHOLARSHIP_EXCLUDE_DOMAINS,
+          ...(universitySearch ? { include_raw_content: "text" } : {}),
           max_results: 10,
         }),
       })
@@ -93,6 +81,7 @@ export async function POST(req: Request) {
             if (!r.url || !isValidHttpUrl(r.url)) return false
             if (r.url.includes("404") || r.url.includes("not-found")) return false
             if (typeof r.score === "number" && r.score < 0.3) return false
+            if (!isOfficialScholarshipUrl(r.url)) return false
             return true
           })
           .map(
@@ -133,7 +122,7 @@ export async function POST(req: Request) {
           return Response.json({
             source: "live",
             notice:
-              "These are live web search results from public scholarship sites. Amounts and deadlines may be incomplete — always confirm on the official page.",
+              "These are live results from official education and government sites. Amounts and deadlines may be incomplete — always confirm on the official page.",
             results: live,
           })
         }
