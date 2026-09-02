@@ -371,3 +371,19 @@ export function extractScholarshipAmount(text: string): string {
   if (/\bvaries\b/i.test(text)) return "Varies"
   return "Varies"
 }
+
+const CLOSED_NOTICE =
+  /applications? are currently closed|this award has been discontinued|archived listing|past deadline|no longer (?:offered|available|accepting)|applications? (?:are )?closed|this (?:page|program|award) (?:has been )?archived/i
+
+const CURRENT_CYCLE = /\b2026\b|\b2027\b|2026\s*[-–\/]\s*2027|2026\s*[-–\/]\s*27/
+
+const ARCHIVED_PATH = /\/archive(?:d)?\/|\/(201[0-9]|202[0-4])(?:\/|$)/i
+
+/** Drop closed/archived pages unless they mention a 2026/2027 cycle. */
+export function isClosedOrArchivedListing(text: string, url = ""): boolean {
+  const blob = `${text} ${url}`
+  const mentionsCurrentCycle = CURRENT_CYCLE.test(blob)
+  if (ARCHIVED_PATH.test(url) && !mentionsCurrentCycle) return true
+  if (CLOSED_NOTICE.test(text) && !mentionsCurrentCycle) return true
+  return false
+}

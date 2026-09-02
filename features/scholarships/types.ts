@@ -12,6 +12,7 @@ export type ScholarshipResult = {
   eligibility: string
   url: string
   source: ScholarshipSource
+  listingKind?: "official-school" | "active"
 }
 
 export type ScholarshipFilters = {

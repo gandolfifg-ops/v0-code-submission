@@ -77,6 +77,10 @@ const SCHOOL_HINTS: { match: RegExp; hint: SchoolHint }[] = [
   { match: /\b(carleton)\b/i, hint: { name: "Carleton University", domain: "carleton.ca" } },
   { match: /\b(concordia)\b/i, hint: { name: "Concordia University", domain: "concordia.ca" } },
   { match: /\b(dalhousie|dal\.ca)\b/i, hint: { name: "Dalhousie University", domain: "dal.ca" } },
+  { match: /\b(northeastern)\b/i, hint: { name: "Northeastern University", domain: "northeastern.edu" } },
+  { match: /\b(harvard)\b/i, hint: { name: "Harvard University", domain: "harvard.edu" } },
+  { match: /\b(ucla)\b/i, hint: { name: "UCLA", domain: "ucla.edu" } },
+  { match: /\b(stanford)\b/i, hint: { name: "Stanford University", domain: "stanford.edu" } },
 ]
 
 function hostnameOf(url: string): string | null {
@@ -112,6 +116,46 @@ export function universitySearchTerms(university: string): string | null {
   return `${text} official scholarship awards`
 }
 
+export function guessSchoolDomains(school: string): string[] {
+  const hint = resolveSchoolHint(school)
+  if (hint) return [hint.domain]
+  const compact = school
+    .toLowerCase()
+    .replace(/[^a-z0-9\s]/g, " ")
+    .replace(/\b(university|universite|université|college|institute|of|the|at)\b/g, "")
+    .replace(/\s+/g, "")
+  if (compact.length >= 3 && compact.length <= 40) {
+    return [`${compact}.edu`, `${compact}.ca`]
+  }
+  return []
+}
+
+export function schoolSearchName(filters: {
+  query: string
+  university: string
+}): string {
+  if (filters.university.trim()) return filters.university.trim()
+  const q = filters.query.trim()
+  if (!q) return ""
+  if (resolveSchoolHint(q) || /\b(university|college|institute)\b/i.test(q)) return q
+  return ""
+}
+
+function aidHubTerms(domains: string[]): string {
+  if (domains.length === 0) {
+    return "financial aid admissions scholarships merit awards"
+  }
+  return domains
+    .flatMap((domain) => [
+      `${domain}/financialaid`,
+      `${domain}/financial-aid`,
+      `admissions.${domain}`,
+      `${domain}/admissions`,
+      `${domain}/scholarships`,
+    ])
+    .join(" ")
+}
+
 export function schoolFocusedScholarshipQuery(filters: {
   country: string
   major: string
@@ -119,20 +163,54 @@ export function schoolFocusedScholarshipQuery(filters: {
   query: string
   university: string
 }): string {
+  const school = schoolSearchName(filters)
+  if (school) {
+    const hint = resolveSchoolHint(school)
+    const name = hint?.name ?? school
+    const domains = guessSchoolDomains(school)
+    return [
+      `"${name}" scholarship financial aid 2026 OR 2027 open application`,
+      aidHubTerms(domains),
+      filters.country,
+      filters.major !== "Any major" ? filters.major : "",
+      filters.level !== "Any level" ? filters.level : "",
+    ]
+      .filter(Boolean)
+      .join(" ")
+  }
   if (filters.query.trim()) {
     return [filters.query.trim(), "official", filters.country].filter(Boolean).join(" ")
   }
   return [
-    filters.university.trim()
-      ? universitySearchTerms(filters.university)
-      : "university official scholarship awards",
+    "university official scholarship awards",
     filters.country,
     filters.major !== "Any major" ? filters.major : "",
     filters.level !== "Any level" ? filters.level : "",
-    filters.query.trim(),
   ]
     .filter(Boolean)
     .join(" ")
+}
+
+export function isSchoolAidHubUrl(url: string, schoolDomains: string[]): boolean {
+  try {
+    const parsed = new URL(url)
+    const host = parsed.hostname.replace(/^www\./i, "").toLowerCase()
+    const path = `${host}${parsed.pathname}`.toLowerCase()
+    const onSchool =
+      schoolDomains.some((domain) => hostMatches(host, domain)) ||
+      host.endsWith(".edu")
+    if (!onSchool) return false
+    return /financial[-_]?aid|admissions|scholarship|merit|student[-_]?aid/.test(path)
+  } catch {
+    return false
+  }
+}
+
+export function isOfficialSchoolPortalUrl(url: string, schoolDomains: string[] = []): boolean {
+  const host = hostnameOf(url)
+  if (!host) return false
+  if (schoolDomains.some((domain) => hostMatches(host, domain))) return true
+  return host.endsWith(".edu")
 }
 
 /** Named foundations only — never “major national scholarships in Canada”. */
@@ -196,7 +274,14 @@ export function officialSourceRank(url: string): number {
 export function compareScholarshipResults(
   a: { url?: string; score?: number },
   b: { url?: string; score?: number },
+  schoolDomains: string[] = [],
 ): number {
+  const aidA = isSchoolAidHubUrl(a.url ?? "", schoolDomains) ? 0 : 1
+  const aidB = isSchoolAidHubUrl(b.url ?? "", schoolDomains) ? 0 : 1
+  if (aidA !== aidB) return aidA - aidB
+  const schoolA = isOfficialSchoolPortalUrl(a.url ?? "", schoolDomains) ? 0 : 1
+  const schoolB = isOfficialSchoolPortalUrl(b.url ?? "", schoolDomains) ? 0 : 1
+  if (schoolA !== schoolB) return schoolA - schoolB
   const rank = officialSourceRank(a.url ?? "") - officialSourceRank(b.url ?? "")
   if (rank !== 0) return rank
   return (b.score ?? 0) - (a.score ?? 0)

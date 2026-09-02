@@ -36,10 +36,17 @@ export function ResultCard({ result }: ResultCardProps) {
         <CreamIcon icon={GraduationCap} />
         <div className="flex min-w-0 flex-1 flex-wrap gap-2">
         {featured ? (
-          <span className="inline-flex items-center gap-1 rounded-full bg-[#C9A84C] px-2.5 py-1 text-[11px] font-semibold text-[#07090d]">
-            <Globe className="h-3 w-3 shrink-0" aria-hidden="true" />
-            Web Result
-          </span>
+          result.listingKind === "official-school" ? (
+            <span className="inline-flex items-center gap-1 rounded-full bg-[#C9A84C] px-2.5 py-1 text-[11px] font-semibold text-[#07090d]">
+              <GraduationCap className="h-3 w-3 shrink-0" aria-hidden="true" />
+              Official School Portal
+            </span>
+          ) : (
+            <span className="inline-flex items-center gap-1 rounded-full bg-[#C9A84C] px-2.5 py-1 text-[11px] font-semibold text-[#07090d]">
+              <Globe className="h-3 w-3 shrink-0" aria-hidden="true" />
+              Active Listing
+            </span>
+          )
         ) : (
           <span className="rounded-full bg-muted px-2.5 py-1 text-[11px] font-semibold text-muted-foreground">
             Curated pick

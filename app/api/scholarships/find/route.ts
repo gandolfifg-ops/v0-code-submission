@@ -4,11 +4,15 @@ import {
   cleanDisplayText,
   evaluateScholarshipDeadlines,
   extractScholarshipAmount,
+  isClosedOrArchivedListing,
 } from "@/lib/liveResultText"
 import {
   compareScholarshipResults,
+  guessSchoolDomains,
+  isOfficialSchoolPortalUrl,
   nationalFoundationQueries,
   schoolFocusedScholarshipQuery,
+  schoolSearchName,
   shouldKeepScholarshipHit,
   TAVILY_SCHOLARSHIP_EXCLUDE_DOMAINS,
 } from "@/lib/scholarshipOfficialSources"
@@ -76,7 +80,7 @@ async function tavilySearch(apiKey: string, query: string, maxResults = 6): Prom
   return tavilyData.results ?? []
 }
 
-function mapLiveResults(hits: TavilyHit[]): ScholarshipResult[] {
+function mapLiveResults(hits: TavilyHit[], schoolDomains: string[] = []): ScholarshipResult[] {
   const seen = new Set<string>()
   return hits
     .filter((r) => {
@@ -89,15 +93,17 @@ function mapLiveResults(hits: TavilyHit[]): ScholarshipResult[] {
       seen.add(key)
       return true
     })
-    .sort(compareScholarshipResults)
+    .sort((a, b) => compareScholarshipResults(a, b, schoolDomains))
     .map((r, i) => {
       const hostname = new URL(r.url!).hostname.replace(/^www\./, "")
       const provider = hostname.split(".")[0] ?? "Source"
       const content = r.content ?? ""
       const rawPage = r.raw_content ?? r.rawContent ?? ""
       const deadlineSource = [r.title ?? "", content, rawPage].filter(Boolean).join("\n")
+      if (isClosedOrArchivedListing(deadlineSource, r.url!)) return null
       const { keep, deadline } = evaluateScholarshipDeadlines(deadlineSource)
       if (!keep) return null
+      const officialSchool = isOfficialSchoolPortalUrl(r.url!, schoolDomains)
       return {
         id: `live-${i}-${hostname}`,
         title: cleanDisplayText(r.title ?? "Scholarship listing").slice(0, 100),
@@ -109,6 +115,7 @@ function mapLiveResults(hits: TavilyHit[]): ScholarshipResult[] {
           cleanDisplayText(content) || "See the official listing for eligibility details.",
         url: r.url!,
         source: "live" as const,
+        listingKind: officialSchool ? "official-school" : "active",
       }
     })
     .filter((item): item is ScholarshipResult => item !== null)
@@ -129,9 +136,11 @@ export async function POST(req: Request) {
   if (apiKey) {
     try {
       const schoolQuery = schoolFocusedScholarshipQuery(filters)
-      const directQuery = filters.query.trim().length > 0
+      const school = schoolSearchName(filters)
+      const schoolDomains = school ? guessSchoolDomains(school) : []
+      const focusedOnly = Boolean(school || filters.query.trim())
       const hitSets = await Promise.all(
-        directQuery
+        focusedOnly
           ? [tavilySearch(apiKey, schoolQuery, 10)]
           : [
               tavilySearch(apiKey, schoolQuery, 6),
@@ -140,7 +149,7 @@ export async function POST(req: Request) {
               ),
             ],
       )
-      const live = mapLiveResults(hitSets.flat())
+      const live = mapLiveResults(hitSets.flat(), schoolDomains)
 
       if (live.length > 0) {
         return Response.json({
