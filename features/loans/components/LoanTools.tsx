@@ -2,8 +2,9 @@
 
 import { useState, type FormEvent } from "react"
 import Link from "next/link"
-import { ListChecks, Search } from "lucide-react"
+import { Banknote, Car, GraduationCap, ListChecks, Search } from "lucide-react"
 import { CountryToggle } from "@/components/CountryToggle"
+import { CreamIcon } from "@/components/CreamIcon"
 import { SectionHeading } from "@/components/layout/SectionHeading"
 import { LenderCard } from "@/features/loans/components/LenderCard"
 import { PaymentCalculator } from "@/features/loans/components/PaymentCalculator"
@@ -12,6 +13,11 @@ import { isProfileFilled, type StudentProfile } from "@/features/student-profile
 import type { LoanCountry, LoanResult, LoanType } from "@/features/loans/types"
 
 const LOAN_TYPES: LoanType[] = ["Student", "Personal", "Auto"]
+const LOAN_TYPE_ICONS = {
+  Student: GraduationCap,
+  Personal: Banknote,
+  Auto: Car,
+} as const
 
 type SearchResponse = {
   source: "live" | "curated"
@@ -105,12 +111,13 @@ export function LoanTools() {
                   key={type}
                   type="button"
                   onClick={() => setLoanType(type)}
-                  className={`min-h-11 rounded-xl text-sm font-semibold transition-colors ${
+                  className={`inline-flex min-h-11 items-center justify-center gap-1.5 rounded-xl px-2 text-sm font-semibold transition-colors ${
                     loanType === type
                       ? "bg-[#C9A84C] text-[#07090d] hover:bg-[#b8973f]"
                       : "border border-border text-muted-foreground hover:bg-muted hover:text-foreground"
                   }`}
                 >
+                  <CreamIcon icon={LOAN_TYPE_ICONS[type]} size="sm" />
                   {type}
                 </button>
               ))}

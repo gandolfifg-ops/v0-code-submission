@@ -1,5 +1,6 @@
 import { CURATED_LENDERS } from "@/features/loans/data/curated"
 import type { LoanCountry, LoanResult, LoanType } from "@/features/loans/types"
+import { cleanDisplayText } from "@/lib/liveResultText"
 
 export const dynamic = "force-dynamic"
 export const maxDuration = 30
@@ -88,14 +89,14 @@ export async function POST(req: Request) {
             const rateMatch = content.match(/\d+\.?\d*\s*%(?:\s*APR)?/i)
             return {
               id: `live-${loanType}-${i}-${hostname}`,
-              name: (r.title ?? name).slice(0, 90),
+              name: cleanDisplayText(r.title ?? name).slice(0, 90),
               country,
               loanType,
               tagline: name.charAt(0).toUpperCase() + name.slice(1),
               advertisedRate: rateMatch
                 ? `Advertised ${rateMatch[0]} — confirm on official site`
                 : "Advertised rate — confirm on official site",
-              highlight: content.trim() || "Open the lender page for current terms.",
+              highlight: cleanDisplayText(content) || "Open the lender page for current terms.",
               href: r.url,
               cta: "Open official site",
               source: "live" as const,

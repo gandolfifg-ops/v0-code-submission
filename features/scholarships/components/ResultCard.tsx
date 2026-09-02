@@ -4,6 +4,7 @@ import { ExpandableText } from "@/components/ExpandableText"
 import type { ScholarshipResult } from "@/features/scholarships/types"
 import { SCHOLARSHIP_CHECKLIST } from "@/features/student-profile/checklists"
 import { FollowThrough } from "@/features/student-profile/components/FollowThrough"
+import { cleanDisplayText } from "@/lib/liveResultText"
 
 type ResultCardProps = {
   result: ScholarshipResult
@@ -11,6 +12,8 @@ type ResultCardProps = {
 
 export function ResultCard({ result }: ResultCardProps) {
   const featured = result.source === "live"
+  const title = cleanDisplayText(result.title)
+  const eligibility = cleanDisplayText(result.eligibility)
 
   return (
     <article
@@ -38,10 +41,10 @@ export function ResultCard({ result }: ResultCardProps) {
         </span>
         </div>
       </div>
-      <h3 className="text-base font-semibold text-foreground">{result.title}</h3>
+      <h3 className="text-base font-semibold text-foreground">{title}</h3>
       <div className="mt-2">
         <ExpandableText
-          text={result.eligibility}
+          text={eligibility}
           className="text-sm leading-relaxed text-muted-foreground"
         />
       </div>
@@ -66,7 +69,7 @@ export function ResultCard({ result }: ResultCardProps) {
         item={{
           id: `scholarship:${result.id}`,
           kind: "scholarship",
-          title: result.title,
+          title: title,
           href: result.url,
           subtitle: `${result.provider} · ${result.amount}`,
           savedAt: Date.now(),

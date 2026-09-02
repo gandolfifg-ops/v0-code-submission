@@ -4,6 +4,7 @@ import { ExpandableText } from "@/components/ExpandableText"
 import type { LoanResult, LoanType } from "@/features/loans/types"
 import { LOAN_CHECKLISTS } from "@/features/student-profile/checklists"
 import { FollowThrough } from "@/features/student-profile/components/FollowThrough"
+import { cleanDisplayText } from "@/lib/liveResultText"
 
 const LOAN_ICONS: Record<LoanType, typeof GraduationCap> = {
   Student: GraduationCap,
@@ -13,6 +14,8 @@ const LOAN_ICONS: Record<LoanType, typeof GraduationCap> = {
 
 export function LenderCard({ lender }: { lender: LoanResult }) {
   const featured = lender.source === "live"
+  const name = cleanDisplayText(lender.name)
+  const highlight = cleanDisplayText(lender.highlight)
 
   return (
     <article
@@ -40,11 +43,11 @@ export function LenderCard({ lender }: { lender: LoanResult }) {
         </span>
         </div>
       </div>
-      <h3 className="text-base font-semibold text-foreground">{lender.name}</h3>
+      <h3 className="text-base font-semibold text-foreground">{name}</h3>
       <p className="mt-1 text-sm font-medium text-[#8B6914] dark:text-[#C9A84C]">{lender.tagline}</p>
       <div className="mt-3">
         <ExpandableText
-          text={lender.highlight}
+          text={highlight}
           className="text-sm leading-relaxed text-muted-foreground"
         />
       </div>
@@ -59,7 +62,7 @@ export function LenderCard({ lender }: { lender: LoanResult }) {
         item={{
           id: `loan:${lender.id}`,
           kind: "loan",
-          title: lender.name,
+          title: name,
           href: lender.href,
           subtitle: `${lender.loanType} · ${lender.advertisedRate}`,
           savedAt: Date.now(),

@@ -142,7 +142,7 @@
   button:not(:disabled):hover {
     filter: brightness(0.97);
   }
-  header nav a:hover,
+  header nav a:not([aria-current="page"]):hover,
   footer nav a:hover {
     text-decoration: underline;
     text-underline-offset: 4px;

@@ -1,5 +1,10 @@
 import { CURATED_SCHOLARSHIPS } from "@/features/scholarships/data/curated"
 import type { ScholarshipFilters, ScholarshipResult } from "@/features/scholarships/types"
+import {
+  cleanDisplayText,
+  extractDeadlineFromSnippet,
+  resolveScholarshipDeadline,
+} from "@/lib/liveResultText"
 
 export const dynamic = "force-dynamic"
 export const maxDuration = 30
@@ -28,18 +33,6 @@ function isValidHttpUrl(url: string): boolean {
   } catch {
     return false
   }
-}
-
-function extractDeadlineFromSnippet(content: string): string {
-  const labeled = content.match(
-    /(?:deadline|due|closes?|ends?)(?:\s*:?\s*)([A-Za-z]+\s+\d{1,2},?\s*\d{4}|\d{1,2}\/\d{1,2}\/\d{4})/i,
-  )
-  if (labeled?.[1]) return labeled[1]
-  const anyDate = content.match(
-    /\b(?:January|February|March|April|May|June|July|August|September|October|November|December)\s+\d{1,2},?\s+\d{4}\b|\b\d{1,2}\/\d{1,2}\/\d{4}\b/,
-  )
-  if (anyDate?.[0]) return anyDate[0]
-  return "Deadline not listed — check official page"
 }
 
 function formatCheckedToday(): string {
@@ -106,18 +99,23 @@ export async function POST(req: Request) {
             const provider = hostname.split(".")[0] ?? "Source"
             const content = r.content ?? ""
             const amountMatch = content.match(/\$[\d,]+(?:\s*-\s*\$[\d,]+)?|\$[\d,]+\+?/)
+            const extracted = extractDeadlineFromSnippet(content)
+            const { keep, deadline } = resolveScholarshipDeadline(extracted)
+            if (!keep) return null
             return {
               id: `live-${i}-${hostname}`,
-              title: (r.title ?? "Scholarship listing").slice(0, 100),
+              title: cleanDisplayText(r.title ?? "Scholarship listing").slice(0, 100),
               provider: provider.charAt(0).toUpperCase() + provider.slice(1),
               amount: amountMatch?.[0] ?? "See listing",
-              deadline: extractDeadlineFromSnippet(content),
+              deadline,
               lastChecked: formatCheckedToday(),
-              eligibility: content.trim() || "See the official listing for eligibility details.",
+              eligibility:
+                cleanDisplayText(content) || "See the official listing for eligibility details.",
               url: r.url,
               source: "live" as const,
             }
           })
+          .filter((item): item is ScholarshipResult => item !== null)
 
         if (live.length > 0) {
           return Response.json({

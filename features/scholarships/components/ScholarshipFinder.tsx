@@ -13,6 +13,7 @@ import {
   type ScholarshipCountry,
   type ScholarshipResult,
 } from "@/features/scholarships/types"
+import { isExpiredDeadline } from "@/lib/liveResultText"
 
 type SearchResponse = {
   source: "live" | "curated"
@@ -58,7 +59,8 @@ export function ScholarshipFinder() {
       })
       if (!res.ok) throw new Error("Search failed")
       const data: SearchResponse = await res.json()
-      setResults(data.results ?? [])
+      const results = (data.results ?? []).filter((item) => !isExpiredDeadline(item.deadline))
+      setResults(results)
       setSource(data.source)
       setNotice(data.notice)
     } catch {

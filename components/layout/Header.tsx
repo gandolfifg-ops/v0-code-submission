@@ -21,6 +21,7 @@ function DesktopNavLink({ href, label }: { href: string; label: string }) {
       className={`inline-flex items-center gap-1.5 rounded-md px-2.5 py-2 text-sm font-medium transition-colors ${
         active ? "text-[#C9A84C]" : "text-muted-foreground hover:text-foreground"
       }`}
+      aria-current={active ? "page" : undefined}
     >
       {Icon && <Icon className="h-3.5 w-3.5 shrink-0 text-[#C9A84C]" strokeWidth={1.75} aria-hidden="true" />}
       <span className="flex flex-col">
