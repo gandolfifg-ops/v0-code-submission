@@ -5,6 +5,7 @@ import { usePathname } from "next/navigation"
 import { useState } from "react"
 import { Menu } from "lucide-react"
 import { Logo } from "@/components/Logo"
+import { HeaderSearchBar } from "@/components/HeaderSearchBar"
 import { PRIMARY_NAV, SECONDARY_NAV, isActivePath } from "@/lib/constants/nav"
 import { NAV_ICONS } from "@/lib/constants/navIcons"
 import { MobileNav } from "@/components/layout/MobileNav"
@@ -49,21 +50,26 @@ export function Header() {
             ))}
           </nav>
 
-          <div className="flex items-center gap-2">
-            <nav className="hidden items-center gap-1 md:flex" aria-label="Secondary">
-              {SECONDARY_NAV.map((link) => (
-                <DesktopNavLink key={link.href} href={link.href} label={link.label} />
-              ))}
-            </nav>
-            <ThemeToggle />
-            <button
-              type="button"
-              className="inline-flex h-9 w-9 items-center justify-center rounded-lg border border-border text-muted-foreground hover:bg-muted md:hidden"
-              onClick={() => setMobileOpen(true)}
-              aria-label="Open menu"
-            >
-              <Menu className="h-5 w-5" />
-            </button>
+          <div className="flex min-w-0 flex-1 items-center justify-end gap-2">
+            <div className="min-w-0 flex-1 md:max-w-xs md:flex-none">
+              <HeaderSearchBar />
+            </div>
+            <div className="flex shrink-0 items-center gap-2">
+              <nav className="hidden items-center gap-1 md:flex" aria-label="Secondary">
+                {SECONDARY_NAV.map((link) => (
+                  <DesktopNavLink key={link.href} href={link.href} label={link.label} />
+                ))}
+              </nav>
+              <ThemeToggle />
+              <button
+                type="button"
+                className="inline-flex h-9 w-9 items-center justify-center rounded-lg border border-border text-muted-foreground hover:bg-muted md:hidden"
+                onClick={() => setMobileOpen(true)}
+                aria-label="Open menu"
+              >
+                <Menu className="h-5 w-5" />
+              </button>
+            </div>
           </div>
         </div>
       </header>

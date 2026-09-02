@@ -48,12 +48,13 @@ export async function POST(req: Request) {
   const country = parseCountry(body?.country)
   const loanType = parseType(body?.loanType)
   const amount = typeof body?.amount === "string" ? body.amount.trim() : ""
+  const query = typeof body?.query === "string" ? body.query.trim() : ""
 
   const apiKey = process.env.TAVILY_API_KEY?.trim()
   const searchQuery = [
     country === "Canada" ? "Canada" : "United States",
-    loanType.toLowerCase(),
-    "loan 2026 apply rates",
+    query || loanType.toLowerCase(),
+    query ? "official" : "loan 2026 apply rates",
     amount ? `${amount} dollars` : "",
   ]
     .filter(Boolean)
@@ -68,7 +69,7 @@ export async function POST(req: Request) {
           api_key: apiKey,
           query: searchQuery,
           search_depth: "advanced",
-          include_domains: DOMAINS[country][loanType],
+          ...(query ? {} : { include_domains: DOMAINS[country][loanType] }),
           max_results: 8,
         }),
       })

@@ -119,6 +119,9 @@ export function schoolFocusedScholarshipQuery(filters: {
   query: string
   university: string
 }): string {
+  if (filters.query.trim()) {
+    return [filters.query.trim(), "official", filters.country].filter(Boolean).join(" ")
+  }
   return [
     filters.university.trim()
       ? universitySearchTerms(filters.university)

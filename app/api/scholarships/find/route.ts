@@ -129,11 +129,17 @@ export async function POST(req: Request) {
   if (apiKey) {
     try {
       const schoolQuery = schoolFocusedScholarshipQuery(filters)
-      const foundationQueries = nationalFoundationQueries(filters.country)
-      const hitSets = await Promise.all([
-        tavilySearch(apiKey, schoolQuery, 6),
-        ...foundationQueries.map((query) => tavilySearch(apiKey, query, 3)),
-      ])
+      const directQuery = filters.query.trim().length > 0
+      const hitSets = await Promise.all(
+        directQuery
+          ? [tavilySearch(apiKey, schoolQuery, 10)]
+          : [
+              tavilySearch(apiKey, schoolQuery, 6),
+              ...nationalFoundationQueries(filters.country).map((query) =>
+                tavilySearch(apiKey, query, 3),
+              ),
+            ],
+      )
       const live = mapLiveResults(hitSets.flat())
 
       if (live.length > 0) {

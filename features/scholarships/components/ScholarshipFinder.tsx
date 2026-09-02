@@ -1,8 +1,9 @@
 "use client"
 
-import { useState, type FormEvent } from "react"
+import { useEffect, useState, type FormEvent } from "react"
 import { GraduationCap, ListChecks, Search } from "lucide-react"
 import { CountryToggle } from "@/components/CountryToggle"
+import { useSmartSearch } from "@/components/SmartSearchProvider"
 import { SectionHeading } from "@/components/layout/SectionHeading"
 import { ResultCard } from "@/features/scholarships/components/ResultCard"
 import { StudentProfileBox } from "@/features/student-profile/components/StudentProfileBox"
@@ -25,6 +26,7 @@ const selectClass =
   "min-h-11 w-full rounded-xl border border-border bg-background px-3 text-sm text-foreground"
 
 export function ScholarshipFinder() {
+  const { setCountry: setSearchCountry, ticket } = useSmartSearch()
   const [country, setCountry] = useState<ScholarshipCountry>("Canada")
   const [major, setMajor] = useState<string>("Any major")
   const [level, setLevel] = useState<string>("Any level")
@@ -40,13 +42,13 @@ export function ScholarshipFinder() {
   function applyProfile(profile: StudentProfile | null) {
     if (!isProfileFilled(profile) || !profile) return
     setCountry(profile.country)
+    setSearchCountry(profile.country)
     if (profile.major) setMajor(profile.major)
     if (profile.level) setLevel(profile.level)
     if (profile.school.trim()) setUniversity(profile.school.trim())
   }
 
-  async function onSubmit(e: FormEvent) {
-    e.preventDefault()
+  async function runSearch(next: { query: string; university?: string }) {
     setLoading(true)
     setError(null)
     setNotice(null)
@@ -55,7 +57,13 @@ export function ScholarshipFinder() {
       const res = await fetch("/api/scholarships/find", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ country, major, level, query, university }),
+        body: JSON.stringify({
+          country,
+          major: next.query ? "Any major" : major,
+          level: next.query ? "Any level" : level,
+          query: next.query,
+          university: next.query ? "" : (next.university ?? university),
+        }),
       })
       if (!res.ok) throw new Error("Search failed")
       const data: SearchResponse = await res.json()
@@ -70,6 +78,23 @@ export function ScholarshipFinder() {
     } finally {
       setLoading(false)
     }
+  }
+
+  useEffect(() => {
+    setSearchCountry(country)
+  }, [country, setSearchCountry])
+
+  useEffect(() => {
+    if (!ticket) return
+    setQuery(ticket.query)
+    setUniversity("")
+    void runSearch({ query: ticket.query, university: "" })
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- run only when header submits a new ticket
+  }, [ticket?.id])
+
+  async function onSubmit(e: FormEvent) {
+    e.preventDefault()
+    await runSearch({ query, university })
   }
 
   return (
@@ -97,7 +122,10 @@ export function ScholarshipFinder() {
             <SectionHeading icon={Search}>Search awards</SectionHeading>
             <CountryToggle
               value={country}
-              onChange={setCountry}
+              onChange={(next) => {
+                setCountry(next)
+                setSearchCountry(next)
+              }}
               options={[
                 { value: "Canada", flag: "CA", label: "Canada" },
                 { value: "USA", flag: "US", label: "United States" },

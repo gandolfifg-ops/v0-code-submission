@@ -1,10 +1,11 @@
 "use client"
 
-import { useState, type FormEvent } from "react"
+import { useEffect, useState, type FormEvent } from "react"
 import Link from "next/link"
 import { Banknote, Car, GraduationCap, ListChecks, Search } from "lucide-react"
 import { CountryToggle } from "@/components/CountryToggle"
 import { CreamIcon } from "@/components/CreamIcon"
+import { useSmartSearch } from "@/components/SmartSearchProvider"
 import { SectionHeading } from "@/components/layout/SectionHeading"
 import { LenderCard } from "@/features/loans/components/LenderCard"
 import { PaymentCalculator } from "@/features/loans/components/PaymentCalculator"
@@ -26,6 +27,7 @@ type SearchResponse = {
 }
 
 export function LoanTools() {
+  const { setCountry: setSearchCountry, ticket } = useSmartSearch()
   const [country, setCountry] = useState<LoanCountry>("Canada")
   const [loanType, setLoanType] = useState<LoanType>("Student")
   const [amount, setAmount] = useState("")
@@ -38,17 +40,17 @@ export function LoanTools() {
   function applyProfile(profile: StudentProfile | null) {
     if (!isProfileFilled(profile) || !profile) return
     setCountry(profile.country)
+    setSearchCountry(profile.country)
   }
 
-  async function onSubmit(e: FormEvent) {
-    e.preventDefault()
+  async function runSearch(nextQuery = "") {
     setLoading(true)
     setError(null)
     try {
       const res = await fetch("/api/loans/find", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ country, loanType, amount }),
+        body: JSON.stringify({ country, loanType, amount, query: nextQuery }),
       })
       if (!res.ok) throw new Error("Search failed")
       const data: SearchResponse = await res.json()
@@ -63,6 +65,21 @@ export function LoanTools() {
     } finally {
       setLoading(false)
     }
+  }
+
+  useEffect(() => {
+    setSearchCountry(country)
+  }, [country, setSearchCountry])
+
+  useEffect(() => {
+    if (!ticket) return
+    void runSearch(ticket.query)
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- run only when header submits a new ticket
+  }, [ticket?.id])
+
+  async function onSubmit(e: FormEvent) {
+    e.preventDefault()
+    await runSearch()
   }
 
   return (
@@ -98,7 +115,10 @@ export function LoanTools() {
             <SectionHeading icon={Search}>Find lenders</SectionHeading>
             <CountryToggle
               value={country}
-              onChange={setCountry}
+              onChange={(next) => {
+                setCountry(next)
+                setSearchCountry(next)
+              }}
               options={[
                 { value: "Canada", flag: "CA", label: "Canada" },
                 { value: "USA", flag: "US", label: "United States" },
