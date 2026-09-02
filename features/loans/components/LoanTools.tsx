@@ -1,6 +1,7 @@
 "use client"
 
 import { useState, type FormEvent } from "react"
+import { CountryToggle } from "@/components/CountryToggle"
 import { LenderCard } from "@/features/loans/components/LenderCard"
 import { PaymentCalculator } from "@/features/loans/components/PaymentCalculator"
 import type { LoanCountry, LoanResult, LoanType } from "@/features/loans/types"
@@ -64,22 +65,14 @@ export function LoanTools() {
         onSubmit={onSubmit}
         className="mt-8 space-y-3 rounded-2xl border border-border bg-card p-4 sm:p-6"
       >
-        <div className="grid grid-cols-2 gap-2">
-          {(["Canada", "USA"] as const).map((code) => (
-            <button
-              key={code}
-              type="button"
-              onClick={() => setCountry(code)}
-              className={`min-h-11 rounded-xl text-sm font-semibold ${
-                country === code
-                  ? "bg-[#C9A84C] text-[#07090d]"
-                  : "border border-border text-muted-foreground"
-              }`}
-            >
-              {code === "Canada" ? "🇨🇦 Canada" : "🇺🇸 United States"}
-            </button>
-          ))}
-        </div>
+        <CountryToggle
+          value={country}
+          onChange={setCountry}
+          options={[
+            { value: "Canada", flag: "CA", label: "Canada" },
+            { value: "USA", flag: "US", label: "United States" },
+          ]}
+        />
 
         <div className="grid grid-cols-3 gap-2">
           {LOAN_TYPES.map((type) => (
@@ -87,10 +80,10 @@ export function LoanTools() {
               key={type}
               type="button"
               onClick={() => setLoanType(type)}
-              className={`min-h-11 rounded-xl text-sm font-semibold ${
+              className={`min-h-11 rounded-xl text-sm font-semibold transition-colors ${
                 loanType === type
-                  ? "bg-[#C9A84C] text-[#07090d]"
-                  : "border border-border text-muted-foreground"
+                  ? "bg-[#C9A84C] text-[#07090d] hover:bg-[#b8973f]"
+                  : "border border-border text-muted-foreground hover:bg-muted hover:text-foreground"
               }`}
             >
               {type}
@@ -112,7 +105,7 @@ export function LoanTools() {
         <button
           type="submit"
           disabled={loading}
-          className="min-h-11 w-full rounded-xl bg-[#C9A84C] text-sm font-bold text-[#07090d] disabled:opacity-60"
+          className="min-h-11 w-full rounded-xl bg-[#C9A84C] text-sm font-bold text-[#07090d] transition-colors hover:bg-[#b8973f] disabled:opacity-60"
         >
           {loading ? "Searching…" : "Find lenders"}
         </button>

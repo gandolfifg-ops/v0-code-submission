@@ -7,7 +7,7 @@ type ResultCardProps = {
 
 export function ResultCard({ result }: ResultCardProps) {
   return (
-    <article className="flex flex-col rounded-2xl border border-border bg-card p-5">
+    <article className="interactive-card flex flex-col rounded-2xl border border-border bg-card p-5">
       <div className="mb-3 flex flex-wrap gap-2">
         <span
           className={`rounded-full px-2.5 py-1 text-[11px] font-semibold ${
@@ -38,7 +38,7 @@ export function ResultCard({ result }: ResultCardProps) {
         href={result.url}
         target="_blank"
         rel="noopener noreferrer"
-        className="mt-4 inline-flex min-h-11 w-full items-center justify-center rounded-xl bg-[#C9A84C] px-4 text-sm font-bold text-[#07090d] hover:opacity-90"
+        className="mt-4 inline-flex min-h-11 w-full items-center justify-center rounded-xl bg-[#C9A84C] px-4 text-sm font-bold text-[#07090d] transition-colors hover:bg-[#b8973f]"
       >
         Open official site
       </a>

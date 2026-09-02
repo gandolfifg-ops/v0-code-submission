@@ -12,7 +12,7 @@ function SavedCard({
   onRemove: (id: string) => void
 }) {
   return (
-    <article className="flex flex-col rounded-2xl border border-border bg-card p-5">
+    <article className="interactive-card flex flex-col rounded-2xl border border-border bg-card p-5">
       <span className="w-fit rounded-full border border-border px-2.5 py-1 text-[11px] font-semibold uppercase text-muted-foreground">
         {item.kind}
       </span>
@@ -22,14 +22,14 @@ function SavedCard({
         href={item.href}
         target="_blank"
         rel="noopener noreferrer"
-        className="mt-4 inline-flex min-h-11 w-full items-center justify-center rounded-xl bg-[#C9A84C] px-4 text-sm font-bold text-[#07090d] hover:opacity-90"
+        className="mt-4 inline-flex min-h-11 w-full items-center justify-center rounded-xl bg-[#C9A84C] px-4 text-sm font-bold text-[#07090d] transition-colors hover:bg-[#b8973f]"
       >
         Open official site
       </a>
       <button
         type="button"
         onClick={() => onRemove(item.id)}
-        className="mt-2 min-h-11 rounded-xl border border-border text-sm font-semibold text-muted-foreground"
+        className="mt-2 min-h-11 rounded-xl border border-border text-sm font-semibold text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
       >
         Remove
       </button>
@@ -63,13 +63,13 @@ export function SavedList() {
           <div className="mt-4 grid gap-3 sm:grid-cols-2">
             <Link
               href="/scholarships"
-              className="inline-flex min-h-11 items-center justify-center rounded-xl bg-[#C9A84C] px-4 text-sm font-bold text-[#07090d]"
+              className="inline-flex min-h-11 items-center justify-center rounded-xl bg-[#C9A84C] px-4 text-sm font-bold text-[#07090d] transition-colors hover:bg-[#b8973f]"
             >
               Find scholarships
             </Link>
             <Link
               href="/loans"
-              className="inline-flex min-h-11 items-center justify-center rounded-xl border border-border px-4 text-sm font-semibold text-foreground"
+              className="inline-flex min-h-11 items-center justify-center rounded-xl border border-border px-4 text-sm font-semibold text-foreground transition-colors hover:bg-muted"
             >
               Find loans
             </Link>

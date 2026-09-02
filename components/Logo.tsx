@@ -39,7 +39,7 @@ export function Logo({ size = 32, showText = false, href = "/" }: LogoProps) {
   return (
     <Link
       href={href}
-      className="inline-flex items-center gap-2 bg-transparent"
+      className="inline-flex items-center gap-2 bg-transparent transition-opacity hover:opacity-80"
       aria-label="WealthNutz home"
     >
       <LogoSvg size={size} />

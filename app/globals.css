@@ -122,4 +122,44 @@
   body {
     @apply bg-background text-foreground;
   }
+  a,
+  button,
+  summary,
+  [role="button"],
+  [role="tab"] {
+    cursor: pointer;
+  }
+  button:disabled,
+  [aria-disabled="true"] {
+    cursor: not-allowed;
+  }
+}
+
+@media (hover: hover) and (pointer: fine) {
+  a:hover {
+    opacity: 0.88;
+  }
+  button:not(:disabled):hover {
+    filter: brightness(0.97);
+  }
+  header nav a:hover,
+  footer nav a:hover {
+    text-decoration: underline;
+    text-underline-offset: 4px;
+  }
+}
+
+.interactive-card {
+  transition:
+    border-color 150ms ease,
+    box-shadow 150ms ease,
+    transform 150ms ease;
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .interactive-card:hover {
+    border-color: color-mix(in oklab, #c9a84c 45%, var(--border));
+    box-shadow: 0 8px 18px -10px rgb(0 0 0 / 0.14);
+    transform: translateY(-1px);
+  }
 }

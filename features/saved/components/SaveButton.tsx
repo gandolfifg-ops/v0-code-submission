@@ -13,7 +13,7 @@ export function SaveButton({ item }: { item: SavedItem }) {
       type="button"
       disabled={!ready}
       onClick={() => toggle(item)}
-      className="inline-flex min-h-11 w-full items-center justify-center gap-2 rounded-xl border border-border text-sm font-semibold text-foreground hover:border-[#C9A84C]/40 disabled:opacity-50"
+      className="inline-flex min-h-11 w-full items-center justify-center gap-2 rounded-xl border border-border text-sm font-semibold text-foreground transition-colors hover:border-[#C9A84C]/40 hover:bg-muted/60 disabled:opacity-50"
     >
       <Bookmark className="h-4 w-4" fill={saved ? "currentColor" : "none"} />
       {saved ? "Saved" : "Save"}

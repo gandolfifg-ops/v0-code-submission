@@ -18,7 +18,7 @@ const FAQS = [
       },
       {
         q: "Which countries are supported?",
-        a: "Canada and the United States. Use the country toggle on Marketplace, Scholarships, Loans, and Chat.",
+        a: "Canada and the United States. Use the country toggle on Marketplace, Scholarships, and Loans.",
       },
     ],
   },
@@ -71,7 +71,7 @@ export default function HelpPage() {
                   <button
                     type="button"
                     onClick={() => setOpenItem(open ? null : key)}
-                    className="flex min-h-11 w-full items-center justify-between gap-3 px-4 py-3 text-left text-sm font-semibold text-foreground"
+                    className="flex min-h-11 w-full items-center justify-between gap-3 px-4 py-3 text-left text-sm font-semibold text-foreground transition-colors hover:bg-muted/50"
                   >
                     {item.q}
                     <span aria-hidden="true">{open ? "−" : "+"}</span>

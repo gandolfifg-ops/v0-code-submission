@@ -1,6 +1,7 @@
 "use client"
 
 import { useState, type FormEvent } from "react"
+import { CountryToggle } from "@/components/CountryToggle"
 import { ResultCard } from "@/features/scholarships/components/ResultCard"
 import {
   SCHOLARSHIP_LEVELS,
@@ -73,22 +74,14 @@ export function ScholarshipFinder() {
         onSubmit={onSubmit}
         className="mt-8 space-y-3 rounded-2xl border border-border bg-card p-4 sm:p-6"
       >
-        <div className="grid grid-cols-2 gap-2">
-          {(["Canada", "USA"] as const).map((code) => (
-            <button
-              key={code}
-              type="button"
-              onClick={() => setCountry(code)}
-              className={`min-h-11 rounded-xl text-sm font-semibold ${
-                country === code
-                  ? "bg-[#C9A84C] text-[#07090d]"
-                  : "border border-border text-muted-foreground"
-              }`}
-            >
-              {code === "Canada" ? "🇨🇦 Canada" : "🇺🇸 United States"}
-            </button>
-          ))}
-        </div>
+        <CountryToggle
+          value={country}
+          onChange={setCountry}
+          options={[
+            { value: "Canada", flag: "CA", label: "Canada" },
+            { value: "USA", flag: "US", label: "United States" },
+          ]}
+        />
 
         <label className="block text-xs font-medium text-muted-foreground">
           Major
@@ -135,7 +128,7 @@ export function ScholarshipFinder() {
         <button
           type="submit"
           disabled={loading}
-          className="min-h-11 w-full rounded-xl bg-[#C9A84C] text-sm font-bold text-[#07090d] disabled:opacity-60"
+          className="min-h-11 w-full rounded-xl bg-[#C9A84C] text-sm font-bold text-[#07090d] transition-colors hover:bg-[#b8973f] disabled:opacity-60"
         >
           {loading ? "Searching…" : "Find scholarships"}
         </button>

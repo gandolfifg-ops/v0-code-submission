@@ -7,7 +7,7 @@ type ProductCardProps = {
 
 export function ProductCard({ product }: ProductCardProps) {
   return (
-    <article className="flex flex-col rounded-2xl border border-border bg-card p-5 shadow-sm">
+    <article className="interactive-card flex flex-col rounded-2xl border border-border bg-card p-5 shadow-sm">
       <div className="mb-3 flex flex-wrap items-center gap-2">
         <span className="rounded-full bg-muted px-2.5 py-1 text-[11px] font-semibold uppercase tracking-wide text-muted-foreground">
           {CATEGORY_LABELS[product.category]}
@@ -28,7 +28,7 @@ export function ProductCard({ product }: ProductCardProps) {
         href={product.href}
         target="_blank"
         rel="noopener noreferrer"
-        className="mt-5 inline-flex min-h-11 w-full items-center justify-center rounded-xl bg-[#C9A84C] px-4 text-sm font-bold text-[#07090d] transition-opacity hover:opacity-90"
+        className="mt-5 inline-flex min-h-11 w-full items-center justify-center rounded-xl bg-[#C9A84C] px-4 text-sm font-bold text-[#07090d] transition-colors hover:bg-[#b8973f]"
       >
         {product.cta}
       </a>

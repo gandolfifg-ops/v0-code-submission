@@ -8,7 +8,6 @@ import { CHAT_SYSTEM_PROMPT, SUGGESTIONS } from "@/features/chat/constants"
 
 type Role = "user" | "assistant"
 type Msg = { role: Role; content: string }
-type Country = "Canada" | "USA"
 
 async function readChatStream(
   res: Response,
@@ -41,7 +40,6 @@ async function readChatStream(
 }
 
 export function StudentChat() {
-  const [country, setCountry] = useState<Country>("Canada")
   const [configured, setConfigured] = useState<boolean | null>(null)
   const [configError, setConfigError] = useState<string | null>(null)
   const [msgs, setMsgs] = useState<Msg[]>([])
@@ -87,7 +85,6 @@ export function StudentChat() {
         body: JSON.stringify({
           messages: nextMsgs,
           system: CHAT_SYSTEM_PROMPT,
-          country,
         }),
       })
 
@@ -148,23 +145,6 @@ export function StudentChat() {
         . This is general education, not personalized advice.
       </p>
 
-      <div className="mt-5 grid grid-cols-2 gap-2">
-        {(["Canada", "USA"] as const).map((code) => (
-          <button
-            key={code}
-            type="button"
-            onClick={() => setCountry(code)}
-            className={`min-h-11 rounded-xl text-sm font-semibold ${
-              country === code
-                ? "bg-[#C9A84C] text-[#07090d]"
-                : "border border-border text-muted-foreground"
-            }`}
-          >
-            {code === "Canada" ? "🇨🇦 Canada" : "🇺🇸 United States"}
-          </button>
-        ))}
-      </div>
-
       {configured === false && (
         <div className="mt-6 rounded-xl border border-[#C9A84C]/40 bg-[#C9A84C]/10 px-4 py-3 text-sm text-foreground">
           {configError ??
@@ -184,7 +164,7 @@ export function StudentChat() {
                     type="button"
                     onClick={() => void send(s)}
                     disabled={loading || configured === null}
-                    className="block w-full rounded-xl border border-border px-3 py-2.5 text-left text-sm text-foreground hover:border-[#C9A84C]/40 disabled:opacity-50"
+                    className="block w-full rounded-xl border border-border px-3 py-2.5 text-left text-sm text-foreground transition-colors hover:border-[#C9A84C]/40 hover:bg-muted/60 disabled:opacity-50"
                   >
                     {s}
                   </button>
@@ -227,7 +207,7 @@ export function StudentChat() {
             <button
               type="submit"
               disabled={loading || !input.trim() || configured !== true}
-              className="inline-flex min-h-11 min-w-11 items-center justify-center rounded-xl bg-[#C9A84C] text-[#07090d] disabled:opacity-50"
+              className="inline-flex min-h-11 min-w-11 items-center justify-center rounded-xl bg-[#C9A84C] text-[#07090d] transition-colors hover:bg-[#b8973f] disabled:opacity-50"
               aria-label="Send"
             >
               <Send className="h-4 w-4" />

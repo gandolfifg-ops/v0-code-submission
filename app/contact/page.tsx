@@ -87,7 +87,7 @@ export default function ContactPage() {
           </label>
           <button
             type="submit"
-            className="min-h-11 w-full rounded-xl bg-[#C9A84C] text-sm font-bold text-[#07090d]"
+            className="min-h-11 w-full rounded-xl bg-[#C9A84C] text-sm font-bold text-[#07090d] transition-colors hover:bg-[#b8973f]"
           >
             Open email
           </button>
