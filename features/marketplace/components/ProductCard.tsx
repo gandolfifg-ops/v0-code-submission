@@ -1,4 +1,5 @@
 import { Star } from "lucide-react"
+import { ExpandableText } from "@/components/ExpandableText"
 import type { MarketplaceProduct } from "@/features/marketplace/types"
 
 type ProductCardProps = {
@@ -29,7 +30,12 @@ export function ProductCard({ product }: ProductCardProps) {
       </div>
       <h3 className="text-lg font-semibold tracking-tight text-foreground">{product.name}</h3>
       <p className="mt-1 text-sm font-medium text-[#8B6914] dark:text-[#C9A84C]">{product.tagline}</p>
-      <p className="mt-3 flex-1 text-sm leading-relaxed text-muted-foreground">{product.whyStudents}</p>
+      <div className="mt-3 flex-1">
+        <ExpandableText
+          text={product.whyStudents}
+          className="text-sm leading-relaxed text-muted-foreground"
+        />
+      </div>
       <a
         href={product.href}
         target="_blank"

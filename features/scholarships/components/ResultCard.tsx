@@ -1,4 +1,5 @@
 import { Star } from "lucide-react"
+import { ExpandableText } from "@/components/ExpandableText"
 import type { ScholarshipResult } from "@/features/scholarships/types"
 import { SCHOLARSHIP_CHECKLIST } from "@/features/student-profile/checklists"
 import { FollowThrough } from "@/features/student-profile/components/FollowThrough"
@@ -34,7 +35,12 @@ export function ResultCard({ result }: ResultCardProps) {
         </span>
       </div>
       <h3 className="text-base font-semibold text-foreground">{result.title}</h3>
-      <p className="mt-2 text-sm leading-relaxed text-muted-foreground">{result.eligibility}</p>
+      <div className="mt-2">
+        <ExpandableText
+          text={result.eligibility}
+          className="text-sm leading-relaxed text-muted-foreground"
+        />
+      </div>
       <dl className="mt-3 grid grid-cols-2 gap-2 text-xs">
         <div>
           <dt className="text-muted-foreground">Amount</dt>

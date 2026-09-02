@@ -94,7 +94,7 @@ export async function POST(req: Request) {
               provider: provider.charAt(0).toUpperCase() + provider.slice(1),
               amount: amountMatch?.[0] ?? "See listing",
               deadline: deadlineMatch?.[1] ?? "Check website",
-              eligibility: content.slice(0, 180) + (content.length > 180 ? "…" : ""),
+              eligibility: content.trim() || "See the official listing for eligibility details.",
               url: r.url,
               source: "live" as const,
             }

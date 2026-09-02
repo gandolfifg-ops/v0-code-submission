@@ -95,7 +95,7 @@ export async function POST(req: Request) {
               advertisedRate: rateMatch
                 ? `Advertised ${rateMatch[0]} — confirm on official site`
                 : "Advertised rate — confirm on official site",
-              highlight: (content.slice(0, 160) + (content.length > 160 ? "…" : "")) || "Open the lender page for current terms.",
+              highlight: content.trim() || "Open the lender page for current terms.",
               href: r.url,
               cta: "Open official site",
               source: "live" as const,

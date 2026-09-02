@@ -1,4 +1,5 @@
 import { Star } from "lucide-react"
+import { ExpandableText } from "@/components/ExpandableText"
 import type { LoanResult } from "@/features/loans/types"
 import { LOAN_CHECKLISTS } from "@/features/student-profile/checklists"
 import { FollowThrough } from "@/features/student-profile/components/FollowThrough"
@@ -31,7 +32,12 @@ export function LenderCard({ lender }: { lender: LoanResult }) {
       </div>
       <h3 className="text-base font-semibold text-foreground">{lender.name}</h3>
       <p className="mt-1 text-sm font-medium text-[#8B6914] dark:text-[#C9A84C]">{lender.tagline}</p>
-      <p className="mt-3 text-sm leading-relaxed text-muted-foreground">{lender.highlight}</p>
+      <div className="mt-3">
+        <ExpandableText
+          text={lender.highlight}
+          className="text-sm leading-relaxed text-muted-foreground"
+        />
+      </div>
       <p className="mt-3 text-xs text-muted-foreground">
         <span className="font-semibold text-foreground">Advertised rate: </span>
         {lender.advertisedRate}
