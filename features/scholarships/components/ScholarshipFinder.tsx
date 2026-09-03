@@ -48,21 +48,22 @@ export function ScholarshipFinder() {
     if (profile.school.trim()) setUniversity(profile.school.trim())
   }
 
-  async function runSearch(next: { query: string; university?: string }) {
+  async function runSearch(next: { query: string; university?: string; fromHeader?: boolean }) {
     setLoading(true)
     setError(null)
     setNotice(null)
     setHasSearched(true)
+    const fromHeader = Boolean(next.fromHeader)
     try {
       const res = await fetch("/api/scholarships/find", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           country,
-          major: next.query ? "Any major" : major,
-          level: next.query ? "Any level" : level,
+          major: fromHeader ? "Any major" : major,
+          level: fromHeader ? "Any level" : level,
           query: next.query,
-          university: next.query ? "" : (next.university ?? university),
+          university: fromHeader ? "" : (next.university ?? university),
         }),
       })
       if (!res.ok) throw new Error("Search failed")
@@ -88,7 +89,7 @@ export function ScholarshipFinder() {
     if (!ticket) return
     setQuery(ticket.query)
     setUniversity("")
-    void runSearch({ query: ticket.query, university: "" })
+    void runSearch({ query: ticket.query, university: "", fromHeader: true })
     // eslint-disable-next-line react-hooks/exhaustive-deps -- run only when header submits a new ticket
   }, [ticket?.id])
 
@@ -98,26 +99,26 @@ export function ScholarshipFinder() {
   }
 
   return (
-    <div className="mx-auto max-w-6xl px-4 py-6 sm:px-6 lg:py-8">
+    <div className="mx-auto max-w-6xl overflow-x-hidden px-3 py-3 md:px-6 md:py-8">
       <p className="text-xs font-semibold uppercase tracking-widest text-[#C9A84C]">
         Scholarships
       </p>
-      <h1 className="mt-2 text-3xl font-bold tracking-tight text-foreground sm:text-4xl">
+      <h1 className="mt-1 text-xl font-bold tracking-tight text-foreground md:mt-2 md:text-4xl">
         Scholarship Finder
       </h1>
-      <p className="mt-3 max-w-2xl text-sm leading-relaxed text-muted-foreground sm:text-base">
+      <p className={`mt-2 max-w-2xl text-sm leading-relaxed text-muted-foreground md:mt-3 md:text-base ${hasSearched ? "hidden md:block" : ""}`}>
         Search public scholarship sites for Canada or the US. This is web search plus a
         short curated list — not a government awards database. Confirm every deadline
         on the official page.
       </p>
 
-      <div className="mt-6 grid gap-4 lg:grid-cols-[minmax(0,22rem)_minmax(0,1fr)] lg:items-start">
-        <div className="space-y-4 lg:sticky lg:top-20">
+      <div className="mt-3 grid min-w-0 gap-3 md:mt-6 md:gap-4 lg:grid-cols-[minmax(0,22rem)_minmax(0,1fr)] lg:items-start">
+        <div className={`min-w-0 space-y-3 lg:sticky lg:top-20 lg:space-y-4 ${results.length > 0 ? "order-2" : "order-1"} lg:order-none`}>
           <StudentProfileBox onProfileChange={applyProfile} />
 
           <form
             onSubmit={onSubmit}
-            className="space-y-3 rounded-2xl border border-border bg-card p-4 sm:p-5"
+            className="space-y-2 rounded-2xl border border-border bg-card p-3 md:space-y-3 md:p-5"
           >
             <SectionHeading icon={Search}>Search awards</SectionHeading>
             <CountryToggle
@@ -186,16 +187,16 @@ export function ScholarshipFinder() {
           </form>
         </div>
 
-        <div>
+        <div className={`min-w-0 ${results.length > 0 ? "order-1" : "order-2"} lg:order-none`}>
           {error && (
-            <p className="rounded-xl border border-red-300 bg-red-50 px-4 py-3 text-sm text-red-700 dark:border-red-900 dark:bg-red-950/40 dark:text-red-300">
+            <p className="break-words rounded-xl border border-red-300 bg-red-50 px-3 py-2 text-sm text-red-700 md:px-4 md:py-3 dark:border-red-900 dark:bg-red-950/40 dark:text-red-300">
               {error}
             </p>
           )}
 
           {notice && (
             <p
-              className={`break-words rounded-xl border px-4 py-3 text-sm ${
+              className={`break-words rounded-xl border px-3 py-2 text-sm md:px-4 md:py-3 ${
                 source === "live"
                   ? "border-emerald-200 bg-emerald-50 text-emerald-900 dark:border-emerald-900 dark:bg-emerald-950/30 dark:text-emerald-200"
                   : "border-[#C9A84C]/40 bg-[#C9A84C]/10 text-foreground"
@@ -223,7 +224,7 @@ export function ScholarshipFinder() {
           )}
 
           {!hasSearched && !loading && (
-            <section className="rounded-2xl border border-dashed border-border bg-muted/30 p-4 sm:p-5">
+            <section className="rounded-2xl border border-dashed border-border bg-muted/30 p-3 md:p-5">
               <SectionHeading icon={GraduationCap}>How it works</SectionHeading>
               <ol className="mt-3 list-decimal space-y-2 pl-5 text-sm text-muted-foreground">
                 <li>Save your student profile (optional) so filters start filled in.</li>

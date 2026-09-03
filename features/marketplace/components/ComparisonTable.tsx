@@ -18,10 +18,6 @@ export function ComparisonTable({ rows, title = "Compare advertised details" }: 
             <h3 className="font-semibold text-foreground">{row.account}</h3>
             <dl className="mt-2 space-y-1.5 text-sm">
               <div>
-                <dt className="text-xs text-muted-foreground">Monthly fee</dt>
-                <dd className="text-foreground">{row.monthlyFee}</dd>
-              </div>
-              <div>
                 <dt className="text-xs text-muted-foreground">ATM access</dt>
                 <dd className="text-foreground">{row.atmAccess}</dd>
               </div>
@@ -47,22 +43,20 @@ export function ComparisonTable({ rows, title = "Compare advertised details" }: 
       </div>
 
       <div className="mt-3 hidden overflow-x-auto rounded-2xl border border-border md:block">
-        <table className="w-full min-w-[52rem] text-left text-sm">
+        <table className="w-full table-fixed text-left text-sm">
           <thead className="bg-muted/50 text-xs uppercase tracking-wide text-muted-foreground">
             <tr>
-              <th className="px-3 py-3 font-semibold">Account</th>
-              <th className="px-3 py-3 font-semibold">Monthly fee</th>
-              <th className="px-3 py-3 font-semibold">ATM access</th>
-              <th className="px-3 py-3 font-semibold">Advertised perk</th>
-              <th className="px-3 py-3 font-semibold">Best for</th>
-              <th className="px-3 py-3 font-semibold">Open site</th>
+              <th className="w-[18%] px-3 py-3 font-semibold">Account</th>
+              <th className="w-[22%] px-3 py-3 font-semibold">ATM access</th>
+              <th className="w-[28%] px-3 py-3 font-semibold">Advertised perk</th>
+              <th className="w-[20%] px-3 py-3 font-semibold">Best for</th>
+              <th className="w-[12%] px-3 py-3 font-semibold">Open site</th>
             </tr>
           </thead>
           <tbody>
             {rows.map((row) => (
               <tr key={row.productId} className="border-t border-border align-top">
                 <td className="px-3 py-3 font-medium text-foreground">{row.account}</td>
-                <td className="px-3 py-3 text-muted-foreground">{row.monthlyFee}</td>
                 <td className="px-3 py-3 text-muted-foreground">{row.atmAccess}</td>
                 <td className="px-3 py-3 text-muted-foreground">{row.advertisedPerk}</td>
                 <td className="px-3 py-3 text-muted-foreground">{row.bestFor}</td>

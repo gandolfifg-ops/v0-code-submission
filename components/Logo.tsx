@@ -39,12 +39,12 @@ export function Logo({ size = 32, showText = false, href = "/" }: LogoProps) {
   return (
     <Link
       href={href}
-      className="inline-flex items-center gap-2 bg-transparent transition-opacity hover:opacity-80"
+      className="inline-flex shrink-0 items-center gap-2 bg-transparent transition-opacity hover:opacity-80"
       aria-label="WealthNutz home"
     >
       <LogoSvg size={size} />
       {showText && (
-        <span className="text-base font-black uppercase tracking-tight text-[#C9A84C]">
+        <span className="hidden text-base font-black uppercase tracking-tight text-[#C9A84C] md:inline">
           WealthNutz
         </span>
       )}

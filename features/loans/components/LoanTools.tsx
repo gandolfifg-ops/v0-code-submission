@@ -83,12 +83,12 @@ export function LoanTools() {
   }
 
   return (
-    <div className="mx-auto max-w-6xl px-4 py-6 sm:px-6 lg:py-8">
+    <div className="mx-auto max-w-6xl overflow-x-hidden px-3 py-3 md:px-6 md:py-8">
       <p className="text-xs font-semibold uppercase tracking-widest text-[#C9A84C]">Loans</p>
-      <h1 className="mt-2 text-3xl font-bold tracking-tight text-foreground sm:text-4xl">
+      <h1 className="mt-1 text-xl font-bold tracking-tight text-foreground md:mt-2 md:text-4xl">
         Loan Tools
       </h1>
-      <p className="mt-3 max-w-2xl text-sm leading-relaxed text-muted-foreground sm:text-base">
+      <p className={`mt-2 max-w-2xl text-sm leading-relaxed text-muted-foreground md:mt-3 md:text-base ${results.length > 0 ? "hidden md:block" : ""}`}>
         Find student, personal, and auto lenders in Canada or the US. Rates shown are
         advertised on public pages — not live guaranteed quotes. Always confirm APR,
         fees, and eligibility on the official site.
@@ -104,13 +104,45 @@ export function LoanTools() {
         </p>
       )}
 
-      <div className="mt-6 grid gap-4 lg:grid-cols-2 lg:items-start">
-        <div className="space-y-4">
+      <div className="mt-3 flex min-w-0 flex-col md:mt-6">
+        <div className="order-1 min-w-0 lg:order-2">
+      {error && (
+        <p className="mt-3 break-words rounded-xl border border-red-300 bg-red-50 px-3 py-2 text-sm text-red-700 md:mt-4 md:px-4 md:py-3 dark:border-red-900 dark:bg-red-950/40 dark:text-red-300">
+          {error}
+        </p>
+      )}
+
+      {notice && (
+        <p
+          className={`mt-3 break-words rounded-xl border px-3 py-2 text-sm md:mt-4 md:px-4 md:py-3 ${
+            source === "live"
+              ? "border-emerald-200 bg-emerald-50 text-emerald-900 dark:border-emerald-900 dark:bg-emerald-950/30 dark:text-emerald-200"
+              : "border-[#C9A84C]/40 bg-[#C9A84C]/10 text-foreground"
+          }`}
+        >
+          {notice}
+        </p>
+      )}
+
+      {results.length > 0 && (
+        <section className="mt-3 md:mt-6">
+          <SectionHeading icon={ListChecks}>Results</SectionHeading>
+          <div className="mt-3 grid grid-cols-1 gap-3 md:grid-cols-2">
+            {results.map((lender) => (
+              <LenderCard key={lender.id} lender={lender} />
+            ))}
+          </div>
+        </section>
+      )}
+        </div>
+
+      <div className="order-2 mt-3 grid min-w-0 gap-3 md:mt-6 md:gap-4 lg:order-1 lg:grid-cols-2 lg:items-start">
+        <div className="min-w-0 space-y-3 lg:space-y-4">
           <StudentProfileBox onProfileChange={applyProfile} />
 
           <form
             onSubmit={onSubmit}
-            className="space-y-3 rounded-2xl border border-border bg-card p-4 sm:p-5"
+            className="space-y-2 rounded-2xl border border-border bg-card p-3 md:space-y-3 md:p-5"
           >
             <SectionHeading icon={Search}>Find lenders</SectionHeading>
             <CountryToggle
@@ -131,7 +163,7 @@ export function LoanTools() {
                   key={type}
                   type="button"
                   onClick={() => setLoanType(type)}
-                  className={`inline-flex min-h-11 items-center justify-center gap-1.5 rounded-xl px-2 text-sm font-semibold transition-colors ${
+                  className={`inline-flex min-h-11 min-w-0 flex-col items-center justify-center gap-0.5 rounded-xl px-1 text-xs font-semibold sm:flex-row sm:gap-1.5 sm:px-2 md:text-sm transition-colors ${
                     loanType === type
                       ? "bg-[#C9A84C] text-[#07090d] hover:bg-[#b8973f]"
                       : "border border-border text-muted-foreground hover:bg-muted hover:text-foreground"
@@ -164,37 +196,11 @@ export function LoanTools() {
           </form>
         </div>
 
-        <PaymentCalculator />
+        <div className="min-w-0">
+          <PaymentCalculator />
+        </div>
       </div>
-
-      {error && (
-        <p className="mt-4 rounded-xl border border-red-300 bg-red-50 px-4 py-3 text-sm text-red-700 dark:border-red-900 dark:bg-red-950/40 dark:text-red-300">
-          {error}
-        </p>
-      )}
-
-      {notice && (
-        <p
-          className={`mt-4 break-words rounded-xl border px-4 py-3 text-sm ${
-            source === "live"
-              ? "border-emerald-200 bg-emerald-50 text-emerald-900 dark:border-emerald-900 dark:bg-emerald-950/30 dark:text-emerald-200"
-              : "border-[#C9A84C]/40 bg-[#C9A84C]/10 text-foreground"
-          }`}
-        >
-          {notice}
-        </p>
-      )}
-
-      {results.length > 0 && (
-        <section className="mt-6">
-          <SectionHeading icon={ListChecks}>Results</SectionHeading>
-          <div className="mt-3 grid gap-3 sm:grid-cols-2">
-            {results.map((lender) => (
-              <LenderCard key={lender.id} lender={lender} />
-            ))}
-          </div>
-        </section>
-      )}
+      </div>
     </div>
   )
 }

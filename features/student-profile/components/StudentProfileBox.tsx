@@ -32,7 +32,7 @@ export function StudentProfileBox({ onProfileChange }: StudentProfileBoxProps) {
     const stored = getStudentProfile()
     setProfile(stored)
     setDraft(stored ?? EMPTY_PROFILE)
-    setEditing(!isProfileFilled(stored))
+    setEditing(false)
     setReady(true)
     onProfileChange?.(stored)
     // Seed filters once after load; later edits call onProfileChange from save.
@@ -62,13 +62,23 @@ export function StudentProfileBox({ onProfileChange }: StudentProfileBoxProps) {
   return (
     <section
       id="student-profile"
-      className="scroll-mt-20 rounded-2xl border border-border bg-card p-4 sm:p-5"
+      className="scroll-mt-20 rounded-2xl border border-border bg-card p-3 md:p-5"
     >
       <SectionHeading icon={UserRound}>Your profile</SectionHeading>
       <p className="mt-1 text-xs text-muted-foreground">
         Stored in this browser only. We use it to pre-fill WealthNutz search fields — not
         to apply on other sites.
       </p>
+
+      {!filled && !editing && (
+        <button
+          type="button"
+          onClick={() => setEditing(true)}
+          className="mt-3 min-h-11 w-full rounded-xl border border-border text-sm font-semibold text-foreground transition-colors hover:bg-muted md:hidden"
+        >
+          Add your profile (optional)
+        </button>
+      )}
 
       {!editing && filled && profile ? (
         <div className="mt-3 space-y-1 text-sm text-foreground">
@@ -102,7 +112,10 @@ export function StudentProfileBox({ onProfileChange }: StudentProfileBoxProps) {
           </button>
         </div>
       ) : (
-        <form onSubmit={onSubmit} className="mt-3 space-y-3">
+        <form
+          onSubmit={onSubmit}
+          className={`mt-3 space-y-3 ${!filled && !editing ? "hidden md:block" : ""}`}
+        >
           {!filled && (
             <p className="text-sm font-medium text-foreground">
               Fill this in so Scholarships and Loans start with your details.

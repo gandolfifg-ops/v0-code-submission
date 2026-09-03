@@ -14,6 +14,7 @@ import {
   schoolFocusedScholarshipQuery,
   schoolSearchName,
   shouldKeepScholarshipHit,
+  shouldKeepSchoolKeywordHit,
   TAVILY_SCHOLARSHIP_EXCLUDE_DOMAINS,
 } from "@/lib/scholarshipOfficialSources"
 
@@ -80,14 +81,24 @@ async function tavilySearch(apiKey: string, query: string, maxResults = 6): Prom
   return tavilyData.results ?? []
 }
 
-function mapLiveResults(hits: TavilyHit[], schoolDomains: string[] = []): ScholarshipResult[] {
+function mapLiveResults(
+  hits: TavilyHit[],
+  schoolDomains: string[] = [],
+  searchedSchool = "",
+): ScholarshipResult[] {
   const seen = new Set<string>()
   return hits
     .filter((r) => {
       if (!r.url || !isValidHttpUrl(r.url)) return false
       if (r.url.includes("404") || r.url.includes("not-found")) return false
       if (typeof r.score === "number" && r.score < 0.3) return false
-      if (!shouldKeepScholarshipHit(r.url, r.title ?? "")) return false
+      const title = r.title ?? ""
+      const content = `${r.content ?? ""} ${r.raw_content ?? r.rawContent ?? ""}`
+      if (searchedSchool) {
+        if (!shouldKeepSchoolKeywordHit(r.url, title, content, searchedSchool)) return false
+      } else if (!shouldKeepScholarshipHit(r.url, title)) {
+        return false
+      }
       const key = canonicalUrl(r.url)
       if (seen.has(key)) return false
       seen.add(key)
@@ -138,18 +149,35 @@ export async function POST(req: Request) {
       const schoolQuery = schoolFocusedScholarshipQuery(filters)
       const school = schoolSearchName(filters)
       const schoolDomains = school ? guessSchoolDomains(school) : []
-      const focusedOnly = Boolean(school || filters.query.trim())
       const hitSets = await Promise.all(
-        focusedOnly
-          ? [tavilySearch(apiKey, schoolQuery, 10)]
-          : [
-              tavilySearch(apiKey, schoolQuery, 6),
+        school
+          ? [
+              tavilySearch(apiKey, schoolQuery, 10),
               ...nationalFoundationQueries(filters.country).map((query) =>
                 tavilySearch(apiKey, query, 3),
               ),
-            ],
+            ]
+          : filters.query.trim()
+            ? [tavilySearch(apiKey, schoolQuery, 10)]
+            : [
+                tavilySearch(apiKey, schoolQuery, 6),
+                ...nationalFoundationQueries(filters.country).map((query) =>
+                  tavilySearch(apiKey, query, 3),
+                ),
+              ],
       )
-      const live = mapLiveResults(hitSets.flat(), schoolDomains)
+      const live = mapLiveResults(hitSets.flat(), schoolDomains, school)
+
+      if (school) {
+        return Response.json({
+          source: "live",
+          notice:
+            live.length > 0
+              ? "These are live results from this school's aid pages and major national awards. Amounts and deadlines may be incomplete — always confirm on the official page."
+              : "No current listings matched this school search. Try a broader keyword, or open the school's financial aid site directly.",
+          results: live,
+        })
+      }
 
       if (live.length > 0) {
         return Response.json({

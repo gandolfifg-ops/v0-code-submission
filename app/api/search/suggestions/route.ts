@@ -1,24 +1,38 @@
-const CANADA_SUGGESTIONS = [
+const CANADA_SCHOLARSHIPS = [
   "University of Toronto",
   "UBC",
   "McGill University",
   "Loran Scholars",
   "Schulich Leader Scholarships",
   "Vanier Canada Graduate Scholarships",
-  "OSAP",
-  "Canada Student Loan",
-  "Student Line of Credit",
 ] as const
 
-const US_SUGGESTIONS = [
+const US_SCHOLARSHIPS = [
   "Harvard University",
   "UCLA",
   "Stanford University",
-  "FAFSA",
   "Pell Grant",
+  "FAFSA",
+] as const
+
+const CANADA_LOANS = [
+  "OSAP",
+  "Canada Student Loan",
+  "Student Line of Credit",
+  "NSLSC",
+  "Student loan",
+  "Personal loan",
+  "Auto loan",
+] as const
+
+const US_LOANS = [
   "Direct Subsidized Loan",
   "Direct Unsubsidized Loan",
   "Private Student Loan",
+  "Student loan",
+  "Personal loan",
+  "Auto loan",
+  "FAFSA",
 ] as const
 
 function parseCountry(value: string | null): "CA" | "US" {
@@ -27,11 +41,23 @@ function parseCountry(value: string | null): "CA" | "US" {
   return "CA"
 }
 
+function parseType(value: string | null): "loans" | "scholarships" {
+  const raw = (value ?? "scholarships").trim().toLowerCase()
+  if (raw === "loans" || raw === "loan") return "loans"
+  return "scholarships"
+}
+
+function poolFor(type: "loans" | "scholarships", country: "CA" | "US"): readonly string[] {
+  if (type === "loans") return country === "US" ? US_LOANS : CANADA_LOANS
+  return country === "US" ? US_SCHOLARSHIPS : CANADA_SCHOLARSHIPS
+}
+
 export async function GET(req: Request) {
   const url = new URL(req.url)
   const q = (url.searchParams.get("q") ?? "").trim().toLowerCase()
   const country = parseCountry(url.searchParams.get("country"))
-  const pool = country === "US" ? US_SUGGESTIONS : CANADA_SUGGESTIONS
+  const type = parseType(url.searchParams.get("type"))
+  const pool = poolFor(type, country)
 
   if (!q) {
     return Response.json({ suggestions: [] })

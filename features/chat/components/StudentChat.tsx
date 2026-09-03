@@ -4,6 +4,7 @@ import { useEffect, useRef, useState, type FormEvent } from "react"
 import Link from "next/link"
 import { Send } from "lucide-react"
 import { ChatMarkdown } from "@/features/chat/components/ChatMarkdown"
+import { ChatDeepLinks } from "@/features/chat/components/ChatDeepLinks"
 import { CHAT_SYSTEM_PROMPT, SUGGESTIONS } from "@/features/chat/constants"
 
 type Role = "user" | "assistant"
@@ -182,7 +183,10 @@ export function StudentChat() {
               >
                 {m.role === "assistant" ? (
                   m.content ? (
-                    <ChatMarkdown content={m.content} />
+                    <>
+                      <ChatMarkdown content={m.content} />
+                      <ChatDeepLinks content={m.content} />
+                    </>
                   ) : loading && i === msgs.length - 1 ? (
                     "…"
                   ) : (

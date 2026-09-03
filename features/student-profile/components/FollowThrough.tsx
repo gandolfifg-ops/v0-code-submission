@@ -25,10 +25,10 @@ export function FollowThrough({
   const saved = ids.has(item.id)
 
   return (
-    <div className="mt-4 min-w-0 space-y-3">
+    <div className="mt-3 min-w-0 space-y-3 md:mt-4">
       <div className="min-w-0">
-        <p className="text-sm font-medium text-muted-foreground">{requirementsLabel}</p>
-        <ul className="mt-1.5 list-disc space-y-1 break-words pl-5 text-sm text-muted-foreground">
+        <p className="text-xs font-medium text-muted-foreground md:text-sm">{requirementsLabel}</p>
+        <ul className="mt-1.5 list-disc space-y-1 break-words pl-5 text-xs text-muted-foreground md:text-sm">
           {checklist.map((line) => (
             <li key={line}>{line}</li>
           ))}

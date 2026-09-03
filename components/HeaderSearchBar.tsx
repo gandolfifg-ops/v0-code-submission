@@ -19,6 +19,7 @@ export function HeaderSearchBar() {
   const [activeIndex, setActiveIndex] = useState(-1)
 
   const show = pathname === "/scholarships" || pathname === "/loans"
+  const searchType = pathname === "/loans" ? "loans" : "scholarships"
   const placeholder = pathname === "/loans" ? "Search loans…" : "Search scholarships…"
 
   useEffect(() => {
@@ -34,7 +35,7 @@ export function HeaderSearchBar() {
     const timer = window.setTimeout(async () => {
       try {
         const res = await fetch(
-          `/api/search/suggestions?q=${encodeURIComponent(q)}&country=${countryCode}`,
+          `/api/search/suggestions?q=${encodeURIComponent(q)}&country=${countryCode}&type=${searchType}`,
         )
         if (!res.ok) throw new Error("suggestions failed")
         const data = await res.json()
@@ -49,7 +50,7 @@ export function HeaderSearchBar() {
     }, DEBOUNCE_MS)
 
     return () => window.clearTimeout(timer)
-  }, [value, countryCode, show])
+  }, [value, countryCode, show, searchType])
 
   useEffect(() => {
     function onPointerDown(event: MouseEvent) {
@@ -101,7 +102,7 @@ export function HeaderSearchBar() {
       />
       <input
         id="header-smart-search"
-        type="search"
+        type="text"
         autoComplete="off"
         role="combobox"
         aria-expanded={open && suggestions.length > 0}

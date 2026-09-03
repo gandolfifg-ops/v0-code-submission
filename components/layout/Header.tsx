@@ -41,8 +41,8 @@ export function Header() {
   return (
     <>
       <header className="sticky top-0 z-40 border-b border-border bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/80">
-        <div className="mx-auto flex h-14 max-w-6xl items-center justify-between gap-4 px-4 sm:h-16 sm:px-6">
-          <Logo size={28} showText />
+        <div className="mx-auto flex h-12 max-w-6xl min-w-0 items-center justify-between gap-2 overflow-x-hidden px-3 md:h-16 md:gap-4 md:px-6">
+          <Logo size={24} showText />
 
           <nav className="hidden items-center gap-1 md:flex" aria-label="Main">
             {PRIMARY_NAV.map((link) => (

@@ -118,16 +118,31 @@ export function universitySearchTerms(university: string): string | null {
 
 export function guessSchoolDomains(school: string): string[] {
   const hint = resolveSchoolHint(school)
-  if (hint) return [hint.domain]
+  const hosts = new Set<string>()
+  if (hint) hosts.add(hint.domain)
   const compact = school
     .toLowerCase()
     .replace(/[^a-z0-9\s]/g, " ")
-    .replace(/\b(university|universite|université|college|institute|of|the|at)\b/g, "")
+    .replace(/\b(university|universite|université|college|institute|state|of|the|at)\b/g, "")
     .replace(/\s+/g, "")
   if (compact.length >= 3 && compact.length <= 40) {
-    return [`${compact}.edu`, `${compact}.ca`]
+    hosts.add(`${compact}.edu`)
+    hosts.add(`${compact}.ca`)
   }
-  return []
+  const first = school
+    .toLowerCase()
+    .replace(/[^a-z0-9\s]/g, " ")
+    .split(/\s+/)
+    .find((word) => word.length >= 4 && !/^(university|college|state|institute)$/.test(word))
+  if (first) {
+    hosts.add(`${first}.edu`)
+    hosts.add(`${first}.ca`)
+  }
+  return [...hosts]
+}
+
+export function displaySchoolName(school: string): string {
+  return resolveSchoolHint(school)?.name ?? school.trim()
 }
 
 export function schoolSearchName(filters: {
@@ -141,21 +156,6 @@ export function schoolSearchName(filters: {
   return ""
 }
 
-function aidHubTerms(domains: string[]): string {
-  if (domains.length === 0) {
-    return "financial aid admissions scholarships merit awards"
-  }
-  return domains
-    .flatMap((domain) => [
-      `${domain}/financialaid`,
-      `${domain}/financial-aid`,
-      `admissions.${domain}`,
-      `${domain}/admissions`,
-      `${domain}/scholarships`,
-    ])
-    .join(" ")
-}
-
 export function schoolFocusedScholarshipQuery(filters: {
   country: string
   major: string
@@ -164,25 +164,28 @@ export function schoolFocusedScholarshipQuery(filters: {
   university: string
 }): string {
   const school = schoolSearchName(filters)
+  const keywords = [
+    filters.university.trim() ? filters.query.trim() : "",
+    filters.major !== "Any major" ? filters.major : "",
+  ]
+    .filter(Boolean)
+    .join(" ")
+
   if (school) {
-    const hint = resolveSchoolHint(school)
-    const name = hint?.name ?? school
-    const domains = guessSchoolDomains(school)
-    return [
-      `"${name}" scholarship financial aid 2026 OR 2027 open application`,
-      aidHubTerms(domains),
-      filters.country,
-      filters.major !== "Any major" ? filters.major : "",
-      filters.level !== "Any level" ? filters.level : "",
-    ]
+    const name = displaySchoolName(school)
+    return [`"${name}" scholarships financial aid awards`, keywords, "2026 2027"]
+      .filter(Boolean)
+      .join(" ")
+      .replace(/\s+/g, " ")
+      .trim()
+  }
+  if (filters.query.trim()) {
+    return [filters.query.trim(), "scholarships awards", filters.country, "2026 2027"]
       .filter(Boolean)
       .join(" ")
   }
-  if (filters.query.trim()) {
-    return [filters.query.trim(), "official", filters.country].filter(Boolean).join(" ")
-  }
   return [
-    "university official scholarship awards",
+    "scholarships financial aid awards 2026 2027",
     filters.country,
     filters.major !== "Any major" ? filters.major : "",
     filters.level !== "Any level" ? filters.level : "",
@@ -196,9 +199,7 @@ export function isSchoolAidHubUrl(url: string, schoolDomains: string[]): boolean
     const parsed = new URL(url)
     const host = parsed.hostname.replace(/^www\./i, "").toLowerCase()
     const path = `${host}${parsed.pathname}`.toLowerCase()
-    const onSchool =
-      schoolDomains.some((domain) => hostMatches(host, domain)) ||
-      host.endsWith(".edu")
+    const onSchool = schoolDomains.some((domain) => hostMatches(host, domain))
     if (!onSchool) return false
     return /financial[-_]?aid|admissions|scholarship|merit|student[-_]?aid/.test(path)
   } catch {
@@ -208,9 +209,85 @@ export function isSchoolAidHubUrl(url: string, schoolDomains: string[]): boolean
 
 export function isOfficialSchoolPortalUrl(url: string, schoolDomains: string[] = []): boolean {
   const host = hostnameOf(url)
-  if (!host) return false
-  if (schoolDomains.some((domain) => hostMatches(host, domain))) return true
-  return host.endsWith(".edu")
+  if (!host || schoolDomains.length === 0) return false
+  return schoolDomains.some((domain) => hostMatches(host, domain))
+}
+
+const NATIONAL_AWARD_HINT =
+  /\bloran\b|schulich leader|canada student grant|canada student grants|td scholarships for community|terry fox humanitarian|horatio alger|vanier canada/i
+
+export function isNationalAwardHit(url: string, title: string, content: string): boolean {
+  const host = hostnameOf(url)
+  if (host && isFoundationHost(host)) return true
+  return NATIONAL_AWARD_HINT.test(`${title} ${content}`)
+}
+
+export function isCirnacOrPolicyExplainer(url: string, title: string, content: string): boolean {
+  const host = hostnameOf(url) ?? ""
+  const blob = `${title} ${content}`.toLowerCase()
+  const cirnacHost = /cirnac|rcaanc/.test(host) || /cirnac|rcaanc/.test(url.toLowerCase())
+  const hasAwardList = /apply|application|deadline|bursar|scholarship|award list|how to apply|eligibility/.test(blob)
+  if (cirnacHost && !hasAwardList) return true
+  if (cirnacHost && /policy|mandate|about us|what we do/.test(blob) && !hasAwardList) return true
+  return false
+}
+
+function schoolNameTokens(name: string): string[] {
+  return name
+    .toLowerCase()
+    .replace(/['’]/g, "")
+    .split(/\s+/)
+    .map((part) => part.trim())
+    .filter((part) => part.length >= 4 && !/^(university|college|institute|state)$/.test(part))
+}
+
+export function isRivalSchoolHit(
+  url: string,
+  title: string,
+  content: string,
+  searchedSchool: string,
+): boolean {
+  if (!searchedSchool.trim()) return false
+  if (isNationalAwardHit(url, title, content)) return false
+  const host = hostnameOf(url)
+  const searchedDomains = guessSchoolDomains(searchedSchool)
+  if (host && searchedDomains.some((domain) => hostMatches(host, domain))) return false
+
+  const haystack = `${title} ${url} ${content.slice(0, 800)}`.toLowerCase()
+  const searchedHint = resolveSchoolHint(searchedSchool)
+  const searchedLabel = (searchedHint?.name ?? searchedSchool).toLowerCase()
+  const mentionsSearched =
+    haystack.includes(searchedLabel) ||
+    schoolNameTokens(searchedHint?.name ?? searchedSchool).some((token) => haystack.includes(token))
+
+  for (const row of SCHOOL_HINTS) {
+    const other = row.hint
+    const isSameSchool =
+      searchedHint?.domain === other.domain ||
+      searchedDomains.includes(other.domain) ||
+      searchedLabel === other.name.toLowerCase()
+    if (isSameSchool) continue
+    if (host && hostMatches(host, other.domain)) return true
+    const otherTokens = schoolNameTokens(other.name)
+    const mentionsOther =
+      haystack.includes(other.name.toLowerCase()) ||
+      otherTokens.some((token) => new RegExp(`\\b${token}\\b`, "i").test(title))
+    if (mentionsOther && !mentionsSearched) return true
+  }
+  return false
+}
+
+export function shouldKeepSchoolKeywordHit(
+  url: string,
+  title: string,
+  content: string,
+  searchedSchool: string,
+): boolean {
+  if (isBlockedScholarshipUrl(url)) return false
+  if (isScholarshipListicle(title, url)) return false
+  if (isCirnacOrPolicyExplainer(url, title, content)) return false
+  if (searchedSchool && isRivalSchoolHit(url, title, content, searchedSchool)) return false
+  return isOfficialScholarshipDestination(url)
 }
 
 /** Named foundations only — never “major national scholarships in Canada”. */
@@ -225,6 +302,7 @@ export function nationalFoundationQueries(country: string): string[] {
   return [
     "Loran Scholars Foundation official loranscholar.ca",
     "Schulich Leader Scholarships official schulichleaders.com",
+    "Canada Student Grants official canada.ca",
     "TD Scholarships for Community Leadership official",
     "Terry Fox Humanitarian Award official",
     "Horatio Alger Scholarship official Canada",

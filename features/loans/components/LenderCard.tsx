@@ -19,7 +19,7 @@ export function LenderCard({ lender }: { lender: LoanResult }) {
 
   return (
     <article
-      className={`interactive-card flex flex-col rounded-2xl p-4 sm:p-5 ${
+      className={`interactive-card flex min-w-0 max-w-full flex-col overflow-hidden rounded-2xl p-3 md:p-5 ${
         featured
           ? "border-2 border-[#C9A84C] bg-[#C9A84C]/10 shadow-sm"
           : "border border-border bg-card"
@@ -43,12 +43,12 @@ export function LenderCard({ lender }: { lender: LoanResult }) {
         </span>
         </div>
       </div>
-      <h3 className="text-base font-semibold text-foreground">{name}</h3>
-      <p className="mt-1 text-sm font-medium text-[#8B6914] dark:text-[#C9A84C]">{lender.tagline}</p>
-      <div className="mt-3">
+      <h3 className="min-w-0 break-words text-base font-semibold text-foreground">{name}</h3>
+      <p className="mt-1 min-w-0 break-words text-sm font-medium text-[#8B6914] dark:text-[#C9A84C]">{lender.tagline}</p>
+      <div className="mt-3 min-w-0">
         <ExpandableText
           text={highlight}
-          className="text-sm leading-relaxed text-muted-foreground"
+          className="break-words text-sm leading-relaxed text-muted-foreground"
         />
       </div>
       <p className="mt-3 text-xs text-muted-foreground">

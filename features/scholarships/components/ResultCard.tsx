@@ -26,7 +26,7 @@ export function ResultCard({ result }: ResultCardProps) {
 
   return (
     <article
-      className={`interactive-card flex min-w-0 flex-col overflow-hidden rounded-2xl p-4 sm:p-5 ${
+      className={`interactive-card flex min-w-0 max-w-full flex-col overflow-hidden rounded-2xl p-3 md:p-5 ${
         featured
           ? "border-2 border-[#C9A84C] bg-[#C9A84C]/10 shadow-sm"
           : "border border-border bg-card"
@@ -57,7 +57,7 @@ export function ResultCard({ result }: ResultCardProps) {
         </span>
         </div>
       </div>
-      <h3 className="break-words text-base font-semibold text-foreground">{title}</h3>
+      <h3 className="min-w-0 break-words text-base font-semibold text-foreground">{title}</h3>
       <div className="mt-2 min-w-0">
         <ExpandableText
           text={eligibility}

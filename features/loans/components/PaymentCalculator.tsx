@@ -74,7 +74,7 @@ export function PaymentCalculator() {
   }, [valid, amount, apr, months])
 
   return (
-    <section className="rounded-2xl border border-border bg-card p-4 sm:p-6">
+    <section className="rounded-2xl border border-border bg-card p-3 md:p-6">
       <SectionHeading icon={Calculator}>Payment estimator</SectionHeading>
       <p className="mt-1 text-sm text-muted-foreground">
         Example only. Enter an APR from a lender’s site to estimate a payment. This is not
