@@ -19,7 +19,7 @@ export function LenderCard({ lender }: { lender: LoanResult }) {
 
   return (
     <article
-      className={`interactive-card flex min-w-0 max-w-full flex-col overflow-hidden rounded-2xl p-3 md:p-5 ${
+      className={`interactive-card flex min-w-0 max-w-full flex-col overflow-hidden rounded-2xl p-4 md:p-5 ${
         featured
           ? "border-2 border-[#C9A84C] bg-[#C9A84C]/10 shadow-sm"
           : "border border-border bg-card"

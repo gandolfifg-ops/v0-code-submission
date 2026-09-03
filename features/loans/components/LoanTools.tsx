@@ -26,6 +26,10 @@ type SearchResponse = {
   results: LoanResult[]
 }
 
+function loanResultsSummary(count: number, country: LoanCountry, loanType: LoanType): string {
+  return `${count} ${count === 1 ? "lender" : "lenders"} · ${country === "USA" ? "United States" : "Canada"} · ${loanType}`
+}
+
 export function LoanTools() {
   const { setCountry: setSearchCountry, ticket } = useSmartSearch()
   const [country, setCountry] = useState<LoanCountry>("Canada")
@@ -93,6 +97,11 @@ export function LoanTools() {
         advertised on public pages — not live guaranteed quotes. Always confirm APR,
         fees, and eligibility on the official site.
       </p>
+      {results.length > 0 && !loading && (
+        <p className="mt-2 text-sm font-medium text-muted-foreground md:hidden">
+          {loanResultsSummary(results.length, country, loanType)}
+        </p>
+      )}
       {country === "Canada" && (
         <p className="mt-2 text-sm">
           <Link
@@ -142,7 +151,7 @@ export function LoanTools() {
 
           <form
             onSubmit={onSubmit}
-            className="space-y-2 rounded-2xl border border-border bg-card p-3 md:space-y-3 md:p-5"
+            className="space-y-2 rounded-2xl border border-border bg-card p-4 md:space-y-3 md:p-5"
           >
             <SectionHeading icon={Search}>Find lenders</SectionHeading>
             <CountryToggle

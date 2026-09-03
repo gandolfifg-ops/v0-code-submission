@@ -25,6 +25,21 @@ type SearchResponse = {
 const selectClass =
   "min-h-11 w-full rounded-xl border border-border bg-background px-3 text-sm text-foreground"
 
+function scholarshipResultsSummary(
+  count: number,
+  country: ScholarshipCountry,
+  major: string,
+  level: string,
+): string {
+  const parts = [
+    `${count} ${count === 1 ? "award" : "awards"}`,
+    country === "USA" ? "United States" : "Canada",
+  ]
+  if (major !== "Any major") parts.push(major)
+  if (level !== "Any level") parts.push(level)
+  return parts.join(" · ")
+}
+
 export function ScholarshipFinder() {
   const { setCountry: setSearchCountry, ticket } = useSmartSearch()
   const [country, setCountry] = useState<ScholarshipCountry>("Canada")
@@ -111,6 +126,13 @@ export function ScholarshipFinder() {
         short curated list — not a government awards database. Confirm every deadline
         on the official page.
       </p>
+      {hasSearched && !loading && (
+        <p className="mt-2 text-sm font-medium text-muted-foreground md:hidden">
+          {results.length > 0
+            ? scholarshipResultsSummary(results.length, country, major, level)
+            : "No awards matched this search"}
+        </p>
+      )}
 
       <div className="mt-3 grid min-w-0 gap-3 md:mt-6 md:gap-4 lg:grid-cols-[minmax(0,22rem)_minmax(0,1fr)] lg:items-start">
         <div className={`min-w-0 space-y-3 lg:sticky lg:top-20 lg:space-y-4 ${results.length > 0 ? "order-2" : "order-1"} lg:order-none`}>
@@ -118,7 +140,7 @@ export function ScholarshipFinder() {
 
           <form
             onSubmit={onSubmit}
-            className="space-y-2 rounded-2xl border border-border bg-card p-3 md:space-y-3 md:p-5"
+            className="space-y-2 rounded-2xl border border-border bg-card p-4 md:space-y-3 md:p-5"
           >
             <SectionHeading icon={Search}>Search awards</SectionHeading>
             <CountryToggle
@@ -224,7 +246,7 @@ export function ScholarshipFinder() {
           )}
 
           {!hasSearched && !loading && (
-            <section className="rounded-2xl border border-dashed border-border bg-muted/30 p-3 md:p-5">
+            <section className="rounded-2xl border border-dashed border-border bg-muted/30 p-4 md:p-5">
               <SectionHeading icon={GraduationCap}>How it works</SectionHeading>
               <ol className="mt-3 list-decimal space-y-2 pl-5 text-sm text-muted-foreground">
                 <li>Save your student profile (optional) so filters start filled in.</li>

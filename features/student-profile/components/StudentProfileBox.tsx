@@ -62,7 +62,7 @@ export function StudentProfileBox({ onProfileChange }: StudentProfileBoxProps) {
   return (
     <section
       id="student-profile"
-      className="scroll-mt-20 rounded-2xl border border-border bg-card p-3 md:p-5"
+      className="scroll-mt-20 rounded-2xl border border-border bg-card p-4 md:p-5"
     >
       <SectionHeading icon={UserRound}>Your profile</SectionHeading>
       <p className="mt-1 text-xs text-muted-foreground">
@@ -74,9 +74,12 @@ export function StudentProfileBox({ onProfileChange }: StudentProfileBoxProps) {
         <button
           type="button"
           onClick={() => setEditing(true)}
-          className="mt-3 min-h-11 w-full rounded-xl border border-border text-sm font-semibold text-foreground transition-colors hover:bg-muted md:hidden"
+          className="mt-3 w-full rounded-2xl border border-dashed border-[#C9A84C]/40 bg-[#C9A84C]/5 p-4 text-left transition-colors hover:bg-[#C9A84C]/10 md:hidden"
         >
-          Add your profile (optional)
+          <span className="block text-sm font-semibold text-foreground">Add your profile (optional)</span>
+          <span className="mt-1 block text-xs leading-relaxed text-muted-foreground">
+            Pre-fill country, school, and major for faster searches.
+          </span>
         </button>
       )}
 

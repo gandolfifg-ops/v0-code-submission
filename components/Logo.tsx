@@ -44,7 +44,7 @@ export function Logo({ size = 32, showText = false, href = "/" }: LogoProps) {
     >
       <LogoSvg size={size} />
       {showText && (
-        <span className="hidden text-base font-black uppercase tracking-tight text-[#C9A84C] md:inline">
+        <span className="text-xs font-black uppercase tracking-tight text-[#C9A84C] sm:text-sm md:text-base">
           WealthNutz
         </span>
       )}
