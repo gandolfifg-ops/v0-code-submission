@@ -19,14 +19,14 @@ export function ProductCard({ product }: ProductCardProps) {
 
   return (
     <article
-      className={`interactive-card flex flex-col rounded-2xl p-4 sm:p-5 ${
+      className={`interactive-card flex flex-col ${
         featured
-          ? "border-2 border-[#C9A84C] bg-[#C9A84C]/10 shadow-sm lg:col-span-2"
-          : "border border-border bg-card"
+          ? "rounded-2xl border-[3px] border-[#C9A84C] bg-[#C9A84C]/10 p-5 shadow-sm sm:p-6 lg:col-span-2"
+          : "rounded-xl border border-border bg-card p-4"
       }`}
     >
-      <div className="mb-3 flex items-start gap-3">
-        <CreamIcon icon={CATEGORY_ICONS[product.category]} />
+      <div className={`mb-3 flex min-w-0 items-start ${featured ? "gap-3.5" : "gap-2.5"}`}>
+        <CreamIcon icon={CATEGORY_ICONS[product.category]} size={featured ? "lg" : "md"} />
         <div className="flex min-w-0 flex-1 flex-wrap items-center gap-2">
           {featured && (
             <span className="inline-flex items-center gap-1 rounded-full bg-[#C9A84C] px-2.5 py-1 text-[11px] font-bold text-[#07090d]">
@@ -39,7 +39,11 @@ export function ProductCard({ product }: ProductCardProps) {
           </span>
         </div>
       </div>
-      <h3 className="text-lg font-semibold tracking-tight text-foreground">{product.name}</h3>
+      <h3
+        className={`font-semibold tracking-tight text-foreground ${featured ? "text-xl" : "text-base"}`}
+      >
+        {product.name}
+      </h3>
       <p className="mt-1 text-sm font-medium text-[#8B6914] dark:text-[#C9A84C]">{product.tagline}</p>
       <div className="mt-3 flex-1">
         <ExpandableText

@@ -283,6 +283,13 @@ export const CATEGORY_LABELS: Record<MarketplaceProduct["category"], string> = {
   credit: "Credit building",
 }
 
+export const CATEGORY_BLURBS: Record<MarketplaceProduct["category"], string> = {
+  banking: "Everyday accounts we list — confirm fees on the official site.",
+  investing: "Cash and registered accounts to start after you can save.",
+  "student-aid": "Government hubs to apply for grants and loans.",
+  credit: "Student cards for building credit — compare terms on the issuer site.",
+}
+
 export const CATEGORY_ORDER: MarketplaceProduct["category"][] = [
   "banking",
   "investing",

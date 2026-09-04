@@ -13,6 +13,7 @@ import {
   US_COMPARISON,
 } from "@/features/marketplace/data/comparison"
 import {
+  CATEGORY_BLURBS,
   CATEGORY_LABELS,
   CATEGORY_ORDER,
   MARKETPLACE_PRODUCTS,
@@ -115,11 +116,14 @@ export function MarketplaceHome() {
       />
 
       {grouped.map((group) => (
-        <section key={group.category} className="mt-7 lg:mt-8">
+        <section key={group.category} className="mt-10 lg:mt-12">
           <SectionHeading icon={CATEGORY_ICONS[group.category]}>
             {CATEGORY_LABELS[group.category]}
           </SectionHeading>
-          <div className="mt-3 grid gap-3 sm:grid-cols-2 lg:grid-cols-3 lg:gap-4">
+          <p className="mt-1 max-w-2xl text-sm text-muted-foreground">
+            {CATEGORY_BLURBS[group.category]}
+          </p>
+          <div className="mt-2 grid grid-cols-1 gap-3 md:grid-cols-2 lg:grid-cols-3 lg:gap-4">
             {group.items.map((product) => (
               <ProductCard key={product.id} product={product} />
             ))}
