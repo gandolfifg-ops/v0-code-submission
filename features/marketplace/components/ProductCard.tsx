@@ -55,9 +55,6 @@ export function ProductCard({ product }: ProductCardProps) {
       >
         {product.cta}
       </a>
-      {product.affiliate && (
-        <p className="mt-2 text-center text-[11px] text-muted-foreground">Affiliate link</p>
-      )}
     </article>
   )
 }

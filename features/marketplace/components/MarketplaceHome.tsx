@@ -159,9 +159,9 @@ export function MarketplaceHome() {
       </section>
 
       <p className="mt-8 max-w-3xl text-xs leading-relaxed text-muted-foreground">
-        WealthNutz may earn a referral commission if you open an account through
-        a link marked “Affiliate link.” That never changes which products we list.
-        Government pages (FAFSA, StudentAid.gov, NSLSC) are official — not
+        Some Marketplace product buttons may be affiliate links — we may earn a
+        commission if you open an account. That never changes which products we
+        list. Government pages (FAFSA, StudentAid.gov, NSLSC) are official — not
         affiliates. This is education, not personalized financial advice.
       </p>
     </div>

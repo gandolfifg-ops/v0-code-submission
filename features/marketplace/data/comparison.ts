@@ -26,8 +26,15 @@ const eq = hrefFor("eq-bank")
 const tangerine = hrefFor("tangerine-student")
 const rbc = hrefFor("rbc-student")
 const wealthsimple = hrefFor("wealthsimple")
+const td = hrefFor("td-student")
+const scotia = hrefFor("scotia-student")
+const bmo = hrefFor("bmo-student")
+const cibc = hrefFor("cibc-student")
+const simplii = hrefFor("simplii-chequing")
 const sofi = hrefFor("sofi-students")
 const ally = hrefFor("ally-savings")
+const bofa = hrefFor("bofa-student")
+const capitalOne = hrefFor("capital-one-student")
 const fidelity = hrefFor("fidelity-roth")
 const betterment = hrefFor("betterment")
 const discover = hrefFor("discover-student")
@@ -74,6 +81,56 @@ export const CANADA_COMPARISON: ComparisonRow[] = [
     href: wealthsimple.href,
     cta: wealthsimple.cta,
   },
+  {
+    productId: "td-student",
+    account: "TD Student Chequing Account",
+    monthlyFee: "See official site",
+    atmAccess: "See official site",
+    advertisedPerk: "See official site",
+    bestFor: "Best if you already use TD branches",
+    href: td.href,
+    cta: td.cta,
+  },
+  {
+    productId: "scotia-student",
+    account: "Scotiabank Preferred Package for Students and Youth",
+    monthlyFee: "See official site",
+    atmAccess: "See official site",
+    advertisedPerk: "See official site",
+    bestFor: "Best for Scotiabank student/youth chequing",
+    href: scotia.href,
+    cta: scotia.cta,
+  },
+  {
+    productId: "bmo-student",
+    account: "BMO Student Banking",
+    monthlyFee: "See official site",
+    atmAccess: "See official site",
+    advertisedPerk: "See official site",
+    bestFor: "Best if you want BMO student chequing",
+    href: bmo.href,
+    cta: bmo.cta,
+  },
+  {
+    productId: "cibc-student",
+    account: "CIBC Smart for Students",
+    monthlyFee: "See official site",
+    atmAccess: "See official site",
+    advertisedPerk: "See official site",
+    bestFor: "Best for CIBC student chequing",
+    href: cibc.href,
+    cta: cibc.cta,
+  },
+  {
+    productId: "simplii-chequing",
+    account: "Simplii Financial No Fee Chequing",
+    monthlyFee: "See official site",
+    atmAccess: "See official site",
+    advertisedPerk: "See official site",
+    bestFor: "Best for online chequing (not student-only)",
+    href: simplii.href,
+    cta: simplii.cta,
+  },
 ]
 
 export const US_COMPARISON: ComparisonRow[] = [
@@ -96,6 +153,26 @@ export const US_COMPARISON: ComparisonRow[] = [
     bestFor: "Best for online savings without a branch",
     href: ally.href,
     cta: ally.cta,
+  },
+  {
+    productId: "bofa-student",
+    account: "Bank of America student banking",
+    monthlyFee: "See official site",
+    atmAccess: "See official site",
+    advertisedPerk: "See official site",
+    bestFor: "Best for Bank of America students and young adults",
+    href: bofa.href,
+    cta: bofa.cta,
+  },
+  {
+    productId: "capital-one-student",
+    account: "Capital One checking for students",
+    monthlyFee: "See official site",
+    atmAccess: "See official site",
+    advertisedPerk: "See official site",
+    bestFor: "Best for Capital One student checking options",
+    href: capitalOne.href,
+    cta: capitalOne.cta,
   },
   {
     productId: "fidelity-roth",

@@ -6,9 +6,14 @@ import { Send } from "lucide-react"
 import { ChatMarkdown } from "@/features/chat/components/ChatMarkdown"
 import { ChatDeepLinks } from "@/features/chat/components/ChatDeepLinks"
 import { CHAT_SYSTEM_PROMPT, SUGGESTIONS } from "@/features/chat/constants"
+import {
+  clearChatThread,
+  readChatThread,
+  writeChatThread,
+  type ChatMessage,
+} from "@/features/chat/storage"
 
-type Role = "user" | "assistant"
-type Msg = { role: Role; content: string }
+type Msg = ChatMessage
 
 async function readChatStream(
   res: Response,
@@ -46,7 +51,18 @@ export function StudentChat() {
   const [msgs, setMsgs] = useState<Msg[]>([])
   const [input, setInput] = useState("")
   const [loading, setLoading] = useState(false)
+  const [threadReady, setThreadReady] = useState(false)
   const bottomRef = useRef<HTMLDivElement>(null)
+
+  useEffect(() => {
+    setMsgs(readChatThread())
+    setThreadReady(true)
+  }, [])
+
+  useEffect(() => {
+    if (!threadReady) return
+    writeChatThread(msgs)
+  }, [msgs, threadReady])
 
   useEffect(() => {
     let cancelled = false
@@ -130,10 +146,39 @@ export function StudentChat() {
     void send(input)
   }
 
+  function newChat() {
+    if (loading) return
+    clearChatThread()
+    setMsgs([])
+  }
+
+  function deepLinkContext(index: number, assistantContent: string): string {
+    let userText = ""
+    for (let j = index - 1; j >= 0; j--) {
+      if (msgs[j].role === "user") {
+        userText = msgs[j].content
+        break
+      }
+    }
+    return `${userText}\n${assistantContent}`
+  }
+
   return (
     <div className="mx-auto flex max-w-3xl flex-col px-4 py-8 sm:px-6 sm:py-10">
       <p className="text-xs font-semibold uppercase tracking-widest text-[#C9A84C]">Chat</p>
-      <h1 className="mt-2 text-3xl font-bold tracking-tight text-foreground">Student finance chat</h1>
+      <div className="mt-2 flex flex-wrap items-start justify-between gap-3">
+        <h1 className="text-3xl font-bold tracking-tight text-foreground">Student finance chat</h1>
+        {threadReady && msgs.length > 0 && (
+          <button
+            type="button"
+            onClick={newChat}
+            disabled={loading}
+            className="min-h-9 shrink-0 rounded-lg border border-border px-3 text-sm font-medium text-foreground transition-colors hover:bg-muted disabled:opacity-50"
+          >
+            New chat
+          </button>
+        )}
+      </div>
       <p className="mt-3 text-sm leading-relaxed text-muted-foreground">
         Ask about scholarships, loans, and student banking. For search tools, use{" "}
         <Link href="/scholarships" className="font-medium text-[#8B6914] underline dark:text-[#C9A84C]">
@@ -143,7 +188,9 @@ export function StudentChat() {
         <Link href="/loans" className="font-medium text-[#8B6914] underline dark:text-[#C9A84C]">
           Loans
         </Link>
-        . This is general education, not personalized advice.
+        . This is general education, not personalized advice. This thread stays in
+        this browser only until you tap New chat. This thread stays in
+        this browser only until you tap New chat.
       </p>
 
       {configured === false && (
@@ -156,7 +203,7 @@ export function StudentChat() {
       {configured !== false && (
         <>
           <div className="mt-6 min-h-[40vh] space-y-3 rounded-2xl border border-border bg-card p-4">
-            {msgs.length === 0 && (
+            {threadReady && msgs.length === 0 && (
               <div className="space-y-2">
                 <p className="text-sm text-muted-foreground">Try a question:</p>
                 {SUGGESTIONS.map((s) => (
@@ -185,7 +232,7 @@ export function StudentChat() {
                   m.content ? (
                     <>
                       <ChatMarkdown content={m.content} />
-                      <ChatDeepLinks content={m.content} />
+                      <ChatDeepLinks content={deepLinkContext(i, m.content)} />
                     </>
                   ) : loading && i === msgs.length - 1 ? (
                     "…"
