@@ -7,8 +7,13 @@ import { UserRound } from "lucide-react"
 import {
   SCHOLARSHIP_LEVELS,
   SCHOLARSHIP_MAJORS,
+  scholarshipLevelLabel,
 } from "@/features/scholarships/types"
-import { getStudentProfile, saveStudentProfile } from "@/features/student-profile/store"
+import {
+  getStudentProfile,
+  saveStudentProfile,
+  subscribeStudentProfile,
+} from "@/features/student-profile/store"
 import {
   EMPTY_PROFILE,
   isProfileFilled,
@@ -29,13 +34,16 @@ export function StudentProfileBox({ onProfileChange }: StudentProfileBoxProps) {
   const [draft, setDraft] = useState<StudentProfile>(EMPTY_PROFILE)
 
   useEffect(() => {
-    const stored = getStudentProfile()
-    setProfile(stored)
-    setDraft(stored ?? EMPTY_PROFILE)
-    setEditing(false)
-    setReady(true)
-    onProfileChange?.(stored)
-    // Seed filters once after load; later edits call onProfileChange from save.
+    const sync = () => {
+      const stored = getStudentProfile()
+      setProfile(stored)
+      setDraft(stored ?? EMPTY_PROFILE)
+      setReady(true)
+      onProfileChange?.(stored)
+    }
+    sync()
+    return subscribeStudentProfile(sync)
+    // Seed filters after load and when the shared profile (including country) updates.
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 
@@ -97,7 +105,7 @@ export function StudentProfileBox({ onProfileChange }: StudentProfileBoxProps) {
           )}
           <p>
             <span className="text-muted-foreground">Level: </span>
-            {profile.level}
+            {scholarshipLevelLabel(profile.level)}
           </p>
           <p>
             <span className="text-muted-foreground">Major: </span>
@@ -150,7 +158,7 @@ export function StudentProfileBox({ onProfileChange }: StudentProfileBoxProps) {
             >
               {SCHOLARSHIP_LEVELS.map((level) => (
                 <option key={level} value={level}>
-                  {level}
+                  {scholarshipLevelLabel(level)}
                 </option>
               ))}
             </select>

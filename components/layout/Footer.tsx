@@ -1,10 +1,12 @@
 import Link from "next/link"
+import { Logo } from "@/components/Logo"
 import { FOOTER_NAV, GUIDE_NAV } from "@/lib/constants/nav"
 
 export function Footer() {
   return (
     <footer className="mt-auto border-t border-border bg-background">
       <div className="mx-auto flex max-w-6xl flex-col gap-4 px-4 py-8 sm:px-6">
+        <Logo size={26} showText />
         <nav className="flex flex-wrap gap-x-5 gap-y-2" aria-label="Footer">
           {FOOTER_NAV.map((link) => (
             <Link

@@ -1,6 +1,6 @@
 import { CURATED_LENDERS } from "@/features/loans/data/curated"
 import type { LoanCountry, LoanResult, LoanType } from "@/features/loans/types"
-import { cleanDisplayText } from "@/lib/liveResultText"
+import { cleanDisplayText, summarizeLiveSnippet } from "@/lib/liveResultText"
 
 export const dynamic = "force-dynamic"
 export const maxDuration = 30
@@ -97,7 +97,11 @@ export async function POST(req: Request) {
               advertisedRate: rateMatch
                 ? `Advertised ${rateMatch[0]} — confirm on official site`
                 : "Advertised rate — confirm on official site",
-              highlight: cleanDisplayText(content) || "Open the lender page for current terms.",
+              highlight: summarizeLiveSnippet(content, {
+                url: r.url,
+                title: r.title ?? "",
+                fallback: "Open the lender page for current terms.",
+              }),
               href: r.url,
               cta: "Open official site",
               source: "live" as const,

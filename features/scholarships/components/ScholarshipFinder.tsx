@@ -11,6 +11,7 @@ import { isProfileFilled, type StudentProfile } from "@/features/student-profile
 import {
   SCHOLARSHIP_LEVELS,
   SCHOLARSHIP_MAJORS,
+  scholarshipLevelLabel,
   type ScholarshipCountry,
   type ScholarshipResult,
 } from "@/features/scholarships/types"
@@ -36,7 +37,7 @@ function scholarshipResultsSummary(
     country === "USA" ? "United States" : "Canada",
   ]
   if (major !== "Any major") parts.push(major)
-  if (level !== "Any level") parts.push(level)
+  if (level !== "Any level") parts.push(scholarshipLevelLabel(level))
   return parts.join(" · ")
 }
 
@@ -55,9 +56,10 @@ export function ScholarshipFinder() {
   const [hasSearched, setHasSearched] = useState(false)
 
   function applyProfile(profile: StudentProfile | null) {
-    if (!isProfileFilled(profile) || !profile) return
+    if (!profile) return
     setCountry(profile.country)
     setSearchCountry(profile.country)
+    if (!isProfileFilled(profile)) return
     if (profile.major) setMajor(profile.major)
     if (profile.level) setLevel(profile.level)
     if (profile.school.trim()) setUniversity(profile.school.trim())
@@ -172,7 +174,7 @@ export function ScholarshipFinder() {
                 <select className={`${selectClass} mt-1`} value={level} onChange={(e) => setLevel(e.target.value)}>
                   {SCHOLARSHIP_LEVELS.map((l) => (
                     <option key={l} value={l}>
-                      {l}
+                      {scholarshipLevelLabel(l)}
                     </option>
                   ))}
                 </select>
@@ -185,7 +187,7 @@ export function ScholarshipFinder() {
                 className={`${selectClass} mt-1`}
                 value={query}
                 onChange={(e) => setQuery(e.target.value)}
-                placeholder="e.g. first-generation, nursing, Indigenous"
+                placeholder="e.g. Indigenous, first-generation, international student, Canadian citizen"
               />
             </label>
 

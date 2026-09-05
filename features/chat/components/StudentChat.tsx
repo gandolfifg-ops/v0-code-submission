@@ -5,12 +5,18 @@ import Link from "next/link"
 import { Send } from "lucide-react"
 import { ChatMarkdown } from "@/features/chat/components/ChatMarkdown"
 import { ChatDeepLinks } from "@/features/chat/components/ChatDeepLinks"
+import { SavedChats } from "@/features/chat/components/SavedChats"
 import { CHAT_SYSTEM_PROMPT, SUGGESTIONS } from "@/features/chat/constants"
 import {
-  clearChatThread,
-  readChatThread,
-  writeChatThread,
+  createEmptyThread,
+  deleteChatThread,
+  readActiveThreadId,
+  readChatThreads,
+  startNewChatThread,
+  writeActiveThread,
+  writeChatThreads,
   type ChatMessage,
+  type ChatThread,
 } from "@/features/chat/storage"
 
 type Msg = ChatMessage
@@ -49,20 +55,42 @@ export function StudentChat() {
   const [configured, setConfigured] = useState<boolean | null>(null)
   const [configError, setConfigError] = useState<string | null>(null)
   const [msgs, setMsgs] = useState<Msg[]>([])
+  const [threads, setThreads] = useState<ChatThread[]>([])
+  const [activeId, setActiveId] = useState("")
   const [input, setInput] = useState("")
   const [loading, setLoading] = useState(false)
   const [threadReady, setThreadReady] = useState(false)
   const bottomRef = useRef<HTMLDivElement>(null)
+  const threadsRef = useRef<ChatThread[]>([])
+  const activeIdRef = useRef("")
 
   useEffect(() => {
-    setMsgs(readChatThread())
+    const loaded = readChatThreads()
+    if (loaded.length === 0) {
+      const empty = createEmptyThread()
+      threadsRef.current = [empty]
+      activeIdRef.current = empty.id
+      setThreads([empty])
+      setActiveId(empty.id)
+      setMsgs([])
+    } else {
+      const id = readActiveThreadId(loaded) ?? loaded[0].id
+      threadsRef.current = loaded
+      activeIdRef.current = id
+      setThreads(loaded)
+      setActiveId(id)
+      setMsgs(loaded.find((t) => t.id === id)?.messages ?? [])
+    }
     setThreadReady(true)
   }, [])
 
   useEffect(() => {
-    if (!threadReady) return
-    writeChatThread(msgs)
-  }, [msgs, threadReady])
+    if (!threadReady || !activeId) return
+    const next = writeActiveThread(threadsRef.current, activeId, msgs)
+    threadsRef.current = next
+    activeIdRef.current = activeId
+    setThreads(next)
+  }, [msgs, activeId, threadReady])
 
   useEffect(() => {
     let cancelled = false
@@ -148,8 +176,35 @@ export function StudentChat() {
 
   function newChat() {
     if (loading) return
-    clearChatThread()
+    threadsRef.current = writeActiveThread(threadsRef.current, activeIdRef.current, msgs)
+    const started = startNewChatThread(threadsRef.current)
+    threadsRef.current = started.threads
+    activeIdRef.current = started.activeId
+    setThreads(started.threads)
+    setActiveId(started.activeId)
     setMsgs([])
+  }
+
+  function selectThread(id: string) {
+    if (loading || id === activeIdRef.current) return
+    threadsRef.current = writeActiveThread(threadsRef.current, activeIdRef.current, msgs)
+    writeChatThreads(threadsRef.current, id)
+    const next = threadsRef.current.find((t) => t.id === id)
+    activeIdRef.current = id
+    setThreads(threadsRef.current)
+    setActiveId(id)
+    setMsgs(next?.messages ?? [])
+  }
+
+  function removeThread(id: string) {
+    if (loading) return
+    threadsRef.current = writeActiveThread(threadsRef.current, activeIdRef.current, msgs)
+    const result = deleteChatThread(threadsRef.current, id, activeIdRef.current)
+    threadsRef.current = result.threads
+    activeIdRef.current = result.activeId
+    setThreads(result.threads)
+    setActiveId(result.activeId)
+    setMsgs(result.messages)
   }
 
   function deepLinkContext(index: number, assistantContent: string): string {
@@ -163,17 +218,20 @@ export function StudentChat() {
     return `${userText}\n${assistantContent}`
   }
 
+  const hasSaved = threads.some((t) => t.messages.length > 0)
+  const showNewChat = threadReady && (msgs.length > 0 || hasSaved)
+
   return (
     <div className="mx-auto flex max-w-3xl flex-col px-4 py-8 sm:px-6 sm:py-10">
       <p className="text-xs font-semibold uppercase tracking-widest text-[#C9A84C]">Chat</p>
       <div className="mt-2 flex flex-wrap items-start justify-between gap-3">
         <h1 className="text-3xl font-bold tracking-tight text-foreground">Student finance chat</h1>
-        {threadReady && msgs.length > 0 && (
+        {showNewChat && (
           <button
             type="button"
             onClick={newChat}
             disabled={loading}
-            className="min-h-9 shrink-0 rounded-lg border border-border px-3 text-sm font-medium text-foreground transition-colors hover:bg-muted disabled:opacity-50"
+            className="min-h-11 shrink-0 rounded-lg border border-border px-3 text-sm font-medium text-foreground transition-colors hover:bg-muted disabled:opacity-50"
           >
             New chat
           </button>
@@ -189,7 +247,6 @@ export function StudentChat() {
           Loans
         </Link>
         . This is general education, not personalized advice. This thread stays in
-        this browser only until you tap New chat. This thread stays in
         this browser only until you tap New chat.
       </p>
 
@@ -202,6 +259,16 @@ export function StudentChat() {
 
       {configured !== false && (
         <>
+          {threadReady && (
+            <SavedChats
+              threads={threads}
+              activeId={activeId}
+              disabled={loading}
+              onSelect={selectThread}
+              onDelete={removeThread}
+            />
+          )}
+
           <div className="mt-6 min-h-[40vh] space-y-3 rounded-2xl border border-border bg-card p-4">
             {threadReady && msgs.length === 0 && (
               <div className="space-y-2">

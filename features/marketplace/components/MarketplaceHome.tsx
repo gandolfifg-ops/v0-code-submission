@@ -1,6 +1,6 @@
 "use client"
 
-import { useMemo, useState } from "react"
+import { useEffect, useMemo, useState } from "react"
 import Link from "next/link"
 import { Building2, CreditCard, GraduationCap, Landmark, PiggyBank, Search } from "lucide-react"
 import { CountryFlag } from "@/components/CountryFlag"
@@ -19,6 +19,7 @@ import {
   MARKETPLACE_PRODUCTS,
 } from "@/features/marketplace/data/products"
 import type { Country, ProductCategory } from "@/features/marketplace/types"
+import { getStudentProfile, subscribeStudentProfile } from "@/features/student-profile/store"
 
 const COUNTRY_COPY: Record<Country, { name: string; intro: string }> = {
   CA: {
@@ -44,6 +45,15 @@ export function MarketplaceHome() {
   const [country, setCountry] = useState<Country>("CA")
   const copy = COUNTRY_COPY[country]
 
+  useEffect(() => {
+    const sync = () => {
+      const profile = getStudentProfile()
+      if (profile) setCountry(profile.country === "USA" ? "US" : "CA")
+    }
+    sync()
+    return subscribeStudentProfile(sync)
+  }, [])
+
   const products = useMemo(
     () => MARKETPLACE_PRODUCTS.filter((p) => p.country === country),
     [country],
@@ -66,10 +76,10 @@ export function MarketplaceHome() {
             Marketplace
           </p>
           <h1 className="mt-2 flex flex-wrap items-center gap-2 text-3xl font-bold tracking-tight text-foreground sm:text-4xl">
-            <span>Student money products,</span>
+            <span>Student money products in</span>
             <span className="inline-flex items-center gap-2">
               <CountryFlag code={country} className="h-5 w-8 rounded-sm" />
-              {copy.name}
+              {country === "CA" ? "Canada" : "the United States"}
             </span>
           </h1>
           <p className="mt-3 text-base font-medium leading-relaxed text-foreground">

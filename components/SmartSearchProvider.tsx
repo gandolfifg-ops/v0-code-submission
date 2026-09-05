@@ -1,6 +1,7 @@
 "use client"
 
-import { createContext, useCallback, useContext, useMemo, useState, type ReactNode } from "react"
+import { createContext, useCallback, useContext, useEffect, useMemo, useState, type ReactNode } from "react"
+import { getStudentProfile, subscribeStudentProfile } from "@/features/student-profile/store"
 
 export type SearchCountry = "Canada" | "USA"
 
@@ -22,6 +23,15 @@ const SmartSearchContext = createContext<SmartSearchContextValue | null>(null)
 export function SmartSearchProvider({ children }: { children: ReactNode }) {
   const [country, setCountry] = useState<SearchCountry>("Canada")
   const [ticket, setTicket] = useState<SmartSearchTicket | null>(null)
+
+  useEffect(() => {
+    const sync = () => {
+      const profile = getStudentProfile()
+      if (profile) setCountry(profile.country)
+    }
+    sync()
+    return subscribeStudentProfile(sync)
+  }, [])
 
   const submitQuery = useCallback((query: string) => {
     const trimmed = query.trim()

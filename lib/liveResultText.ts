@@ -1,3 +1,5 @@
+const SNIPPET_MAX = 400
+
 /** Strip leftover markdown and labels from live search titles/snippets. */
 export function cleanDisplayText(input: string): string {
   let text = input.replace(/\r\n/g, "\n")
@@ -12,6 +14,126 @@ export function cleanDisplayText(input: string): string {
   text = text.replace(/_/g, " ")
   text = text.replace(/\s+/g, " ")
   return text.trim()
+}
+
+const JUNK =
+  /protected\s*b\b|copyright|all rights reserved|privacy (?:policy|statement)|terms of (?:use|service)|skip to(?: main)? content|javascript must be enabled|enable cookies|click here to (?:download|print|apply)|print this (?:form|page)|fill(?:able)? form|date of birth|social insurance|sin number|income table|household income|line \d+|box \d+|ocr error|�{2,}/i
+
+const FORM_NOISE =
+  /please (?:print|complete|fill|sign)|block letters|for office use|applicant must|instructions?:|section [a-z0-9]+ of this form/i
+
+function isMostlyCaps(s: string): boolean {
+  const letters = s.replace(/[^A-Za-z]/g, "")
+  if (letters.length < 24) return false
+  return letters.replace(/[^A-Z]/g, "").length / letters.length > 0.72
+}
+
+function stripOcrAndMarkdown(input: string): string {
+  let text = input.replace(/\r\n/g, "\n")
+  text = text.replace(/!\[[^\]]*]\([^)]*\)/g, " ")
+  text = text.replace(/\[([^\]]+)]\([^)]*\)/g, "$1")
+  text = text.replace(/<[^>]+>/g, " ")
+  text = text.replace(/\|/g, " ")
+  text = text.replace(/[|]{2,}/g, " ")
+  text = text.replace(/[^\S\n]+/g, " ")
+  text = text.replace(/[^\x09\x0a\x0d\x20-\x7e\u00a0-\u024f\u2010-\u2027]/g, " ")
+  return cleanDisplayText(text)
+}
+
+function splitSentences(text: string): string[] {
+  return text
+    .split(/(?<=[.!?])\s+|\n+/)
+    .map((s) => s.replace(/^[\s•\-–—*]+/, "").trim())
+    .filter((s) => s.length >= 28 && s.length <= 320)
+}
+
+function keepSentence(s: string): boolean {
+  if (JUNK.test(s) || FORM_NOISE.test(s) || isMostlyCaps(s)) return false
+  if (/^\d+(\.\d+)?%?$/.test(s)) return false
+  if ((s.match(/\d/g) ?? []).length > 24) return false
+  return true
+}
+
+function scoreSentence(s: string, title: string): number {
+  let n = 0
+  const blob = s.toLowerCase()
+  if (/\b(scholarship|bursar|award|grant|loan|lender|student)\b/.test(blob)) n += 3
+  if (/\b(eligib|for students|who can apply|open to|available to)\b/.test(blob)) n += 2
+  if (/\b(canada|canadian|ontario|quebec|province|national|university|college|school)\b/.test(blob))
+    n += 2
+  if (/\b(cover|tuition|pays|funding|financial aid)\b/.test(blob)) n += 1
+  if (title && blob.includes(title.slice(0, 24).toLowerCase())) n += 1
+  return n
+}
+
+function detectListingKind(url: string, text: string): "pdf" | "news" | "page" {
+  const blob = `${url} ${text}`.toLowerCase()
+  if (/\.pdf(\?|$)/i.test(url) || blob.includes("application form") || blob.includes("fillable pdf")) {
+    return "pdf"
+  }
+  if (/news[- ]?release|press release|media release/.test(blob)) return "news"
+  return "page"
+}
+
+function clip(text: string, max: number): string {
+  if (text.length <= max) return text
+  const cut = text.slice(0, max - 1)
+  const at = cut.lastIndexOf(" ")
+  return `${(at > 80 ? cut.slice(0, at) : cut).trimEnd()}…`
+}
+
+/**
+ * Short card body for live results. Does not invent amounts.
+ * Prefers what / who / why / where from existing sentences.
+ */
+export function summarizeLiveSnippet(
+  input: string,
+  opts?: { url?: string; title?: string; fallback?: string },
+): string {
+  const url = opts?.url ?? ""
+  const title = opts?.title ?? ""
+  const fallback = opts?.fallback ?? "See the official listing for eligibility details."
+  const kind = detectListingKind(url, input)
+  const prefix =
+    kind === "pdf"
+      ? "This listing is a PDF application form — open the official site to apply. "
+      : kind === "news"
+        ? "This is a news release. Confirm current details on the official page. "
+        : ""
+
+  const cleaned = stripOcrAndMarkdown(input)
+  const ranked = splitSentences(cleaned)
+    .filter(keepSentence)
+    .map((s) => ({ s, score: scoreSentence(s, title) }))
+    .sort((a, b) => b.score - a.score)
+
+  const picked: string[] = []
+  let used = prefix.length
+  for (const { s, score } of ranked) {
+    if (score < 1 && picked.length > 0) continue
+    const nextLen = used + (picked.length ? 1 : 0) + s.length
+    if (nextLen > SNIPPET_MAX) {
+      if (picked.length === 0) {
+        return clip(prefix + s, SNIPPET_MAX)
+      }
+      break
+    }
+    picked.push(s)
+    used = nextLen
+    if (picked.length >= 3 || used >= 220) break
+  }
+
+  const body = `${prefix}${picked.join(" ")}`.trim()
+  if (!body) {
+    if (kind === "pdf") {
+      return "This listing is a PDF application form — open the official site to apply."
+    }
+    if (kind === "news") {
+      return "This is a news release. Confirm current details on the official page."
+    }
+    return fallback
+  }
+  return clip(body, SNIPPET_MAX)
 }
 
 const MONTHS: Record<string, number> = {

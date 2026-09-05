@@ -43,3 +43,17 @@ export const SCHOLARSHIP_LEVELS = [
   "Undergraduate",
   "Graduate",
 ] as const
+
+export const SCHOLARSHIP_LEVEL_LABELS: Record<(typeof SCHOLARSHIP_LEVELS)[number], string> = {
+  "Any level": "Any level",
+  "High school / entering college": "High school / applying to university",
+  "Undergraduate": "First-year / undergraduate",
+  "Graduate": "Graduate / professional",
+}
+
+export function scholarshipLevelLabel(level: string): string {
+  if (level in SCHOLARSHIP_LEVEL_LABELS) {
+    return SCHOLARSHIP_LEVEL_LABELS[level as (typeof SCHOLARSHIP_LEVELS)[number]]
+  }
+  return level
+}

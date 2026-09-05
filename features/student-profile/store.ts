@@ -1,4 +1,4 @@
-import { EMPTY_PROFILE, type StudentProfile } from "@/features/student-profile/types"
+import { EMPTY_PROFILE, type StudentCountry, type StudentProfile } from "@/features/student-profile/types"
 
 export const STUDENT_PROFILE_KEY = "wealthnutz.studentProfile"
 
@@ -36,6 +36,11 @@ export function saveStudentProfile(profile: StudentProfile): void {
   if (typeof window === "undefined") return
   window.localStorage.setItem(STUDENT_PROFILE_KEY, JSON.stringify(profile))
   notify()
+}
+
+export function saveStudentCountry(country: StudentCountry): void {
+  const existing = readProfile() ?? EMPTY_PROFILE
+  saveStudentProfile({ ...existing, country })
 }
 
 export function clearStudentProfile(): void {

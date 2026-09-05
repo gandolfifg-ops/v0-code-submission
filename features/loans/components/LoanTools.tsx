@@ -10,7 +10,7 @@ import { SectionHeading } from "@/components/layout/SectionHeading"
 import { LenderCard } from "@/features/loans/components/LenderCard"
 import { PaymentCalculator } from "@/features/loans/components/PaymentCalculator"
 import { StudentProfileBox } from "@/features/student-profile/components/StudentProfileBox"
-import { isProfileFilled, type StudentProfile } from "@/features/student-profile/types"
+import { type StudentProfile } from "@/features/student-profile/types"
 import type { LoanCountry, LoanResult, LoanType } from "@/features/loans/types"
 
 const LOAN_TYPES: LoanType[] = ["Student", "Personal", "Auto"]
@@ -42,7 +42,7 @@ export function LoanTools() {
   const [error, setError] = useState<string | null>(null)
 
   function applyProfile(profile: StudentProfile | null) {
-    if (!isProfileFilled(profile) || !profile) return
+    if (!profile) return
     setCountry(profile.country)
     setSearchCountry(profile.country)
   }
@@ -178,7 +178,11 @@ export function LoanTools() {
                       : "border border-border text-muted-foreground hover:bg-muted hover:text-foreground"
                   }`}
                 >
-                  <CreamIcon icon={LOAN_TYPE_ICONS[type]} size="sm" />
+                  <CreamIcon
+                    icon={LOAN_TYPE_ICONS[type]}
+                    size="sm"
+                    variant={loanType === type ? "onGold" : "boxed"}
+                  />
                   {type}
                 </button>
               ))}

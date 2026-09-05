@@ -74,6 +74,9 @@ export function ResultCard({ result }: ResultCardProps) {
           <dd className="break-words font-medium text-foreground">{result.deadline}</dd>
         </div>
       </dl>
+      {result.lastChecked ? (
+        <p className="mt-2 text-xs text-muted-foreground">Last checked {result.lastChecked}</p>
+      ) : null}
       <FollowThrough
         href={result.url}
         cta="Open official site"

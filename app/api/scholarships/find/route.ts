@@ -5,6 +5,7 @@ import {
   evaluateScholarshipDeadlines,
   extractScholarshipAmount,
   isClosedOrArchivedListing,
+  summarizeLiveSnippet,
 } from "@/lib/liveResultText"
 import {
   compareScholarshipResults,
@@ -122,8 +123,11 @@ function mapLiveResults(
         amount: extractScholarshipAmount(deadlineSource),
         deadline,
         lastChecked: formatCheckedToday(),
-        eligibility:
-          cleanDisplayText(content) || "See the official listing for eligibility details.",
+        eligibility: summarizeLiveSnippet(content, {
+          url: r.url!,
+          title: r.title ?? "",
+          fallback: "See the official listing for eligibility details.",
+        }),
         url: r.url!,
         source: "live" as const,
         listingKind: officialSchool ? "official-school" : "active",

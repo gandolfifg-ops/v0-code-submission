@@ -1,4 +1,5 @@
 import type { ReactNode } from "react"
+import { CountryWelcomeModal } from "@/components/CountryWelcomeModal"
 import { Footer } from "@/components/layout/Footer"
 import { Header } from "@/components/layout/Header"
 import { SmartSearchProvider } from "@/components/SmartSearchProvider"
@@ -14,6 +15,7 @@ export function SiteShell({ children }: SiteShellProps) {
         <Header />
         <main className="flex-1">{children}</main>
         <Footer />
+        <CountryWelcomeModal />
       </div>
     </SmartSearchProvider>
   )
