@@ -1,6 +1,6 @@
 "use client"
 
-import { useEffect, useState } from "react"
+import { useEffect, useRef, useState } from "react"
 import { usePathname } from "next/navigation"
 import { CountryFlag } from "@/components/CountryFlag"
 import {
@@ -22,13 +22,19 @@ function shouldSkipCountryModal(pathname: string): boolean {
 export function CountryWelcomeModal() {
   const pathname = usePathname()
   const [open, setOpen] = useState(false)
+  const canadaRef = useRef<HTMLButtonElement>(null)
+  const restoreFocusRef = useRef<HTMLElement | null>(null)
 
   useEffect(() => {
     if (shouldSkipCountryModal(pathname)) {
       setOpen(false)
       return
     }
-    if (!hasChosenCountry()) setOpen(true)
+    if (!hasChosenCountry()) {
+      restoreFocusRef.current =
+        document.activeElement instanceof HTMLElement ? document.activeElement : null
+      setOpen(true)
+    }
   }, [pathname])
 
   function choose(country: StudentCountry) {
@@ -51,18 +57,35 @@ export function CountryWelcomeModal() {
       <DialogContent
         showCloseButton={false}
         className="w-[calc(100%-1.5rem)] max-w-md rounded-2xl border-border p-5 sm:p-6"
+        onOpenAutoFocus={(event) => {
+          event.preventDefault()
+          canadaRef.current?.focus()
+        }}
+        onCloseAutoFocus={(event) => {
+          event.preventDefault()
+          const previous = restoreFocusRef.current
+          if (previous && previous !== document.body && document.contains(previous)) {
+            previous.focus()
+            return
+          }
+          document.getElementById("main-content")?.focus()
+        }}
       >
         <DialogHeader className="text-center sm:text-center">
-          <DialogTitle className="text-xl font-bold tracking-tight text-foreground sm:text-2xl">
+          <DialogTitle
+            id="country-welcome-title"
+            className="text-xl font-bold tracking-tight text-foreground sm:text-2xl"
+          >
             Are you in Canada or the United States?
           </DialogTitle>
-          <DialogDescription className="text-sm text-muted-foreground">
+          <DialogDescription id="country-welcome-desc" className="text-sm text-muted-foreground">
             We’ll use this to show scholarships, loans, and banking for your country. You can
             change it anytime.
           </DialogDescription>
         </DialogHeader>
         <div className="grid gap-3 pt-1">
           <button
+            ref={canadaRef}
             type="button"
             onClick={() => choose("Canada")}
             className="inline-flex min-h-14 w-full items-center justify-center gap-3 rounded-xl bg-gold px-4 text-base font-bold text-gold-foreground transition-colors hover:bg-gold-hover"

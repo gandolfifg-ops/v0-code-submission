@@ -15,7 +15,7 @@
   --secondary: #efebe3;
   --secondary-foreground: #1a1a1a;
   --muted: #efebe3;
-  --muted-foreground: #4a4a4a;
+  --muted-foreground: #3a3834;
   --accent: #efebe3;
   --accent-foreground: #1a1a1a;
   --destructive: oklch(0.577 0.245 27.325);
@@ -56,7 +56,7 @@
   --secondary: #242b35;
   --secondary-foreground: #f3f1ea;
   --muted: #242b35;
-  --muted-foreground: #c4c0b6;
+  --muted-foreground: #d4d0c6;
   --accent: #242b35;
   --accent-foreground: #f3f1ea;
   --destructive: oklch(0.396 0.141 25.723);
@@ -132,7 +132,7 @@
 
 @layer base {
   * {
-    @apply border-border outline-ring/50;
+    @apply border-border;
   }
   body {
     @apply bg-background text-foreground;
@@ -148,6 +148,39 @@
   [aria-disabled="true"] {
     cursor: not-allowed;
   }
+  a:focus-visible,
+  button:focus-visible,
+  input:focus-visible,
+  select:focus-visible,
+  textarea:focus-visible,
+  summary:focus-visible,
+  [role="button"]:focus-visible,
+  [role="tab"]:focus-visible,
+  [tabindex]:focus-visible {
+    outline: 2px solid var(--ring);
+    outline-offset: 2px;
+  }
+  .bg-gold:focus-visible,
+  a.bg-gold:focus-visible,
+  button.bg-gold:focus-visible {
+    outline-color: #1e3a5f;
+  }
+  .bg-link:focus-visible,
+  a.bg-link:focus-visible,
+  button.bg-link:focus-visible {
+    outline-color: var(--gold);
+  }
+}
+
+/* Keep page scrollable under dialogs (no body scroll lock). */
+html[data-scroll-locked],
+body[data-scroll-locked],
+html body[data-scroll-locked] {
+  overflow: visible !important;
+  margin-right: 0 !important;
+  padding-right: 0 !important;
+  overscroll-behavior: auto !important;
+  --removed-body-scroll-bar-size: 0px;
 }
 
 @media (hover: hover) and (pointer: fine) {

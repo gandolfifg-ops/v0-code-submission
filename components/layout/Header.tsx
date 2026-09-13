@@ -2,7 +2,7 @@
 
 import Link from "next/link"
 import { usePathname } from "next/navigation"
-import { useState } from "react"
+import { useEffect, useState } from "react"
 import { Menu } from "lucide-react"
 import { Logo } from "@/components/Logo"
 import { HeaderSearchBar } from "@/components/HeaderSearchBar"
@@ -41,7 +41,12 @@ function DesktopNavLink({ href, label }: { href: string; label: string }) {
 }
 
 export function Header() {
+  const pathname = usePathname()
   const [mobileOpen, setMobileOpen] = useState(false)
+
+  useEffect(() => {
+    setMobileOpen(false)
+  }, [pathname])
 
   return (
     <>
@@ -70,8 +75,10 @@ export function Header() {
               className="inline-flex h-9 w-9 shrink-0 items-center justify-center rounded-lg border border-border text-muted-foreground hover:bg-muted md:hidden"
               onClick={() => setMobileOpen(true)}
               aria-label="Open menu"
+              aria-expanded={mobileOpen}
+              aria-controls="mobile-nav"
             >
-              <Menu className="h-5 w-5" />
+              <Menu className="h-5 w-5" aria-hidden="true" />
             </button>
           </div>
         </div>

@@ -288,7 +288,7 @@ export function StudentChat() {
             />
           )}
 
-          <div className="mt-6 min-h-[40vh] space-y-3 rounded-2xl border border-border bg-card p-4">
+          <div className="mt-6 min-h-[40vh] min-w-0 space-y-3 overflow-x-hidden rounded-2xl border border-border bg-card p-4">
             {threadReady && msgs.length === 0 && (
               <div className="space-y-2">
                 <p className="text-sm text-muted-foreground">Try a question:</p>
@@ -305,7 +305,7 @@ export function StudentChat() {
                     type="button"
                     onClick={() => void send(s)}
                     disabled={loading || configured === null}
-                    className="block w-full rounded-xl border border-border px-3 py-2.5 text-left text-sm text-foreground transition-colors hover:border-border hover:bg-muted/60 disabled:opacity-50"
+                    className="block min-h-11 w-full min-w-0 whitespace-normal break-words rounded-xl border border-border px-3 py-2.5 text-left text-sm text-foreground transition-colors hover:border-border hover:bg-muted/60 disabled:opacity-50"
                   >
                     {s}
                   </button>
@@ -357,7 +357,7 @@ export function StudentChat() {
               className="inline-flex min-h-11 min-w-11 items-center justify-center rounded-xl bg-gold text-gold-foreground transition-colors hover:bg-gold-hover disabled:opacity-50"
               aria-label="Send"
             >
-              <Send className="h-4 w-4" />
+              <Send className="h-4 w-4" aria-hidden="true" />
             </button>
           </form>
         </>

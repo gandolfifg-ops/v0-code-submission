@@ -168,7 +168,7 @@ export function HeaderSearchBar({
                 setOpen(false)
               }}
             >
-              <X className="h-3.5 w-3.5" />
+              <X className="h-3.5 w-3.5" aria-hidden="true" />
             </button>
           )}
         </div>

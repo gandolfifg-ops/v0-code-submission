@@ -66,6 +66,7 @@ export function RegionalAidStrip({
                   ? "bg-gold text-gold-foreground hover:bg-gold-hover"
                   : "border border-border text-muted-foreground hover:bg-muted hover:text-foreground"
               }`}
+              aria-pressed={active}
             >
               {chip.label}
             </button>

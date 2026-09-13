@@ -4,7 +4,7 @@ type CreamIconProps = {
   icon: LucideIcon
   size?: "sm" | "md" | "lg"
   className?: string
-  /** Cream glyph for gold selected buttons (no boxed background). */
+  /** Navy glyph for gold selected buttons (no boxed background). */
   variant?: "boxed" | "onGold"
 }
 
@@ -16,8 +16,8 @@ export function CreamIcon({ icon: Icon, size = "md", className = "", variant = "
   if (variant === "onGold") {
     return (
       <Icon
-        className={`${glyph} shrink-0 !text-cream ${className}`}
-        color="#FFF8E7"
+        className={`${glyph} shrink-0 text-gold-foreground ${className}`}
+        color="currentColor"
         strokeWidth={1.75}
         aria-hidden="true"
       />

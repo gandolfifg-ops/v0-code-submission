@@ -28,6 +28,7 @@ export function CountryToggle<T extends string>({
             key={option.value}
             type="button"
             onClick={() => onChange(option.value)}
+            aria-pressed={active}
             className={`inline-flex min-h-11 min-w-0 items-center justify-center gap-1.5 rounded-xl px-2 text-xs font-semibold md:gap-2 md:px-3 md:text-sm transition-colors ${
               active
                 ? "bg-gold text-gold-foreground hover:bg-gold-hover"

@@ -239,15 +239,16 @@ export function LoanTools({ initialQuery = "" }: { initialQuery?: string }) {
               ]}
             />
 
-            <div className="grid grid-cols-3 gap-2">
+            <div className="grid grid-cols-3 gap-2" role="group" aria-label="Loan type">
               {LOAN_TYPES.map((type) => (
                 <button
                   key={type}
                   type="button"
                   onClick={() => setLoanType(type)}
+                  aria-pressed={loanType === type}
                   className={`inline-flex min-h-11 min-w-0 flex-col items-center justify-center gap-0.5 rounded-xl px-1 text-xs font-semibold sm:flex-row sm:gap-1.5 sm:px-2 md:text-sm transition-colors ${
                     loanType === type
-                      ? "bg-gold text-gold-foreground hover:bg-gold-hover [&_svg]:!text-cream [&_svg]:!stroke-cream"
+                      ? "bg-gold text-gold-foreground hover:bg-gold-hover [&_svg]:text-gold-foreground [&_svg]:stroke-current"
                       : "border border-border text-muted-foreground hover:bg-muted hover:text-foreground"
                   }`}
                 >
