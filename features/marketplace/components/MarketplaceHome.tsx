@@ -137,7 +137,7 @@ export function MarketplaceHome() {
                 href="/guides/best-student-bank-canada"
                 className="font-medium text-link underline"
               >
-                Read the 2026 student bank guide
+                Read the 2026 Canada student bank guide
               </Link>
             </p>
           )}
@@ -147,7 +147,7 @@ export function MarketplaceHome() {
                 href="/guides/best-student-bank-usa"
                 className="font-medium text-link underline"
               >
-                Read the 2026 student bank guide
+                Read the 2026 US student bank guide
               </Link>
             </p>
           )}

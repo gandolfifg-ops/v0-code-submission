@@ -1,5 +1,8 @@
+"use client"
+
 import type { ComparisonKind, ComparisonRow } from "@/features/marketplace/data/comparison"
-import { COMPARISON_DISCLAIMER } from "@/features/marketplace/data/comparison"
+import { COMPARISON_DISCLAIMER, HOW_WE_PICK } from "@/features/marketplace/data/comparison"
+import { MarketplaceOutboundLink } from "@/features/marketplace/components/MarketplaceOutboundLink"
 
 type ComparisonTableProps = {
   rows: ComparisonRow[]
@@ -12,6 +15,9 @@ const KIND_LABEL: Record<ComparisonKind, string> = {
   investing: "Investing",
   credit: "Credit",
 }
+
+const ctaClass =
+  "inline-flex min-h-11 w-full items-center justify-center rounded-xl bg-gold px-2 py-2 text-center text-xs font-bold leading-snug text-gold-foreground hyphens-none whitespace-normal [overflow-wrap:normal] [word-break:normal] transition-colors hover:bg-gold-hover"
 
 function rowKind(row: ComparisonRow): ComparisonKind {
   return row.kind ?? "banking"
@@ -39,12 +45,14 @@ function SnapshotBlock({
             ) : null}
             <h4 className={`${heading ? "mt-1" : ""} font-semibold text-foreground`}>{row.account}</h4>
             <dl className="mt-2 space-y-1.5 text-sm">
-              {showAtm ? (
-                <div>
-                  <dt className="text-xs text-muted-foreground">ATM access</dt>
-                  <dd className="text-foreground">{row.atmAccess}</dd>
-                </div>
-              ) : null}
+              <div>
+                <dt className="text-xs text-muted-foreground">Fees</dt>
+                <dd className="text-foreground">{row.monthlyFee}</dd>
+              </div>
+              <div>
+                <dt className="text-xs text-muted-foreground">ATM access</dt>
+                <dd className="text-foreground">{row.atmAccess}</dd>
+              </div>
               <div>
                 <dt className="text-xs text-muted-foreground">Advertised perk</dt>
                 <dd className="text-foreground">{row.advertisedPerk}</dd>
@@ -54,14 +62,9 @@ function SnapshotBlock({
                 <dd className="text-foreground">{row.bestFor}</dd>
               </div>
             </dl>
-            <a
-              href={row.href}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="mt-3 inline-flex min-h-11 w-full items-center justify-center rounded-xl bg-gold px-4 text-sm font-bold text-gold-foreground transition-colors hover:bg-gold-hover"
-            >
+            <MarketplaceOutboundLink productId={row.productId} href={row.href} className={`${ctaClass} mt-3 text-sm`}>
               {row.cta}
-            </a>
+            </MarketplaceOutboundLink>
           </article>
         ))}
       </div>
@@ -70,29 +73,26 @@ function SnapshotBlock({
         <table className="w-full table-fixed text-left text-sm">
           <thead className="bg-muted/50 text-xs uppercase tracking-wide text-muted-foreground">
             <tr>
-              <th className="w-[22%] px-3 py-3 font-semibold">Product</th>
-              {showAtm ? <th className="w-[20%] px-3 py-3 font-semibold">ATM access</th> : null}
-              <th className={`${showAtm ? "w-[26%]" : "w-[38%]"} px-3 py-3 font-semibold`}>Advertised perk</th>
-              <th className="w-[20%] px-3 py-3 font-semibold">Best for</th>
-              <th className="w-[12%] px-3 py-3 font-semibold">Open site</th>
+              <th className={`${showAtm ? "w-[16%]" : "w-[20%]"} px-3 py-3 font-semibold`}>Product</th>
+              <th className="w-[14%] px-3 py-3 font-semibold">Fees</th>
+              {showAtm ? <th className="w-[16%] px-3 py-3 font-semibold">ATM access</th> : null}
+              <th className={`${showAtm ? "w-[20%]" : "w-[28%]"} px-3 py-3 font-semibold`}>Advertised perk</th>
+              <th className="w-[16%] px-3 py-3 font-semibold">Best for</th>
+              <th className="w-[18%] px-3 py-3 font-semibold">Open site</th>
             </tr>
           </thead>
           <tbody>
             {rows.map((row) => (
               <tr key={row.productId} className="border-t border-border align-top">
                 <td className="px-3 py-3 font-medium text-foreground">{row.account}</td>
+                <td className="px-3 py-3 text-muted-foreground">{row.monthlyFee}</td>
                 {showAtm ? <td className="px-3 py-3 text-muted-foreground">{row.atmAccess}</td> : null}
                 <td className="px-3 py-3 text-muted-foreground">{row.advertisedPerk}</td>
                 <td className="px-3 py-3 text-muted-foreground">{row.bestFor}</td>
-                <td className="px-3 py-3">
-                  <a
-                    href={row.href}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="inline-flex min-h-11 items-center justify-center rounded-xl bg-gold px-3 text-xs font-bold text-gold-foreground transition-colors hover:bg-gold-hover"
-                  >
+                <td className="px-2 py-3">
+                  <MarketplaceOutboundLink productId={row.productId} href={row.href} className={ctaClass}>
                     {row.cta}
-                  </a>
+                  </MarketplaceOutboundLink>
                 </td>
               </tr>
             ))}
@@ -122,6 +122,12 @@ export function ComparisonTable({ rows, title = "Compare advertised details" }: 
           showAtm={group.kind === "banking"}
         />
       ))}
+      <div className="mt-4 max-w-3xl space-y-1.5 text-sm leading-relaxed text-muted-foreground">
+        <h3 className="text-sm font-semibold text-foreground">How we pick these</h3>
+        {HOW_WE_PICK.map((line) => (
+          <p key={line}>{line}</p>
+        ))}
+      </div>
     </section>
   )
 }

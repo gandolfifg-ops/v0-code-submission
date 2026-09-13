@@ -1,6 +1,10 @@
+"use client"
+
 import { Building2, CreditCard, Landmark, Star, TrendingUp } from "lucide-react"
 import { CreamIcon } from "@/components/CreamIcon"
 import { ExpandableText } from "@/components/ExpandableText"
+import { MarketplaceOutboundLink } from "@/features/marketplace/components/MarketplaceOutboundLink"
+import { CANADA_COMPARISON, US_COMPARISON } from "@/features/marketplace/data/comparison"
 import type { MarketplaceProduct, ProductCategory } from "@/features/marketplace/types"
 
 const CATEGORY_ICONS: Record<ProductCategory, typeof Building2> = {
@@ -10,12 +14,23 @@ const CATEGORY_ICONS: Record<ProductCategory, typeof Building2> = {
   credit: CreditCard,
 }
 
+function feeLineFor(product: MarketplaceProduct): string {
+  const row = [...CANADA_COMPARISON, ...US_COMPARISON].find((item) => item.productId === product.id)
+  if (row?.monthlyFee && row.advertisedPerk && row.monthlyFee !== row.advertisedPerk) {
+    return `${row.monthlyFee} — ${row.advertisedPerk}`
+  }
+  if (row?.monthlyFee) return row.monthlyFee
+  if (product.category === "student-aid") return "Free to use on the official site"
+  return "Confirm fees on the official site"
+}
+
 type ProductCardProps = {
   product: MarketplaceProduct
 }
 
 export function ProductCard({ product }: ProductCardProps) {
   const featured = Boolean(product.featured)
+  const government = product.source === "official"
 
   return (
     <article
@@ -36,7 +51,7 @@ export function ProductCard({ product }: ProductCardProps) {
             </span>
           )}
           <span className="rounded-full border border-border bg-background/70 px-2.5 py-1 text-[11px] font-medium text-muted-foreground">
-            {product.source === "official" ? "Official site" : "Curated pick"}
+            {government ? "Official site" : "Curated pick"}
           </span>
         </div>
       </div>
@@ -46,20 +61,30 @@ export function ProductCard({ product }: ProductCardProps) {
         {product.name}
       </h3>
       <p className="mt-1 text-sm font-medium text-link">{product.tagline}</p>
+      <p className="mt-2 text-sm text-foreground">
+        <span className="text-muted-foreground">Fee / student deal: </span>
+        {feeLineFor(product)}
+      </p>
       <div className="mt-3 flex-1">
         <ExpandableText
           text={product.whyStudents}
           className="text-sm leading-relaxed text-muted-foreground"
         />
       </div>
-      <a
+      {product.affiliate ? (
+        <p className="mt-3 text-[11px] leading-snug text-muted-foreground">
+          We may be paid if you open this.
+        </p>
+      ) : government ? (
+        <p className="mt-3 text-[11px] leading-snug text-muted-foreground">Not an affiliate.</p>
+      ) : null}
+      <MarketplaceOutboundLink
+        productId={product.id}
         href={product.href}
-        target="_blank"
-        rel="noopener noreferrer"
-        className="mt-5 inline-flex min-h-11 w-full items-center justify-center rounded-xl bg-gold px-4 text-sm font-bold text-gold-foreground transition-colors hover:bg-gold-hover"
+        className="mt-3 inline-flex min-h-11 w-full items-center justify-center rounded-xl bg-gold px-4 text-sm font-bold text-gold-foreground transition-colors hover:bg-gold-hover"
       >
         {product.cta}
-      </a>
+      </MarketplaceOutboundLink>
     </article>
   )
 }

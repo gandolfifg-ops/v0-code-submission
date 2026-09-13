@@ -3,6 +3,14 @@ import { MARKETPLACE_PRODUCTS } from "@/features/marketplace/data/products"
 export const COMPARISON_DISCLAIMER =
   "Advertised details as of September 2026. Confirm on the official site."
 
+export const HOW_WE_PICK = [
+  "We list no-fee or student-fee everyday accounts already on Marketplace — not every bank in Canada or the US.",
+  "Fees, ATM access, and advertised perks are as of September 2026. Confirm them on the bank’s site before you apply.",
+  "Some product buttons are affiliate links. We may earn a commission if you open an account.",
+  "Table order is editorial, not paid placement. Placement is editorial.",
+  "No bank paid for its rank on this page.",
+] as const
+
 export type ComparisonKind = "banking" | "investing" | "credit"
 
 export type ComparisonRow = {
