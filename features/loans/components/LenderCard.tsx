@@ -1,8 +1,8 @@
-import { Banknote, Car, GraduationCap, Star } from "lucide-react"
+import { Banknote, Car, GraduationCap, Landmark } from "lucide-react"
 import { CreamIcon } from "@/components/CreamIcon"
 import { ExpandableText } from "@/components/ExpandableText"
 import type { LoanResult, LoanType } from "@/features/loans/types"
-import { LOAN_CHECKLISTS } from "@/features/student-profile/checklists"
+import { loanRequirements } from "@/features/student-profile/checklists"
 import { FollowThrough } from "@/features/student-profile/components/FollowThrough"
 import { cleanDisplayText } from "@/lib/liveResultText"
 
@@ -20,22 +20,20 @@ export function LenderCard({ lender }: { lender: LoanResult }) {
   return (
     <article
       className={`interactive-card flex min-w-0 max-w-full flex-col overflow-hidden rounded-2xl p-4 md:p-5 ${
-        featured
-          ? "border-2 border-border bg-card shadow-sm"
-          : "border border-border bg-card"
+        featured ? "border border-border bg-card" : "border-2 border-border bg-card shadow-sm"
       }`}
     >
       <div className="mb-3 flex items-start gap-3">
         <CreamIcon icon={LOAN_ICONS[lender.loanType]} />
         <div className="flex min-w-0 flex-1 flex-wrap gap-2">
         {featured ? (
-          <span className="inline-flex items-center gap-1 rounded-full bg-gold px-2.5 py-1 text-[11px] font-bold text-gold-foreground">
-            <Star className="h-3 w-3" fill="currentColor" aria-hidden="true" />
-            Live web result
+          <span className="rounded-full border border-border px-2.5 py-1 text-[11px] font-semibold text-muted-foreground">
+            Live page
           </span>
         ) : (
-          <span className="rounded-full bg-muted px-2.5 py-1 text-[11px] font-semibold text-muted-foreground">
-            Curated pick
+          <span className="inline-flex items-center gap-1 rounded-full bg-gold px-2.5 py-1 text-[11px] font-semibold text-gold-foreground">
+            <Landmark className="h-3 w-3" aria-hidden="true" />
+            Official
           </span>
         )}
         <span className="rounded-full border border-border px-2.5 py-1 text-[11px] text-muted-foreground">
@@ -58,7 +56,8 @@ export function LenderCard({ lender }: { lender: LoanResult }) {
       <FollowThrough
         href={lender.href}
         cta={lender.cta}
-        checklist={LOAN_CHECKLISTS[lender.loanType]}
+        checklist={loanRequirements(lender.country, lender.loanType)}
+        requirementsLabel="What to know:"
         item={{
           id: `loan:${lender.id}`,
           kind: "loan",

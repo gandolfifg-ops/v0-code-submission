@@ -51,9 +51,6 @@ export function LoanTools() {
   async function runSearch(nextQuery = "") {
     setLoading(true)
     setError(null)
-    setNotice(null)
-    setSource(null)
-    setResults([])
     try {
       const res = await fetch("/api/loans/find", {
         method: "POST",
@@ -131,7 +128,7 @@ export function LoanTools() {
         </p>
       )}
 
-      {notice && (
+      {notice && !loading && (
         <p
           className={`mt-3 break-words rounded-xl border px-3 py-2 text-sm md:mt-4 md:px-4 md:py-3 ${
             source === "live"
@@ -143,15 +140,45 @@ export function LoanTools() {
         </p>
       )}
 
-      {results.length > 0 && (
-        <section className="mt-3 md:mt-6">
-          <SectionHeading icon={ListChecks}>Results</SectionHeading>
+      {loading && results.length === 0 && (
+        <section className="mt-3 md:mt-6" aria-hidden="true">
+          <SectionHeading icon={ListChecks}>Start here (official)</SectionHeading>
           <div className="mt-3 grid grid-cols-1 gap-3 md:grid-cols-2">
-            {results.map((lender) => (
-              <LenderCard key={lender.id} lender={lender} />
+            {[0, 1, 2].map((key) => (
+              <div key={key} className="h-40 animate-pulse rounded-2xl border border-border bg-muted/50" />
             ))}
           </div>
         </section>
+      )}
+
+      {results.length > 0 && (
+        <div className={`relative mt-3 md:mt-6 ${loading ? "opacity-60" : ""}`}>
+          {loading && <div className="absolute inset-0 z-10 rounded-2xl bg-background/60" aria-hidden="true" />}
+          {results.some((item) => item.source === "curated") && (
+            <section>
+              <SectionHeading icon={ListChecks}>Start here (official)</SectionHeading>
+              <div className="mt-3 grid grid-cols-1 gap-3 md:grid-cols-2">
+                {results
+                  .filter((item) => item.source === "curated")
+                  .map((lender) => (
+                    <LenderCard key={lender.id} lender={lender} />
+                  ))}
+              </div>
+            </section>
+          )}
+          {results.some((item) => item.source === "live") && (
+            <section className={results.some((item) => item.source === "curated") ? "mt-6" : ""}>
+              <SectionHeading icon={ListChecks}>More pages we found</SectionHeading>
+              <div className="mt-3 grid grid-cols-1 gap-3 md:grid-cols-2">
+                {results
+                  .filter((item) => item.source === "live")
+                  .map((lender) => (
+                    <LenderCard key={lender.id} lender={lender} />
+                  ))}
+              </div>
+            </section>
+          )}
+        </div>
       )}
         </div>
 
@@ -216,7 +243,7 @@ export function LoanTools() {
               className="inline-flex min-h-11 w-full items-center justify-center gap-2 rounded-xl bg-gold px-4 text-sm font-bold text-gold-foreground transition-colors hover:bg-gold-hover disabled:opacity-60"
             >
               {loading && <Loader2 className="h-4 w-4 shrink-0 animate-spin" aria-hidden="true" />}
-              Find lenders
+              {loading ? "Searching official pages…" : "Find lenders"}
             </button>
           </form>
         </div>

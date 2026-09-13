@@ -808,3 +808,48 @@ export function isClosedOrArchivedListing(text: string, url = ""): boolean {
   if (CLOSED_NOTICE.test(text) && !mentionsCurrentCycle) return true
   return false
 }
+
+const LOAN_ROUNDUP_TITLE = /\bbest\s+.+\s+rates\b|\bbest student loan rates\b|\bcompare lenders\b|\btop\s+\d+\s+student loans\b/i
+const LOAN_BLOG_PATH = /\/blog\/|\/news\/|\/article\//i
+const LOAN_NODE_PATH = /\/node(\/|$)/i
+const UNCERTAIN_LOAN_RATE = "Advertised rate — confirm on official site"
+
+const LOAN_RATE_BLOCK_HOSTS = [
+  "bankrate.com",
+  "nerdwallet.com",
+  "credible.com",
+  "wikipedia.org",
+  "investopedia.com",
+] as const
+
+export function isDroppedLoanHit(url: string, title = ""): boolean {
+  const lower = url.toLowerCase()
+  let host = ""
+  try {
+    host = new URL(url).hostname.replace(/^www\./i, "").toLowerCase()
+  } catch {
+    host = ""
+  }
+  if (LOAN_RATE_BLOCK_HOSTS.some((blocked) => host === blocked || host.endsWith(`.${blocked}`))) {
+    return true
+  }
+  if (LOAN_BLOG_PATH.test(lower) || LOAN_NODE_PATH.test(lower)) return true
+  if (LOAN_ROUNDUP_TITLE.test(title) || LOAN_ROUNDUP_TITLE.test(url)) return true
+  if (/best student loan rates in september/i.test(`${title} ${url}`)) return true
+  if (/\bcompare lenders\b/i.test(`${title} ${url}`)) return true
+  return false
+}
+
+/** Keep a % only when APR/interest sits next to it on an official (non-roundup) page. */
+export function extractLoanAdvertisedRate(text: string, url = ""): string {
+  if (!url || isDroppedLoanHit(url, text.slice(0, 120))) return UNCERTAIN_LOAN_RATE
+  const pattern = /(\d{1,2}(?:\.\d{1,3})?)\s*%/g
+  let match: RegExpExecArray | null
+  while ((match = pattern.exec(text))) {
+    const window = text.slice(Math.max(0, match.index - 40), Math.min(text.length, match.index + match[0].length + 40))
+    if (/\b(apr|interest(?:\s+rate)?|direct loan)\b/i.test(window)) {
+      return `Advertised ${match[1]}% — confirm on official site`
+    }
+  }
+  return UNCERTAIN_LOAN_RATE
+}

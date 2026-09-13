@@ -78,7 +78,7 @@ export function PaymentCalculator() {
       <SectionHeading icon={Calculator}>Payment estimator</SectionHeading>
       <p className="mt-1 text-sm text-muted-foreground">
         Example only. Enter an APR from a lender’s site to estimate a payment. This is not
-        an offer or a credit decision.
+        an offer or a credit decision. This is an estimate, not a quote.
       </p>
 
       <label className="mt-4 block text-xs font-medium text-muted-foreground">

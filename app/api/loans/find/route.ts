@@ -1,33 +1,27 @@
-import { CURATED_LENDERS } from "@/features/loans/data/curated"
-import type { LoanCountry, LoanResult, LoanType } from "@/features/loans/types"
+import {
+  officialLoanSeeds,
+  isGovernmentLoanHost,
+  TAVILY_LOAN_EXCLUDE_DOMAINS,
+  tavilyLoanIncludeDomains,
+} from "@/features/loans/data/official"
+import { parseLoanCountry, type LoanResult, type LoanType } from "@/features/loans/types"
 import {
   cleanDisplayText,
   dropApplicationFormsIfProgramPageExists,
+  extractLoanAdvertisedRate,
   isApplicationFormListing,
+  isDroppedLoanHit,
   summarizeLiveSnippet,
 } from "@/lib/liveResultText"
 
 export const dynamic = "force-dynamic"
 export const maxDuration = 30
 
-const DOMAINS: Record<LoanCountry, Record<LoanType, string[]>> = {
-  USA: {
-    Student: [
-      "studentaid.gov",
-      "salliemae.com",
-      "sofi.com",
-      "earnest.com",
-      "credible.com",
-      "collegeavestudentloans.com",
-    ],
-    Personal: ["sofi.com", "lightstream.com", "discover.com", "upstart.com", "nerdwallet.com", "bankrate.com"],
-    Auto: ["capitalone.com", "lightstream.com", "bankrate.com", "nerdwallet.com"],
-  },
-  Canada: {
-    Student: ["canada.ca", "csnpe-nslsc.canada.ca", "rbcroyalbank.com", "ontario.ca"],
-    Personal: ["rbcroyalbank.com", "td.com", "tangerine.ca", "nerdwallet.com"],
-    Auto: ["rbcroyalbank.com", "td.com", "scotiabank.com"],
-  },
+type TavilyHit = {
+  title?: string
+  url?: string
+  content?: string
+  score?: number
 }
 
 function isValidHttpUrl(url: string): boolean {
@@ -39,31 +33,117 @@ function isValidHttpUrl(url: string): boolean {
   }
 }
 
-function parseCountry(value: unknown): LoanCountry {
-  return value === "USA" ? "USA" : "Canada"
-}
-
 function parseType(value: unknown): LoanType {
   if (value === "Personal" || value === "Auto") return value
   return "Student"
 }
 
+function hostnameOf(url: string): string | null {
+  try {
+    return new URL(url).hostname.replace(/^www\./i, "").toLowerCase()
+  } catch {
+    return null
+  }
+}
+
+function registrableDomain(url: string): string {
+  const host = hostnameOf(url)
+  if (!host) return url.toLowerCase()
+  const parts = host.split(".")
+  if (parts.length <= 2) return host
+  if (parts[parts.length - 2] === "canada" && parts[parts.length - 1] === "ca") {
+    return parts.slice(-3).join(".")
+  }
+  return parts.slice(-2).join(".")
+}
+
+function isBlockedLoanHost(url: string): boolean {
+  const host = hostnameOf(url)
+  if (!host) return true
+  return TAVILY_LOAN_EXCLUDE_DOMAINS.some(
+    (blocked) => host === blocked || host.endsWith(`.${blocked}`),
+  )
+}
+
+function isAdviceArticle(url: string): boolean {
+  const path = url.toLowerCase()
+  return /\/learn\/|\/advice\/|\/education\/|\/resources\/|\/guide\//.test(path)
+}
+
+function isApplyOrAidPath(url: string): boolean {
+  const path = url.toLowerCase()
+  return /\/apply|fafsa|osap|grants-loans|student-aid|student-loans|personal-loan|auto-loan|car-loans/.test(
+    path,
+  )
+}
+
+function loanHitRank(url: string): number {
+  const host = hostnameOf(url) ?? ""
+  if (isGovernmentLoanHost(host) && isApplyOrAidPath(url)) return 0
+  if (isGovernmentLoanHost(host)) return 1
+  if (isApplyOrAidPath(url) && !isAdviceArticle(url)) return 2
+  if (isAdviceArticle(url)) return 5
+  return 3
+}
+
+function urlQuality(url: string): number {
+  let n = 0
+  if (/\/node(\/|$)/i.test(url)) n += 8
+  if (/index\.php/i.test(url)) n += 3
+  try {
+    n += new URL(url).pathname.length / 40
+  } catch {
+    n += url.length / 80
+  }
+  return n
+}
+
+function pickBetterHit(a: TavilyHit, b: TavilyHit): TavilyHit {
+  const rank = loanHitRank(a.url ?? "") - loanHitRank(b.url ?? "")
+  if (rank !== 0) return rank < 0 ? a : b
+  return urlQuality(a.url ?? "") <= urlQuality(b.url ?? "") ? a : b
+}
+
+function dedupeLoanHitsByDomain(hits: TavilyHit[]): TavilyHit[] {
+  const byDomain = new Map<string, TavilyHit>()
+  for (const hit of hits) {
+    if (!hit.url) continue
+    const key = registrableDomain(hit.url)
+    const prev = byDomain.get(key)
+    byDomain.set(key, prev ? pickBetterHit(prev, hit) : hit)
+  }
+  return hits.filter((hit) => hit.url && byDomain.get(registrableDomain(hit.url)) === hit)
+}
+
+function canonicalUrl(url: string): string {
+  try {
+    const parsed = new URL(url)
+    parsed.hash = ""
+    return parsed.href.replace(/\/$/, "")
+  } catch {
+    return url.replace(/\/$/, "")
+  }
+}
+
 export async function POST(req: Request) {
   const body = await req.json().catch(() => ({}))
-  const country = parseCountry(body?.country)
+  const country = parseLoanCountry(body?.country)
   const loanType = parseType(body?.loanType)
   const amount = typeof body?.amount === "string" ? body.amount.trim() : ""
   const query = typeof body?.query === "string" ? body.query.trim() : ""
+  const seeds = officialLoanSeeds(country, loanType)
 
   const apiKey = process.env.TAVILY_API_KEY?.trim()
   const searchQuery = [
     country === "Canada" ? "Canada" : "United States",
-    query || loanType.toLowerCase(),
-    query ? "official" : "loan 2026 apply rates",
+    query || `${loanType} loan official apply`,
+    query ? "official government lender" : "official apply",
     amount ? `${amount} dollars` : "",
   ]
     .filter(Boolean)
     .join(" ")
+
+  let live: LoanResult[] = []
 
   if (apiKey) {
     try {
@@ -74,72 +154,74 @@ export async function POST(req: Request) {
           api_key: apiKey,
           query: searchQuery,
           search_depth: "advanced",
-          ...(query ? {} : { include_domains: DOMAINS[country][loanType] }),
+          include_domains: tavilyLoanIncludeDomains(country, loanType),
+          exclude_domains: [...TAVILY_LOAN_EXCLUDE_DOMAINS],
           max_results: 8,
         }),
       })
 
       if (tavilyResponse.ok) {
         const tavilyData = await tavilyResponse.json()
-        const liveHits = dropApplicationFormsIfProgramPageExists(
-          (tavilyData.results ?? []).filter((r: { url?: string; score?: number }) => {
+        const seedHosts = new Set(seeds.map((item) => registrableDomain(item.href)))
+        const seedUrls = new Set(seeds.map((item) => canonicalUrl(item.href)))
+        const filtered = dropApplicationFormsIfProgramPageExists(
+          (tavilyData.results ?? []).filter((r: TavilyHit) => {
             if (!r.url || !isValidHttpUrl(r.url)) return false
             if (r.url.includes("404") || r.url.includes("not-found")) return false
             if (typeof r.score === "number" && r.score < 0.3) return false
+            if (isBlockedLoanHost(r.url)) return false
+            if (isDroppedLoanHit(r.url, r.title ?? "")) return false
+            if (seedUrls.has(canonicalUrl(r.url))) return false
             return true
           }),
-        )
-        const live: LoanResult[] = liveHits.map(
-          (r: { title?: string; url: string; content?: string }, i: number) => {
-            const hostname = new URL(r.url).hostname.replace(/^www\./, "")
-            const name = hostname.split(".")[0] ?? "Lender"
-            const content = r.content ?? ""
-            const isForm = isApplicationFormListing(r.title ?? "", content, r.url)
-            const rateMatch = content.match(/\d+\.?\d*\s*%(?:\s*APR)?/i)
-            return {
-              id: `live-${loanType}-${i}-${hostname}`,
-              name: isForm
-                ? "Official application form"
-                : cleanDisplayText(r.title ?? name).slice(0, 90),
-              country,
-              loanType,
-              tagline: name.charAt(0).toUpperCase() + name.slice(1),
-              advertisedRate: rateMatch
-                ? `Advertised ${rateMatch[0]} — confirm on official site`
-                : "Advertised rate — confirm on official site",
-              highlight: isForm
-                ? "Official application form — open the site to apply"
-                : summarizeLiveSnippet(content, {
-                    url: r.url,
-                    title: r.title ?? "",
-                    fallback: "Open the lender page for current terms.",
-                  }),
-              href: r.url,
-              cta: "Open official site",
-              source: "live" as const,
-            }
-          },
-        )
+        ).sort((a: TavilyHit, b: TavilyHit) => loanHitRank(a.url ?? "") - loanHitRank(b.url ?? ""))
 
-        if (live.length > 0) {
-          return Response.json({
-            source: "live",
-            notice:
-              "These are live web search results. Any APR shown was scraped from public pages and is not a personalized quote. Confirm on the official site.",
-            results: live,
-          })
-        }
+        const unique = dedupeLoanHitsByDomain(filtered).filter((hit) => {
+          if (!hit.url) return false
+          return !seedHosts.has(registrableDomain(hit.url))
+        })
+
+        live = unique.map((r: TavilyHit, i: number) => {
+          const hostname = hostnameOf(r.url!) ?? "lender"
+          const name = hostname.split(".")[0] ?? "Lender"
+          const content = r.content ?? ""
+          const isForm = isApplicationFormListing(r.title ?? "", content, r.url!)
+          return {
+            id: `live-${loanType}-${i}-${hostname}`,
+            name: isForm
+              ? "Official application form"
+              : cleanDisplayText(r.title ?? name).slice(0, 90),
+            country,
+            loanType,
+            tagline: name.charAt(0).toUpperCase() + name.slice(1),
+            advertisedRate: extractLoanAdvertisedRate(`${r.title ?? ""}\n${content}`, r.url),
+            highlight: isForm
+              ? "Official application form — open the site to apply"
+              : summarizeLiveSnippet(content, {
+                  url: r.url!,
+                  title: r.title ?? "",
+                  fallback: "Open the official page for current terms.",
+                }),
+            href: r.url!,
+            cta: "Open official site",
+            source: "live" as const,
+          }
+        })
       }
     } catch (error) {
       console.error("[loans] Live search failed:", error)
     }
   }
 
+  const results = [...seeds, ...live]
   return Response.json({
-    source: "curated",
-    notice: apiKey
-      ? "Live search didn’t find a match — here are official starting points."
-      : "Showing official starting points.",
-    results: CURATED_LENDERS.filter((l) => l.country === country && l.loanType === loanType),
+    source: live.length > 0 ? "live" : "curated",
+    notice:
+      live.length > 0
+        ? "Official government and lender pages first. Any APR shown was taken from that same official page and is not a personalized quote."
+        : apiKey
+          ? "Live search didn’t find extra pages — here are official starting points."
+          : "Showing official starting points.",
+    results,
   })
 }

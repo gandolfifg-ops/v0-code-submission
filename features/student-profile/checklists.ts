@@ -1,4 +1,4 @@
-import type { LoanType } from "@/features/loans/types"
+import type { LoanCountry, LoanType } from "@/features/loans/types"
 
 export const SCHOLARSHIP_CHECKLIST = [
   "Student ID or proof of enrollment",
@@ -7,23 +7,21 @@ export const SCHOLARSHIP_CHECKLIST = [
   "Confirm deadline and eligibility on the official page",
 ] as const
 
-export const LOAN_CHECKLISTS: Record<LoanType, readonly string[]> = {
-  Student: [
-    "Government-issued ID",
-    "Proof of enrollment or acceptance letter",
-    "Social Insurance Number / Social Security Number",
-    "Cosigner details if the lender asks for one",
-  ],
-  Personal: [
-    "Government-issued ID",
-    "Proof of income or bank statements",
-    "Address and contact details",
-    "Confirm APR, fees, and repayment on the official page",
-  ],
-  Auto: [
-    "Government-issued ID",
-    "Proof of income",
-    "Vehicle details (make, model, price) if you have them",
-    "Confirm rate, term, and fees on the official page",
-  ],
+export function loanRequirements(country: LoanCountry, loanType: LoanType): readonly string[] {
+  if (loanType === "Student") {
+    if (country === "Canada") {
+      return ["Apply through your province or territory; NSLSC manages the federal portion."]
+    }
+    return ["Start with FAFSA on studentaid.gov. Private loans need a credit check and often a cosigner."]
+  }
+  if (loanType === "Personal") {
+    if (country === "Canada") {
+      return ["Confirm rate, fees, and eligibility on the bank’s official personal loans page."]
+    }
+    return ["A credit check is typical. Confirm APR, fees, and eligibility on the official lender site."]
+  }
+  if (country === "Canada") {
+    return ["Confirm rate, term, and fees on the bank’s official auto loans page."]
+  }
+  return ["Confirm APR, term, and fees on the official auto lender site."]
 }
