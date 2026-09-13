@@ -79,10 +79,11 @@ export function MarketplaceHome() {
           <p className="text-xs font-semibold uppercase tracking-widest text-link">
             Marketplace
           </p>
-          <h1 className="mt-2 flex flex-wrap items-center gap-2 text-3xl font-bold tracking-tight text-foreground sm:text-4xl">
-            <span>Student money products in</span>
-            <span className="inline-flex items-center gap-2">
-              <CountryFlag code={country} className="h-5 w-8 rounded-sm" />
+          <h1 className="mt-2 text-2xl font-bold leading-snug tracking-tight text-foreground sm:text-4xl">
+            Student money products{" "}
+            <span className="inline-flex items-center gap-1.5 whitespace-nowrap align-middle">
+              in
+              <CountryFlag code={country} className="h-4 w-6 rounded-sm sm:h-5 sm:w-8" />
               {country === "CA" ? "Canada" : "the United States"}
             </span>
           </h1>

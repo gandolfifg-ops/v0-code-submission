@@ -6,6 +6,16 @@ import { SCHOLARSHIP_CHECKLIST } from "@/features/student-profile/checklists"
 import { FollowThrough } from "@/features/student-profile/components/FollowThrough"
 import { cleanDisplayText } from "@/lib/liveResultText"
 
+const SNIPPET_MAX = 400
+
+function clipSnippet(text: string): string {
+  const cleaned = cleanDisplayText(text)
+  if (cleaned.length <= SNIPPET_MAX) return cleaned
+  const cut = cleaned.slice(0, SNIPPET_MAX - 1)
+  const at = cut.lastIndexOf(" ")
+  return `${(at > 80 ? cut.slice(0, at) : cut).trimEnd()}…`
+}
+
 type ResultCardProps = {
   result: ScholarshipResult
 }
@@ -21,7 +31,7 @@ function displayAmount(amount: string): string {
 export function ResultCard({ result }: ResultCardProps) {
   const featured = result.source === "live"
   const title = cleanDisplayText(result.title)
-  const eligibility = cleanDisplayText(result.eligibility)
+  const eligibility = clipSnippet(result.eligibility)
   const amount = displayAmount(result.amount)
 
   return (

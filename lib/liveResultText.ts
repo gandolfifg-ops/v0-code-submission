@@ -77,7 +77,7 @@ const APPLY_OR_PROGRAM_PATH =
 
 function isFaqOrNewsroomScholarshipPage(url: string, title = ""): boolean {
   if (FAQ_OR_NEWSROOM.test(url)) return true
-  if (/\bfaqs?\b|frequently asked questions/i.test(title)) return true
+  if (/\bfaqs?\b|frequently asked questions|newsroom|press[- ]releases?/i.test(title)) return true
   if (FAQ_OR_NEWSROOM.test(title)) return true
   return false
 }
@@ -113,15 +113,16 @@ function pickPreferredScholarshipHit<T extends { url?: string; title?: string }>
 
 /** Same award name or same host+path: keep apply/program pages, drop FAQ and newsroom. */
 export function dedupeLiveScholarshipHits<T extends { url?: string; title?: string }>(hits: T[]): T[] {
+  const usable = hits.filter((hit) => !isFaqOrNewsroomScholarshipPage(hit.url ?? "", hit.title ?? ""))
   const byPath = new Map<string, T>()
-  for (const hit of hits) {
+  for (const hit of usable) {
     if (!hit.url) continue
     const key = hostAndPathKey(hit.url)
     const prev = byPath.get(key)
     byPath.set(key, prev ? pickPreferredScholarshipHit(prev, hit) : hit)
   }
   const pathWinners = new Set(byPath.values())
-  const pathDeduped = hits.filter((hit) => !hit.url || pathWinners.has(hit))
+  const pathDeduped = usable.filter((hit) => !hit.url || pathWinners.has(hit))
 
   const byName = new Map<string, T>()
   for (const hit of pathDeduped) {
@@ -135,6 +136,21 @@ export function dedupeLiveScholarshipHits<T extends { url?: string; title?: stri
     if (!key) return true
     return byName.get(key) === hit
   })
+}
+
+/** Aggregators kept only when no official (non-aggregator) hit exists. Does not change Tavily allowlists. */
+const POST_FILTER_AGGREGATOR_HOSTS = ["scholartree.ca"] as const
+
+export function isPostFilterScholarshipAggregator(url: string): boolean {
+  const host = hostnameKey(url)
+  if (!host) return false
+  return POST_FILTER_AGGREGATOR_HOSTS.some((blocked) => host === blocked || host.endsWith(`.${blocked}`))
+}
+
+export function dropAggregatorScholarshipHitsIfOfficialExists<T extends { url?: string }>(hits: T[]): T[] {
+  const official = hits.filter((hit) => hit.url && !isPostFilterScholarshipAggregator(hit.url))
+  if (official.length === 0) return hits
+  return official
 }
 
 export function applicationFormDisplayTitle(title: string): string {
@@ -273,7 +289,7 @@ export function summarizeLiveSnippet(
 }
 
 const ORG_HISTORY =
-  /\bestablished in\b|\bfounded in\b|\bsince (?:19|20)\d{2}\b|\bincorporated in\b|\bfor (?:over|more than) \d+ years\b|\bour (?:history|story|heritage|mission|vision)\b|\bcelebrat(?:e|ing) \d+ years\b|\bthe (?:foundation|organization|society) was (?:created|founded|established)\b/i
+  /\bestablished in\s*(?:19|20)\d{2}\b|\bestablished in\b|\bfounded in\b|\bsince (?:19|20)\d{2}\b|\bincorporated in\b|\bfor (?:over|more than) \d+ years\b|\bour (?:history|story|heritage|mission|vision)\b|\bcelebrat(?:e|ing) \d+ years\b|\bthe (?:foundation|organization|society) was (?:created|founded|established)\b/i
 
 function keepScholarshipSentence(s: string): boolean {
   if (!keepSentence(s)) return false

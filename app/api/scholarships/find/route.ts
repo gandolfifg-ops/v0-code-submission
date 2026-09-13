@@ -4,6 +4,7 @@ import {
   applicationFormDisplayTitle,
   cleanDisplayText,
   dropApplicationFormsIfProgramPageExists,
+  dropAggregatorScholarshipHitsIfOfficialExists,
   dedupeLiveScholarshipHits,
   evaluateScholarshipDeadlines,
   extractScholarshipAmount,
@@ -108,9 +109,11 @@ function mapLiveResults(
     seen.add(key)
     return true
   })
-  const preferred = dedupeLiveScholarshipHits(
-    dropApplicationFormsIfProgramPageExists(
-      filtered.sort((a, b) => compareScholarshipResults(a, b, schoolDomains)),
+  const preferred = dropAggregatorScholarshipHitsIfOfficialExists(
+    dedupeLiveScholarshipHits(
+      dropApplicationFormsIfProgramPageExists(
+        filtered.sort((a, b) => compareScholarshipResults(a, b, schoolDomains)),
+      ),
     ),
   )
 
