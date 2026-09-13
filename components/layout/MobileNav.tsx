@@ -37,15 +37,13 @@ export function MobileNav({ open, onClose }: MobileNavProps) {
             <X className="h-5 w-5" />
           </button>
         </div>
-        {(pathname === "/scholarships" || pathname === "/loans") && (
-          <div className="border-b border-border px-3 py-3">
-            <HeaderSearchBar
-              className="relative min-w-0 w-full"
-              inputId="mobile-smart-search"
-              onRanSearch={onClose}
-            />
-          </div>
-        )}
+        <div className="border-b border-border px-3 py-3">
+          <HeaderSearchBar
+            className="relative z-50 min-w-0 w-full"
+            inputId="mobile-smart-search"
+            onRanSearch={onClose}
+          />
+        </div>
         <nav className="flex flex-1 flex-col gap-1 overflow-y-auto p-3">
           {ALL_NAV.map((link) => {
             const active = isActivePath(pathname, link.href)

@@ -8,6 +8,12 @@ export const metadata: Metadata = pageMeta(
   "/loans",
 )
 
-export default function LoansPage() {
-  return <LoanTools />
+type LoansPageProps = {
+  searchParams: Promise<{ q?: string }>
+}
+
+export default async function LoansPage({ searchParams }: LoansPageProps) {
+  const params = await searchParams
+  const query = typeof params.q === "string" ? params.q : ""
+  return <LoanTools initialQuery={query} />
 }

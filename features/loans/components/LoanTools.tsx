@@ -31,7 +31,7 @@ function loanResultsSummary(count: number, country: LoanCountry, loanType: LoanT
   return `${count} ${count === 1 ? "lender" : "lenders"} · ${country === "USA" ? "United States" : "Canada"} · ${loanType}`
 }
 
-export function LoanTools() {
+export function LoanTools({ initialQuery = "" }: { initialQuery?: string }) {
   const { setCountry: setSearchCountry, ticket } = useSmartSearch()
   const [country, setCountry] = useState<LoanCountry>("Canada")
   const [loanType, setLoanType] = useState<LoanType>("Student")
@@ -81,6 +81,12 @@ export function LoanTools() {
     void runSearch(ticket.query)
     // eslint-disable-next-line react-hooks/exhaustive-deps -- run only when header submits a new ticket
   }, [ticket?.id])
+
+  useEffect(() => {
+    if (!initialQuery.trim()) return
+    void runSearch(initialQuery.trim())
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- run once from /loans?q=
+  }, [])
 
   async function onSubmit(e: FormEvent) {
     e.preventDefault()

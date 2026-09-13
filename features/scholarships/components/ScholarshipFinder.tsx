@@ -42,13 +42,20 @@ function scholarshipResultsSummary(
   return parts.join(" · ")
 }
 
-export function ScholarshipFinder({ initialSchool = "" }: { initialSchool?: string }) {
+export function ScholarshipFinder({
+  initialSchool = "",
+  initialQuery = "",
+}: {
+  initialSchool?: string
+  initialQuery?: string
+}) {
   const schoolFromUrl = initialSchool.trim()
+  const queryFromUrl = initialQuery.trim()
   const { setCountry: setSearchCountry, ticket } = useSmartSearch()
   const [country, setCountry] = useState<ScholarshipCountry>("Canada")
   const [major, setMajor] = useState<string>("Any major")
   const [level, setLevel] = useState<string>("Any level")
-  const [query, setQuery] = useState("")
+  const [query, setQuery] = useState(queryFromUrl)
   const [university, setUniversity] = useState(schoolFromUrl)
   const [loading, setLoading] = useState(false)
   const [notice, setNotice] = useState<string | null>(null)
@@ -113,6 +120,12 @@ export function ScholarshipFinder({ initialSchool = "" }: { initialSchool?: stri
     void runSearch({ query: ticket.query, university: "", fromHeader: true })
     // eslint-disable-next-line react-hooks/exhaustive-deps -- run only when header submits a new ticket
   }, [ticket?.id])
+
+  useEffect(() => {
+    if (!queryFromUrl) return
+    void runSearch({ query: queryFromUrl, university: schoolFromUrl })
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- run once from /scholarships?q=
+  }, [])
 
   async function onSubmit(e: FormEvent) {
     e.preventDefault()

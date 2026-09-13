@@ -72,6 +72,15 @@ export function MarketplaceHome() {
     [products],
   )
 
+  useEffect(() => {
+    const id = window.location.hash.replace(/^#/, "")
+    if (!id) return
+    const timer = window.setTimeout(() => {
+      document.getElementById(id)?.scrollIntoView({ behavior: "smooth", block: "center" })
+    }, 50)
+    return () => window.clearTimeout(timer)
+  }, [products])
+
   return (
     <div className="mx-auto max-w-6xl px-4 py-6 sm:px-6 lg:py-8">
       <div className="flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">

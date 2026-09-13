@@ -9,11 +9,12 @@ export const metadata: Metadata = pageMeta(
 )
 
 type ScholarshipsPageProps = {
-  searchParams: Promise<{ school?: string }>
+  searchParams: Promise<{ school?: string; q?: string }>
 }
 
 export default async function ScholarshipsPage({ searchParams }: ScholarshipsPageProps) {
   const params = await searchParams
   const school = typeof params.school === "string" ? params.school : ""
-  return <ScholarshipFinder initialSchool={school} />
+  const query = typeof params.q === "string" ? params.q : ""
+  return <ScholarshipFinder initialSchool={school} initialQuery={query} />
 }

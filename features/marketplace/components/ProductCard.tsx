@@ -19,7 +19,8 @@ export function ProductCard({ product }: ProductCardProps) {
 
   return (
     <article
-      className={`interactive-card flex flex-col ${
+      id={product.id}
+      className={`interactive-card flex flex-col scroll-mt-24 ${
         featured
           ? "rounded-2xl border-[3px] border-border bg-card p-5 shadow-sm sm:p-6 lg:col-span-2"
           : "rounded-xl border border-border bg-card p-4"
