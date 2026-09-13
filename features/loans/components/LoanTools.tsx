@@ -10,10 +10,12 @@ import { SectionHeading } from "@/components/layout/SectionHeading"
 import { LenderCard } from "@/features/loans/components/LenderCard"
 import { PaymentCalculator } from "@/features/loans/components/PaymentCalculator"
 import { StudentProfileBox } from "@/features/student-profile/components/StudentProfileBox"
+import { RegionalAidStrip } from "@/features/student-profile/components/RegionalAidStrip"
 import { type StudentProfile } from "@/features/student-profile/types"
-import { saveStudentCountry } from "@/features/student-profile/store"
+import { getStudentProfile, patchStudentProfile, saveStudentCountry } from "@/features/student-profile/store"
 import type { LoanCountry, LoanListingKind, LoanResult, LoanType } from "@/features/loans/types"
 import { loanCardKind } from "@/lib/listingDisplay"
+import { pinRegionalLoanResults } from "@/features/student-profile/regionalAid"
 
 const LOAN_TYPES: LoanType[] = ["Student", "Personal", "Auto"]
 const LOAN_TYPE_ICONS = {
@@ -59,25 +61,37 @@ export function LoanTools({ initialQuery = "" }: { initialQuery?: string }) {
   const [source, setSource] = useState<"live" | "curated" | null>(null)
   const [results, setResults] = useState<LoanResult[]>([])
   const [error, setError] = useState<string | null>(null)
+  const [provinceOrState, setProvinceOrState] = useState("")
 
   function applyProfile(profile: StudentProfile | null) {
     if (!profile) return
     setCountry(profile.country)
     setSearchCountry(profile.country)
+    setProvinceOrState(profile.provinceOrState ?? "")
   }
+
+  useEffect(() => {
+    const stored = getStudentProfile()
+    if (stored) applyProfile(stored)
+    // Prefill once from the existing localStorage profile.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [])
 
   async function runSearch(nextQuery = "") {
     setLoading(true)
     setError(null)
+    const stored = getStudentProfile()
+    const requestCountry = stored?.country ?? country
+    const requestProvince = stored?.provinceOrState ?? provinceOrState
     try {
       const res = await fetch("/api/loans/find", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ country, loanType, amount, query: nextQuery }),
+        body: JSON.stringify({ country: requestCountry, loanType, amount, query: nextQuery }),
       })
       if (!res.ok) throw new Error("Search failed")
       const data: SearchResponse = await res.json()
-      setResults(data.results ?? [])
+      setResults(pinRegionalLoanResults(data.results ?? [], requestCountry, requestProvince, loanType))
       setSource(data.source)
       setNotice(data.notice)
     } catch {
@@ -137,6 +151,17 @@ export function LoanTools({ initialQuery = "" }: { initialQuery?: string }) {
           </Link>
         </p>
       )}
+
+      <div className="mt-3 md:mt-4">
+        <RegionalAidStrip
+          country={country}
+          provinceOrState={provinceOrState}
+          onProvinceChange={(code) => {
+            setProvinceOrState(code)
+            patchStudentProfile({ country: "Canada", provinceOrState: code })
+          }}
+        />
+      </div>
 
       <div className="mt-3 flex min-w-0 flex-col md:mt-6">
         <div className="order-1 min-w-0 lg:order-2">

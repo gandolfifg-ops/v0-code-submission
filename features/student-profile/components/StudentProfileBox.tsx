@@ -4,12 +4,19 @@ import { useEffect, useState, type FormEvent } from "react"
 import { CountryToggle } from "@/components/CountryToggle"
 import { SectionHeading } from "@/components/layout/SectionHeading"
 import { UserRound } from "lucide-react"
+import { resolveSchool } from "@/features/scholarships/schools"
 import {
   SCHOLARSHIP_LEVELS,
   SCHOLARSHIP_MAJORS,
   scholarshipLevelLabel,
   normalizeScholarshipLevel,
 } from "@/features/scholarships/types"
+import { SchoolAutocomplete } from "@/features/student-profile/components/SchoolAutocomplete"
+import {
+  CANADA_PROVINCE_CHIPS,
+  normalizeCanadaProvince,
+  provinceFromSchool,
+} from "@/features/student-profile/regionalAid"
 import {
   getStudentProfile,
   saveStudentProfile,
@@ -24,8 +31,24 @@ import {
 const fieldClass =
   "min-h-11 w-full rounded-xl border border-border bg-background px-3 text-sm text-foreground"
 
+const GRAD_YEARS = ["", "2026", "2027", "2028", "2029", "2030", "2031", "2032"]
+
 type StudentProfileBoxProps = {
   onProfileChange?: (profile: StudentProfile | null) => void
+}
+
+function withSchoolDefaults(draft: StudentProfile, schoolName: string): StudentProfile {
+  const registered = resolveSchool(schoolName)
+  const inferred = provinceFromSchool(schoolName)
+  return {
+    ...draft,
+    school: schoolName,
+    country: registered?.country ?? draft.country,
+    provinceOrState:
+      registered?.country === "Canada" && inferred && !normalizeCanadaProvince(draft.provinceOrState)
+        ? inferred
+        : draft.provinceOrState,
+  }
 }
 
 export function StudentProfileBox({ onProfileChange }: StudentProfileBoxProps) {
@@ -62,12 +85,18 @@ export function StudentProfileBox({ onProfileChange }: StudentProfileBoxProps) {
       ...draft,
       school: draft.school.trim(),
       level: normalizeScholarshipLevel(draft.level),
+      provinceOrState:
+        draft.country === "Canada"
+          ? normalizeCanadaProvince(draft.provinceOrState) || draft.provinceOrState.trim()
+          : draft.provinceOrState.trim(),
+      graduationYear: draft.graduationYear.trim(),
     })
   }
 
   if (!ready) return null
 
   const filled = isProfileFilled(profile)
+  const provinceChip = draft.country === "Canada" ? normalizeCanadaProvince(draft.provinceOrState) : ""
 
   return (
     <section
@@ -76,7 +105,7 @@ export function StudentProfileBox({ onProfileChange }: StudentProfileBoxProps) {
     >
       <SectionHeading icon={UserRound}>Your profile</SectionHeading>
       <p className="mt-1 text-xs text-muted-foreground">
-        Stored in this browser only. We use it to pre-fill WealthNutz search fields — not
+        Stored in this browser only. We use it to pre-fill searches and pin official aid — not
         to apply on other sites.
       </p>
 
@@ -105,6 +134,16 @@ export function StudentProfileBox({ onProfileChange }: StudentProfileBoxProps) {
               {profile.school}
             </p>
           )}
+          {profile.provinceOrState.trim() && (
+            <p>
+              <span className="text-muted-foreground">
+                {profile.country === "USA" ? "State: " : "Province: "}
+              </span>
+              {profile.country === "Canada"
+                ? normalizeCanadaProvince(profile.provinceOrState) || profile.provinceOrState
+                : profile.provinceOrState}
+            </p>
+          )}
           <p>
             <span className="text-muted-foreground">Level: </span>
             {scholarshipLevelLabel(profile.level)}
@@ -113,6 +152,12 @@ export function StudentProfileBox({ onProfileChange }: StudentProfileBoxProps) {
             <span className="text-muted-foreground">Major: </span>
             {profile.major}
           </p>
+          {profile.graduationYear.trim() && (
+            <p>
+              <span className="text-muted-foreground">Graduation year: </span>
+              {profile.graduationYear}
+            </p>
+          )}
           <button
             type="button"
             onClick={() => {
@@ -144,13 +189,47 @@ export function StudentProfileBox({ onProfileChange }: StudentProfileBoxProps) {
           />
           <label className="block text-xs font-medium text-muted-foreground">
             School
-            <input
-              className={`${fieldClass} mt-1`}
+            <SchoolAutocomplete
               value={draft.school}
-              onChange={(e) => setDraft((prev) => ({ ...prev, school: e.target.value }))}
-              placeholder="e.g. University of Toronto"
+              country={draft.country}
+              onChange={(school) => setDraft((prev) => ({ ...prev, school }))}
+              onPickSchool={(school) => setDraft((prev) => withSchoolDefaults(prev, school))}
             />
           </label>
+          {draft.country === "Canada" ? (
+            <div>
+              <p className="text-xs font-medium text-muted-foreground">Province (optional)</p>
+              <div className="mt-1 flex flex-wrap gap-2" role="group" aria-label="Province">
+                {CANADA_PROVINCE_CHIPS.map((chip) => {
+                  const active = provinceChip === chip.code
+                  return (
+                    <button
+                      key={chip.code}
+                      type="button"
+                      onClick={() => setDraft((prev) => ({ ...prev, provinceOrState: chip.code }))}
+                      className={`inline-flex min-h-11 min-w-11 items-center justify-center rounded-xl px-3 text-sm font-semibold transition-colors ${
+                        active
+                          ? "bg-gold text-gold-foreground hover:bg-gold-hover"
+                          : "border border-border text-muted-foreground hover:bg-muted hover:text-foreground"
+                      }`}
+                    >
+                      {chip.label}
+                    </button>
+                  )
+                })}
+              </div>
+            </div>
+          ) : (
+            <label className="block text-xs font-medium text-muted-foreground">
+              State (optional)
+              <input
+                className={`${fieldClass} mt-1`}
+                value={draft.provinceOrState}
+                onChange={(e) => setDraft((prev) => ({ ...prev, provinceOrState: e.target.value }))}
+                placeholder="e.g. California"
+              />
+            </label>
+          )}
           <label className="block text-xs font-medium text-muted-foreground">
             School level
             <select
@@ -175,6 +254,20 @@ export function StudentProfileBox({ onProfileChange }: StudentProfileBoxProps) {
               {SCHOLARSHIP_MAJORS.map((major) => (
                 <option key={major} value={major}>
                   {major}
+                </option>
+              ))}
+            </select>
+          </label>
+          <label className="block text-xs font-medium text-muted-foreground">
+            Graduation year (optional)
+            <select
+              className={`${fieldClass} mt-1`}
+              value={draft.graduationYear}
+              onChange={(e) => setDraft((prev) => ({ ...prev, graduationYear: e.target.value }))}
+            >
+              {GRAD_YEARS.map((year) => (
+                <option key={year || "none"} value={year}>
+                  {year || "Not set"}
                 </option>
               ))}
             </select>

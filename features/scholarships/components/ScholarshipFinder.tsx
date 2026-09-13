@@ -6,7 +6,10 @@ import { useSmartSearch } from "@/components/SmartSearchProvider"
 import { SectionHeading } from "@/components/layout/SectionHeading"
 import { ResultCard } from "@/features/scholarships/components/ResultCard"
 import { StudentProfileBox } from "@/features/student-profile/components/StudentProfileBox"
-import { isProfileFilled, type StudentProfile } from "@/features/student-profile/types"
+import { RegionalAidStrip } from "@/features/student-profile/components/RegionalAidStrip"
+import { SchoolAutocomplete } from "@/features/student-profile/components/SchoolAutocomplete"
+import { getStudentProfile, patchStudentProfile } from "@/features/student-profile/store"
+import { type StudentProfile } from "@/features/student-profile/types"
 import { resolveSchool } from "@/features/scholarships/schools"
 import {
   SCHOLARSHIP_LEVELS,
@@ -71,6 +74,7 @@ export function ScholarshipFinder({
   const [level, setLevel] = useState<string>("Any level")
   const [query, setQuery] = useState(queryFromUrl)
   const [university, setUniversity] = useState(schoolFromUrl)
+  const [provinceOrState, setProvinceOrState] = useState("")
   const shouldAutoSearch = Boolean(schoolFromUrl || queryFromUrl)
   const [loading, setLoading] = useState(shouldAutoSearch)
   const [notice, setNotice] = useState<string | null>(null)
@@ -84,27 +88,39 @@ export function ScholarshipFinder({
     setCountry(profile.country)
     setSearchCountry(profile.country)
     setLevel(normalizeScholarshipLevel(profile.level))
-    if (!isProfileFilled(profile)) return
     if (profile.major) setMajor(profile.major)
     if (profile.school.trim() && !schoolFromUrl) setUniversity(profile.school.trim())
+    setProvinceOrState(profile.provinceOrState ?? "")
   }
+
+  useEffect(() => {
+    const stored = getStudentProfile()
+    if (stored) applyProfile(stored)
+    // Prefill once from the existing localStorage profile.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [])
 
   async function runSearch(next: { query: string; university?: string; fromHeader?: boolean }) {
     setLoading(true)
     setError(null)
     setHasSearched(true)
     const fromHeader = Boolean(next.fromHeader)
-    const schoolName = fromHeader ? "" : (next.university ?? university)
+    const schoolName = fromHeader
+      ? ""
+      : (next.university ?? university).trim() || getStudentProfile()?.school.trim() || ""
     const registered = resolveSchool(schoolName)
-    const requestCountry = registered?.country ?? country
+    const stored = getStudentProfile()
+    const requestCountry = registered?.country ?? stored?.country ?? country
+    const requestMajor = fromHeader ? "Any major" : major || stored?.major || "Any major"
+    const requestLevel = fromHeader ? "Any level" : level || stored?.level || "Any level"
     try {
       const res = await fetch("/api/scholarships/find", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           country: requestCountry,
-          major: fromHeader ? "Any major" : major,
-          level: fromHeader ? "Any level" : level,
+          major: requestMajor,
+          level: requestLevel,
           query: next.query,
           university: schoolName,
         }),
@@ -173,6 +189,17 @@ export function ScholarshipFinder({
         </p>
       )}
 
+      <div className="mt-3 md:mt-4">
+        <RegionalAidStrip
+          country={country}
+          provinceOrState={provinceOrState}
+          onProvinceChange={(code) => {
+            setProvinceOrState(code)
+            patchStudentProfile({ country: "Canada", provinceOrState: code })
+          }}
+        />
+      </div>
+
       <div className="mt-3 grid min-w-0 gap-3 md:mt-6 md:gap-4 lg:grid-cols-[minmax(0,22rem)_minmax(0,1fr)] lg:items-start">
         <div className={`min-w-0 space-y-3 lg:sticky lg:top-20 lg:space-y-4 ${results.length > 0 || loading ? "order-2" : "order-1"} lg:order-none`}>
           <StudentProfileBox onProfileChange={applyProfile} />
@@ -219,11 +246,11 @@ export function ScholarshipFinder({
 
             <label className="block text-xs font-medium text-muted-foreground">
               School name (optional)
-              <input
-                className={`${selectClass} mt-1`}
+              <SchoolAutocomplete
                 value={university}
-                onChange={(e) => setUniversity(e.target.value)}
-                placeholder="e.g. University of Toronto, UCLA"
+                country={country}
+                onChange={setUniversity}
+                placeholder="e.g. University of Waterloo, UCLA"
               />
             </label>
 

@@ -48,6 +48,8 @@ function readProfile(): StudentProfile | null {
       school: typeof parsed.school === "string" ? parsed.school : "",
       level: typeof parsed.level === "string" ? parsed.level : EMPTY_PROFILE.level,
       major: typeof parsed.major === "string" ? parsed.major : EMPTY_PROFILE.major,
+      provinceOrState: typeof parsed.provinceOrState === "string" ? parsed.provinceOrState : "",
+      graduationYear: typeof parsed.graduationYear === "string" ? parsed.graduationYear : "",
     }
   } catch {
     return null
@@ -85,6 +87,11 @@ export function saveStudentCountry(country: StudentCountry): void {
   writeCountryKey(next)
   const existing = readProfile() ?? EMPTY_PROFILE
   saveStudentProfile({ ...existing, country: next })
+}
+
+export function patchStudentProfile(patch: Partial<StudentProfile>): void {
+  const existing = readProfile() ?? EMPTY_PROFILE
+  saveStudentProfile({ ...existing, ...patch })
 }
 
 export function clearStudentProfile(): void {

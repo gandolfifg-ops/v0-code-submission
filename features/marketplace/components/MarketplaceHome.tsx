@@ -21,9 +21,11 @@ import {
 import type { Country, ProductCategory } from "@/features/marketplace/types"
 import {
   getStoredCountry,
+  getStudentProfile,
   saveStudentCountry,
   subscribeStudentProfile,
 } from "@/features/student-profile/store"
+import { campusAtmsMatter } from "@/features/student-profile/regionalAid"
 
 const COUNTRY_COPY: Record<Country, { name: string; intro: string }> = {
   CA: {
@@ -47,12 +49,15 @@ const CATEGORY_ICONS: Record<ProductCategory, typeof Landmark> = {
 
 export function MarketplaceHome() {
   const [country, setCountry] = useState<Country>("CA")
+  const [school, setSchool] = useState("")
   const copy = COUNTRY_COPY[country]
 
   useEffect(() => {
     const sync = () => {
-      const stored = getStoredCountry()
-      if (stored) setCountry(stored === "USA" ? "US" : "CA")
+      const storedCountry = getStoredCountry()
+      if (storedCountry) setCountry(storedCountry === "USA" ? "US" : "CA")
+      const profile = getStudentProfile()
+      setSchool(profile?.school.trim() ?? "")
     }
     sync()
     return subscribeStudentProfile(sync)
@@ -112,6 +117,11 @@ export function MarketplaceHome() {
             </Link>
             <span className="text-muted-foreground"> — optional, saved in this browser.</span>
           </p>
+          {campusAtmsMatter(country === "US" ? "USA" : "Canada") && school ? (
+            <p className="mt-2 text-sm text-muted-foreground">
+              Campus ATMs matter if you are at {school} — confirm the bank’s ATM network on the product page.
+            </p>
+          ) : null}
           <p className="mt-2 text-sm">
             <Link
               href="/schools"
