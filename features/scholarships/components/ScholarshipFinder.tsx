@@ -57,12 +57,13 @@ export function ScholarshipFinder({
   const [level, setLevel] = useState<string>("Any level")
   const [query, setQuery] = useState(queryFromUrl)
   const [university, setUniversity] = useState(schoolFromUrl)
-  const [loading, setLoading] = useState(false)
+  const shouldAutoSearch = Boolean(schoolFromUrl || queryFromUrl)
+  const [loading, setLoading] = useState(shouldAutoSearch)
   const [notice, setNotice] = useState<string | null>(null)
   const [source, setSource] = useState<"live" | "curated" | null>(null)
   const [results, setResults] = useState<ScholarshipResult[]>([])
   const [error, setError] = useState<string | null>(null)
-  const [hasSearched, setHasSearched] = useState(false)
+  const [hasSearched, setHasSearched] = useState(shouldAutoSearch)
 
   function applyProfile(profile: StudentProfile | null) {
     if (!profile) return
@@ -122,9 +123,14 @@ export function ScholarshipFinder({
   }, [ticket?.id])
 
   useEffect(() => {
-    if (!queryFromUrl) return
+    if (!queryFromUrl && !schoolFromUrl) return
+    const registered = resolveSchool(schoolFromUrl)
+    if (registered) {
+      setCountry(registered.country)
+      setSearchCountry(registered.country)
+    }
     void runSearch({ query: queryFromUrl, university: schoolFromUrl })
-    // eslint-disable-next-line react-hooks/exhaustive-deps -- run once from /scholarships?q=
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- run once from /scholarships?school= or ?q=
   }, [])
 
   async function onSubmit(e: FormEvent) {

@@ -42,9 +42,26 @@ export default function SchoolsIndexPage() {
 
         <section>
           <h2 className="text-lg font-semibold text-foreground">United States</h2>
-          <p className="mt-3 rounded-2xl border border-dashed border-border bg-muted/30 px-4 py-6 text-sm text-muted-foreground">
-            US school pages coming later.
-          </p>
+          <div className="mt-3 rounded-2xl border border-border bg-card p-4 md:p-5">
+            <p className="text-sm leading-relaxed text-muted-foreground">
+              US school pages ship next. Use Scholarships search and{" "}
+              <a
+                href="https://studentaid.gov"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="font-medium text-link underline underline-offset-4"
+              >
+                studentaid.gov
+              </a>{" "}
+              meanwhile.
+            </p>
+            <Link
+              href="/scholarships"
+              className="mt-4 inline-flex min-h-11 w-full items-center justify-center rounded-xl bg-gold px-4 text-sm font-bold text-gold-foreground transition-colors hover:bg-gold-hover sm:w-auto"
+            >
+              Search scholarships
+            </Link>
+          </div>
         </section>
       </div>
     </article>

@@ -3,7 +3,7 @@
 import Link from "next/link"
 import { usePathname } from "next/navigation"
 import { HeaderSearchBar } from "@/components/HeaderSearchBar"
-import { ALL_NAV, isActivePath } from "@/lib/constants/nav"
+import { ALL_NAV, isActivePath, isRelatedPath } from "@/lib/constants/nav"
 import { NAV_ICONS } from "@/lib/constants/navIcons"
 import { X } from "lucide-react"
 
@@ -47,16 +47,19 @@ export function MobileNav({ open, onClose }: MobileNavProps) {
         <nav className="flex flex-1 flex-col gap-1 overflow-y-auto p-3">
           {ALL_NAV.map((link) => {
             const active = isActivePath(pathname, link.href)
+            const related = isRelatedPath(pathname, link.href)
             const Icon = NAV_ICONS[link.href]
             return (
               <Link
                 key={link.href}
                 href={link.href}
                 onClick={onClose}
-                className={`inline-flex items-center gap-2 rounded-lg px-4 py-3 text-base font-medium transition-colors ${
+                className={`inline-flex min-h-11 items-center gap-2 rounded-lg px-4 py-3 text-base transition-colors ${
                   active
-                    ? "bg-muted text-link"
-                    : "text-foreground hover:bg-muted"
+                    ? "bg-muted font-medium text-link"
+                    : related
+                      ? "font-semibold text-foreground hover:bg-muted"
+                      : "font-medium text-foreground hover:bg-muted"
                 }`}
               >
                 {Icon && (

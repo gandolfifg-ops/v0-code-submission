@@ -2,7 +2,7 @@ import Link from "next/link"
 import type { SchoolAwardsData } from "@/features/scholarships/schools/types"
 
 export function SchoolAwardsPage({ school }: { school: SchoolAwardsData }) {
-  const searchHref = "/scholarships?school=" + encodeURIComponent(school.searchName)
+  const searchHref = "/scholarships?school=" + encodeURIComponent(school.name)
 
   return (
     <article className="mx-auto max-w-3xl px-4 py-8 sm:px-6 sm:py-10">
@@ -36,7 +36,7 @@ export function SchoolAwardsPage({ school }: { school: SchoolAwardsData }) {
         href={searchHref}
         className="mt-8 inline-flex min-h-11 w-full items-center justify-center rounded-xl bg-gold px-4 text-sm font-bold text-gold-foreground transition-colors hover:bg-gold-hover sm:w-auto"
       >
-        Search live awards
+        Search live awards for {school.name}
       </Link>
     </article>
   )

@@ -6,7 +6,7 @@ import { useState } from "react"
 import { Menu } from "lucide-react"
 import { Logo } from "@/components/Logo"
 import { HeaderSearchBar } from "@/components/HeaderSearchBar"
-import { PRIMARY_NAV, SECONDARY_NAV, isActivePath } from "@/lib/constants/nav"
+import { PRIMARY_NAV, SECONDARY_NAV, isActivePath, isRelatedPath } from "@/lib/constants/nav"
 import { NAV_ICONS } from "@/lib/constants/navIcons"
 import { MobileNav } from "@/components/layout/MobileNav"
 import { ThemeToggle } from "@/components/layout/ThemeToggle"
@@ -14,13 +14,18 @@ import { ThemeToggle } from "@/components/layout/ThemeToggle"
 function DesktopNavLink({ href, label }: { href: string; label: string }) {
   const pathname = usePathname()
   const active = isActivePath(pathname, href)
+  const related = isRelatedPath(pathname, href)
   const Icon = NAV_ICONS[href]
 
   return (
     <Link
       href={href}
-      className={`inline-flex items-center gap-1.5 rounded-md px-2.5 py-2 text-sm font-medium transition-colors ${
-        active ? "text-link" : "text-muted-foreground hover:text-foreground"
+      className={`inline-flex items-center gap-1.5 rounded-md px-2.5 py-2 text-sm transition-colors ${
+        active
+          ? "font-medium text-link"
+          : related
+            ? "font-semibold text-foreground"
+            : "font-medium text-muted-foreground hover:text-foreground"
       }`}
       aria-current={active ? "page" : undefined}
     >
