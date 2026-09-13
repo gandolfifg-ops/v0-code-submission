@@ -12,7 +12,8 @@ import { PaymentCalculator } from "@/features/loans/components/PaymentCalculator
 import { StudentProfileBox } from "@/features/student-profile/components/StudentProfileBox"
 import { type StudentProfile } from "@/features/student-profile/types"
 import { saveStudentCountry } from "@/features/student-profile/store"
-import type { LoanCountry, LoanResult, LoanType } from "@/features/loans/types"
+import type { LoanCountry, LoanListingKind, LoanResult, LoanType } from "@/features/loans/types"
+import { loanCardKind } from "@/lib/listingDisplay"
 
 const LOAN_TYPES: LoanType[] = ["Student", "Personal", "Auto"]
 const LOAN_TYPE_ICONS = {
@@ -25,6 +26,23 @@ type SearchResponse = {
   source: "live" | "curated"
   notice: string
   results: LoanResult[]
+}
+
+const LOAN_GROUPS: { id: LoanListingKind; title: string }[] = [
+  { id: "government", title: "Government" },
+  { id: "bank", title: "Banks" },
+  { id: "private-lender", title: "Private lenders" },
+  { id: "article", title: "Articles" },
+]
+
+function groupedLoanResults(results: LoanResult[]) {
+  const withKind = results.map((item) => ({ item, kind: loanCardKind(item) }))
+  const hasPrimary = withKind.some((row) => row.kind !== "article")
+  const visible = hasPrimary ? withKind.filter((row) => row.kind !== "article") : withKind
+  return LOAN_GROUPS.map((group) => ({
+    ...group,
+    items: visible.filter((row) => row.kind === group.id).map((row) => row.item),
+  })).filter((group) => group.items.length > 0)
 }
 
 function loanResultsSummary(count: number, country: LoanCountry, loanType: LoanType): string {
@@ -148,7 +166,7 @@ export function LoanTools({ initialQuery = "" }: { initialQuery?: string }) {
 
       {loading && results.length === 0 && (
         <section className="mt-3 md:mt-6" aria-hidden="true">
-          <SectionHeading icon={ListChecks}>Start here (official)</SectionHeading>
+          <SectionHeading icon={ListChecks}>Results</SectionHeading>
           <div className="mt-3 grid grid-cols-1 gap-3 md:grid-cols-2">
             {[0, 1, 2].map((key) => (
               <div key={key} className="h-40 animate-pulse rounded-2xl border border-border bg-muted/50" />
@@ -160,30 +178,16 @@ export function LoanTools({ initialQuery = "" }: { initialQuery?: string }) {
       {results.length > 0 && (
         <div className={`relative mt-3 md:mt-6 ${loading ? "opacity-60" : ""}`}>
           {loading && <div className="absolute inset-0 z-10 rounded-2xl bg-background/60" aria-hidden="true" />}
-          {results.some((item) => item.source === "curated") && (
-            <section>
-              <SectionHeading icon={ListChecks}>Start here (official)</SectionHeading>
+          {groupedLoanResults(results).map((group, index) => (
+            <section key={group.id} className={index === 0 ? "" : "mt-6"}>
+              <SectionHeading icon={ListChecks}>{group.title}</SectionHeading>
               <div className="mt-3 grid grid-cols-1 gap-3 md:grid-cols-2">
-                {results
-                  .filter((item) => item.source === "curated")
-                  .map((lender) => (
-                    <LenderCard key={lender.id} lender={lender} />
-                  ))}
+                {group.items.map((lender) => (
+                  <LenderCard key={lender.id} lender={lender} />
+                ))}
               </div>
             </section>
-          )}
-          {results.some((item) => item.source === "live") && (
-            <section className={results.some((item) => item.source === "curated") ? "mt-6" : ""}>
-              <SectionHeading icon={ListChecks}>More pages we found</SectionHeading>
-              <div className="mt-3 grid grid-cols-1 gap-3 md:grid-cols-2">
-                {results
-                  .filter((item) => item.source === "live")
-                  .map((lender) => (
-                    <LenderCard key={lender.id} lender={lender} />
-                  ))}
-              </div>
-            </section>
-          )}
+          ))}
         </div>
       )}
         </div>

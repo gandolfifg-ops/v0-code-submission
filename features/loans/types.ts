@@ -1,6 +1,7 @@
 export type LoanCountry = "Canada" | "USA"
 export type LoanType = "Student" | "Personal" | "Auto"
 export type LoanSource = "live" | "curated"
+export type LoanListingKind = "government" | "bank" | "private-lender" | "article"
 
 export function parseLoanCountry(input: unknown): LoanCountry {
   const text = String(input ?? "")
@@ -32,4 +33,5 @@ export type LoanResult = {
   href: string
   cta: string
   source: LoanSource
+  listingKind?: LoanListingKind
 }

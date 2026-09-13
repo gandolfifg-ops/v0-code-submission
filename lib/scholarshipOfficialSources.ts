@@ -502,14 +502,14 @@ export function isBlockedScholarshipUrl(url: string): boolean {
   })
 }
 
-function isGovernmentHost(hostname: string): boolean {
+export function isGovernmentHost(hostname: string): boolean {
   return (
     CANADA_GOVERNMENT_DOMAINS.some((domain) => hostMatches(hostname, domain)) ||
     USA_GOVERNMENT_DOMAINS.some((domain) => hostMatches(hostname, domain))
   )
 }
 
-function isFoundationHost(hostname: string): boolean {
+export function isFoundationHost(hostname: string): boolean {
   return OFFICIAL_FOUNDATION_HOSTS.some((domain) => hostMatches(hostname, domain))
 }
 

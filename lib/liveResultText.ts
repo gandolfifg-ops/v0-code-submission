@@ -1,11 +1,15 @@
-const SNIPPET_MAX = 400
+const SNIPPET_MAX = 220
 
 const PAGE_CHROME =
-  /language selection|search menu|skip to(?: main)? content|you are here|breadcrumb|\bfrançais\b|\benglish\b\s*\/|\bcookie (?:consent|banner|settings|policy)\b|we use cookies|apply nowapply now/gi
+  /language selection|search menu|skip to(?: main)? content|you are here|breadcrumb(?: trail)?|date modified|share this page|toggle submenu|main navigation|secondary menu|\bfrançais\b|\benglish\b\s*\/|\bcookie (?:consent|banner|settings|policy)\b|we use cookies|apply nowapply now/gi
+
+const CANADA_NAV_RUN =
+  /(?:language selection|search menu|you are here|skip to(?: main)? content|menu|search|home)(?:\s+(?:language selection|search menu|you are here|skip to(?: main)? content|menu|search|home))+/gi
 
 function stripPageChrome(input: string): string {
   let text = input.replace(/\r\n/g, "\n")
   text = text.replace(/apply now\s*apply now/gi, "Apply now")
+  text = text.replace(CANADA_NAV_RUN, " ")
   text = text.replace(PAGE_CHROME, " ")
   text = text.replace(/^(?:\s*(?:menu|home|search|:)\s*)+/gi, " ")
   text = text.replace(/^[:\-–—]+\s*/, "")
@@ -270,6 +274,11 @@ function keepSentence(s: string): boolean {
   if (JUNK.test(s) || FORM_NOISE.test(s) || isMostlyCaps(s)) return false
   if (/^\d+(\.\d+)?%?$/.test(s)) return false
   if ((s.match(/\d/g) ?? []).length > 24) return false
+  if (/language selection|you are here|skip to(?: main)? content/i.test(s)) return false
+  if (!/[a-z]/.test(s)) return false
+  if (!/\s/.test(s)) return false
+  const words = s.split(/\s+/).filter(Boolean)
+  if (words.length < 8 && !/[.!?]$/.test(s)) return false
   return true
 }
 
@@ -345,7 +354,7 @@ export function summarizeLiveSnippet(
     }
     picked.push(s)
     used = nextLen
-    if (picked.length >= 3 || used >= 220) break
+    if (picked.length >= 2 || used >= 180) break
   }
 
   const body = `${prefix}${picked.join(" ")}`.trim()
@@ -385,7 +394,7 @@ function scoreScholarshipSentence(s: string, title: string): number {
   return n
 }
 
-/** Live scholarship card copy: what / who / amount / where. Max ~400 chars. */
+/** Live scholarship card copy: what / who / amount / where. Max two sentences. */
 export function summarizeScholarshipSnippet(
   input: string,
   opts?: { url?: string; title?: string; fallback?: string },
@@ -414,7 +423,7 @@ export function summarizeScholarshipSnippet(
     }
     picked.push(s)
     used = nextLen
-    if (picked.length >= 3 || used >= 280) break
+    if (picked.length >= 2 || used >= 180) break
   }
 
   const body = picked.join(" ").trim()
@@ -453,7 +462,7 @@ const MONTH_TOKEN =
   "January|February|March|April|May|June|July|August|September|October|November|December|Jan|Feb|Mar|Apr|Jun|Jul|Aug|Sep|Sept|Oct|Nov|Dec"
 
 const DEADLINE_WORD =
-  /(?:application\s+)?(?:deadlines?|due(?:\s+dates?)?|closes?|closing|apply\s+by|submi(?:t|ssion)|ends?|cutoff|must be (?:received|submitted)|nominations?\s+due)/i
+  /(?:application\s+)?(?:deadlines?|due(?:\s+dates?)?|closes?|closing|apply\s+by|submi(?:t|ssion)|application(?:s)?\s+end|cutoff|must be (?:received|submitted)|nominations?\s+due)/i
 
 const SKIP_BEFORE =
   /(?:updated|published|posted|last\s+modified|as\s+of|copyright|founded|established|born)\s*$/i
@@ -644,6 +653,17 @@ function formatDeadline(date: Date): string {
   })
 }
 
+function addUtcMonths(date: Date, months: number): Date {
+  return new Date(Date.UTC(date.getUTCFullYear(), date.getUTCMonth() + months, date.getUTCDate()))
+}
+
+function isWithinApplicationWindow(date: Date, now: Date): boolean {
+  const t = startOfUtcDay(date)
+  const today = startOfUtcDay(now)
+  const limit = startOfUtcDay(addUtcMonths(now, 18))
+  return t >= today && t <= limit
+}
+
 function soonestOnOrAfter(found: FoundDeadline[], now: Date): Date | null {
   const today = startOfUtcDay(now)
   const upcoming = found.filter((item) => startOfUtcDay(item.date) >= today)
@@ -695,34 +715,51 @@ export function parseDeadlineDate(raw: string, now = new Date()): Date | null {
 
 export const UNLISTED_DEADLINE = "Deadline not listed — check official page"
 
+export function isDisplayableDeadline(raw: string, now = new Date()): boolean {
+  const text = raw.trim()
+  if (!text || text === UNLISTED_DEADLINE) return false
+  if (/check official|not listed|see listing|varies|apply via/i.test(text)) return false
+  const parsed = parseDeadlineDate(text, now)
+  if (!parsed) return false
+  return isWithinApplicationWindow(parsed, now)
+}
+
 export function extractDeadlineFromSnippet(content: string, now = new Date()): string {
   return evaluateScholarshipDeadlines(content, now).deadline
 }
 
-/** Keep/drop from every date found in listing text — not a single labeled match. */
+/** Keep listings unless every labeled application deadline is already past. */
 export function evaluateScholarshipDeadlines(
   content: string,
   now = new Date(),
 ): { keep: boolean; deadline: string } {
   const found = collectDeadlineDates(content, now)
   if (found.length === 0) {
-    return { keep: true, deadline: UNLISTED_DEADLINE }
+    return { keep: true, deadline: "" }
   }
-  const soonest = soonestOnOrAfter(found, now)
-  if (!soonest) {
-    return { keep: false, deadline: UNLISTED_DEADLINE }
+  const labeled = found.filter((item) => item.labeled)
+  const displayable = labeled.filter((item) => isWithinApplicationWindow(item.date, now))
+  if (displayable.length > 0) {
+    const soonest = soonestOnOrAfter(displayable, now)
+    return { keep: true, deadline: soonest ? formatDeadline(soonest) : "" }
   }
-  return { keep: true, deadline: formatDeadline(soonest) }
+  const today = startOfUtcDay(now)
+  const labeledPast = labeled.filter((item) => startOfUtcDay(item.date) < today)
+  if (labeled.length > 0 && labeledPast.length === labeled.length) {
+    return { keep: false, deadline: "" }
+  }
+  return { keep: true, deadline: "" }
 }
 
 export function resolveScholarshipDeadline(
   raw: string,
   now = new Date(),
 ): { keep: boolean; deadline: string } {
-  if (raw === UNLISTED_DEADLINE) return { keep: true, deadline: UNLISTED_DEADLINE }
+  if (!raw.trim() || raw === UNLISTED_DEADLINE) return { keep: true, deadline: "" }
   const parsed = parseDeadlineDate(raw, now)
-  if (!parsed) return { keep: true, deadline: UNLISTED_DEADLINE }
+  if (!parsed) return { keep: true, deadline: "" }
   if (isExpiredDeadline(raw, now)) return { keep: false, deadline: raw }
+  if (!isWithinApplicationWindow(parsed, now)) return { keep: true, deadline: "" }
   return { keep: true, deadline: formatDeadline(parsed) }
 }
 
@@ -753,15 +790,19 @@ const AWARD_CONTEXT = /\b(?:scholarship|bursar(?:y|ies)?|award|grant|stipend)\b/
 export function extractScholarshipAmount(text: string, url = ""): string {
   const blob = `${url}\n${text}`
   if (/\/afford(?:ability)?(?:\/|$)/i.test(url) || /cost[-_ ]of[-_ ]attendance|tuition[-_ ]and[-_ ]fees/i.test(url)) {
-    return "Varies"
+    return ""
   }
 
   const phrase = text.match(/\bfull[\s-]*(tuition|ride)\b|\btuition\s+waiver\b/i)
   if (phrase) {
-    const raw = phrase[0].toLowerCase()
-    if (raw.includes("ride")) return "Full ride"
-    if (raw.includes("waiver")) return "Tuition waiver"
-    return "Full tuition"
+    const at = phrase.index ?? 0
+    const window = text.slice(Math.max(0, at - 90), Math.min(text.length, at + phrase[0].length + 90))
+    if (AWARD_CONTEXT.test(window) || AWARD_CONTEXT.test(blob)) {
+      const raw = phrase[0].toLowerCase()
+      if (raw.includes("ride")) return "Full ride"
+      if (raw.includes("waiver")) return "Tuition waiver"
+      return "Full tuition"
+    }
   }
 
   const moneyPattern =
@@ -776,7 +817,8 @@ export function extractScholarshipAmount(text: string, url = ""): string {
     if (best < MIN_SCHOLARSHIP_AMOUNT) continue
     const window = text.slice(Math.max(0, match.index - 90), Math.min(text.length, match.index + match[0].length + 90))
     if (COST_CONTEXT.test(window) && !AWARD_CONTEXT.test(window)) continue
-    if (COST_CONTEXT.test(blob) && !AWARD_CONTEXT.test(blob) && best >= 20000) continue
+    if (COST_CONTEXT.test(blob) && !AWARD_CONTEXT.test(blob)) continue
+    if (!AWARD_CONTEXT.test(window) && !AWARD_CONTEXT.test(blob)) continue
     let display = prettyMoneyPhrase(match[0])
     if (low < MIN_SCHOLARSHIP_AMOUNT && high !== null && high >= MIN_SCHOLARSHIP_AMOUNT) {
       display = `$${match[2]}${match[3] ?? ""}`
@@ -789,8 +831,18 @@ export function extractScholarshipAmount(text: string, url = ""): string {
     return viable[0].display
   }
 
-  if (/\bvaries\b/i.test(text)) return "Varies"
-  return "Varies"
+  return ""
+}
+
+/** True only for a real award figure — not "Varies" or tuition-schedule prose. */
+export function isDisplayableAwardAmount(amount: string): boolean {
+  const value = amount.trim()
+  if (!value) return false
+  if (/^(varies|n\/?a|unknown|see listing|tbd|check official)/i.test(value)) return false
+  if (/^\$\??$/.test(value)) return false
+  if (/\bfull[\s-]*(tuition|ride)\b|\btuition\s+waiver\b/i.test(value)) return true
+  if (/\$\s*[\d,]/.test(value) || /[\d,]+\s*(dollars|usd|cad)/i.test(value)) return true
+  return false
 }
 
 const CLOSED_NOTICE =
@@ -812,7 +864,7 @@ export function isClosedOrArchivedListing(text: string, url = ""): boolean {
 const LOAN_ROUNDUP_TITLE = /\bbest\s+.+\s+rates\b|\bbest student loan rates\b|\bcompare lenders\b|\btop\s+\d+\s+student loans\b/i
 const LOAN_BLOG_PATH = /\/blog\/|\/news\/|\/article\//i
 const LOAN_NODE_PATH = /\/node(\/|$)/i
-const UNCERTAIN_LOAN_RATE = "Advertised rate — confirm on official site"
+const UNCERTAIN_LOAN_RATE = ""
 
 const LOAN_RATE_BLOCK_HOSTS = [
   "bankrate.com",
@@ -852,4 +904,8 @@ export function extractLoanAdvertisedRate(text: string, url = ""): string {
     }
   }
   return UNCERTAIN_LOAN_RATE
+}
+
+export function isConfirmedLoanRate(rate: string): boolean {
+  return /\d+(?:\.\d+)?\s*%/.test(rate.trim())
 }

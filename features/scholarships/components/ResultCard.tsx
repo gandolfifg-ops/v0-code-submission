@@ -1,102 +1,93 @@
-import { GraduationCap, Globe } from "lucide-react"
+import { GraduationCap } from "lucide-react"
 import { CreamIcon } from "@/components/CreamIcon"
-import { ExpandableText } from "@/components/ExpandableText"
-import type { ScholarshipResult } from "@/features/scholarships/types"
-import { SCHOLARSHIP_CHECKLIST } from "@/features/student-profile/checklists"
+import type { ScholarshipListingKind, ScholarshipResult } from "@/features/scholarships/types"
 import { FollowThrough } from "@/features/student-profile/components/FollowThrough"
-import { cleanDisplayText } from "@/lib/liveResultText"
+import { prettyIssuerName, scholarshipCardBadge } from "@/lib/listingDisplay"
+import { cleanDisplayText, isDisplayableAwardAmount, isDisplayableDeadline } from "@/lib/liveResultText"
 
-const SNIPPET_MAX = 400
-
-function clipSnippet(text: string): string {
+function clipTwoLineSnippet(text: string): string {
   const cleaned = cleanDisplayText(text)
-  if (cleaned.length <= SNIPPET_MAX) return cleaned
-  const cut = cleaned.slice(0, SNIPPET_MAX - 1)
+  if (cleaned.length <= 220) return cleaned
+  const cut = cleaned.slice(0, 219)
   const at = cut.lastIndexOf(" ")
   return `${(at > 80 ? cut.slice(0, at) : cut).trimEnd()}…`
+}
+
+const BADGE_LABEL: Record<ScholarshipListingKind, string> = {
+  "official-school": "Official school",
+  government: "Government",
+  foundation: "Foundation",
+  listing: "Listing",
 }
 
 type ResultCardProps = {
   result: ScholarshipResult
 }
 
-function displayAmount(amount: string): string {
-  const value = amount.trim()
-  if (!value || /^\$\??$/.test(value) || /^(n\/?a|unknown|see listing|tbd)$/i.test(value)) {
-    return "Varies"
-  }
-  return value
-}
-
 export function ResultCard({ result }: ResultCardProps) {
-  const featured = result.source === "live"
   const title = cleanDisplayText(result.title)
-  const eligibility = clipSnippet(result.eligibility)
-  const amount = displayAmount(result.amount)
+  const issuer = prettyIssuerName(result.url, result.provider)
+  const badge = scholarshipCardBadge(result.url, result.listingKind)
+  const eligibility = clipTwoLineSnippet(result.eligibility)
+  const amount = isDisplayableAwardAmount(result.amount) ? result.amount.trim() : ""
+  const deadline = isDisplayableDeadline(result.deadline) ? result.deadline.trim() : ""
+  const featured = badge === "official-school" || badge === "government"
 
   return (
     <article
       className={`interactive-card flex min-w-0 max-w-full flex-col overflow-hidden rounded-2xl p-4 md:p-5 ${
-        featured || result.listingKind === "official-school"
-          ? "border-2 border-border bg-card shadow-sm"
-          : "border border-border bg-card"
+        featured ? "border-2 border-border bg-card shadow-sm" : "border border-border bg-card"
       }`}
     >
       <div className="mb-3 flex min-w-0 items-start gap-3">
         <CreamIcon icon={GraduationCap} />
         <div className="flex min-w-0 flex-1 flex-wrap gap-2">
-        {featured || result.listingKind === "official-school" ? (
-          result.listingKind === "official-school" ? (
-            <span className="inline-flex items-center gap-1 rounded-full bg-gold px-2.5 py-1 text-[11px] font-semibold text-gold-foreground">
-              <GraduationCap className="h-3 w-3 shrink-0" aria-hidden="true" />
-              Official School Portal
-            </span>
-          ) : (
-            <span className="inline-flex items-center gap-1 rounded-full bg-gold px-2.5 py-1 text-[11px] font-semibold text-gold-foreground">
-              <Globe className="h-3 w-3 shrink-0" aria-hidden="true" />
-              Active Listing
-            </span>
-          )
-        ) : (
-          <span className="rounded-full bg-muted px-2.5 py-1 text-[11px] font-semibold text-muted-foreground">
-            Curated pick
+          <span
+            className={
+              badge === "listing"
+                ? "rounded-full bg-muted px-2.5 py-1 text-[11px] font-semibold text-muted-foreground"
+                : "inline-flex items-center rounded-full bg-gold px-2.5 py-1 text-[11px] font-semibold text-gold-foreground"
+            }
+          >
+            {BADGE_LABEL[badge]}
           </span>
-        )}
-        <span className="max-w-full break-all rounded-full border border-border px-2.5 py-1 text-[11px] text-muted-foreground">
-          {result.provider}
-        </span>
+          <span className="max-w-full break-words rounded-full border border-border px-2.5 py-1 text-[11px] text-muted-foreground">
+            {issuer}
+          </span>
         </div>
       </div>
       <h3 className="min-w-0 break-words text-base font-semibold text-foreground">{title}</h3>
-      <div className="mt-2 min-w-0">
-        <ExpandableText
-          text={eligibility}
-          className="break-words text-sm leading-relaxed text-muted-foreground"
-        />
-      </div>
-      <dl className="mt-3 grid grid-cols-2 gap-2 text-xs">
-        <div className="min-w-0">
-          <dt className="text-muted-foreground">Amount</dt>
-          <dd className="break-words font-medium text-foreground">{amount}</dd>
-        </div>
-        <div className="min-w-0">
-          <dt className="text-muted-foreground">Deadline</dt>
-          <dd className="break-words font-medium text-foreground">{result.deadline}</dd>
-        </div>
-      </dl>
+      <p className="mt-2 line-clamp-2 min-w-0 break-words text-sm leading-relaxed text-muted-foreground">
+        {eligibility}
+      </p>
+      {amount || deadline ? (
+        <dl className={`mt-3 grid gap-2 text-xs ${amount && deadline ? "grid-cols-2" : "grid-cols-1"}`}>
+          {amount ? (
+            <div className="min-w-0">
+              <dt className="text-muted-foreground">Amount</dt>
+              <dd className="break-words font-medium text-foreground">{amount}</dd>
+            </div>
+          ) : null}
+          {deadline ? (
+            <div className="min-w-0">
+              <dt className="text-muted-foreground">Deadline</dt>
+              <dd className="break-words font-medium text-foreground">{deadline}</dd>
+            </div>
+          ) : null}
+        </dl>
+      ) : null}
       {result.lastChecked ? (
         <p className="mt-2 text-xs text-muted-foreground">Last checked {result.lastChecked}</p>
       ) : null}
       <FollowThrough
         href={result.url}
-        cta="Open official site"
-        checklist={SCHOLARSHIP_CHECKLIST}
+        cta="Open official page"
         item={{
           id: `scholarship:${result.id}`,
           kind: "scholarship",
           title: title,
           href: result.url,
-          subtitle: `${result.provider} · ${amount}`,
+          subtitle: amount ? `${issuer} · ${amount}` : issuer,
           savedAt: Date.now(),
         }}
       />

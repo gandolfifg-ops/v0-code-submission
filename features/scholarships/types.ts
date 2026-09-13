@@ -2,6 +2,8 @@ export type ScholarshipCountry = "Canada" | "USA"
 
 export type ScholarshipSource = "live" | "curated"
 
+export type ScholarshipListingKind = "official-school" | "government" | "foundation" | "listing"
+
 export type ScholarshipResult = {
   id: string
   title: string
@@ -12,7 +14,7 @@ export type ScholarshipResult = {
   eligibility: string
   url: string
   source: ScholarshipSource
-  listingKind?: "official-school" | "active"
+  listingKind?: ScholarshipListingKind | "active"
 }
 
 export type ScholarshipFilters = {

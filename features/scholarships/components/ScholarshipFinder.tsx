@@ -16,6 +16,7 @@ import {
   type ScholarshipCountry,
   type ScholarshipResult,
 } from "@/features/scholarships/types"
+import { scholarshipResultGroup } from "@/lib/listingDisplay"
 import { isExpiredDeadline } from "@/lib/liveResultText"
 
 type SearchResponse = {
@@ -26,6 +27,19 @@ type SearchResponse = {
 
 const selectClass =
   "min-h-11 w-full rounded-xl border border-border bg-background px-3 text-sm text-foreground"
+
+const RESULT_GROUPS = [
+  { id: "official-school" as const, title: "Official school pages" },
+  { id: "government" as const, title: "Government aid" },
+  { id: "other" as const, title: "Other awards" },
+]
+
+function groupedScholarshipResults(results: ScholarshipResult[]) {
+  return RESULT_GROUPS.map((group) => ({
+    ...group,
+    items: results.filter((item) => scholarshipResultGroup(item) === group.id),
+  })).filter((group) => group.items.length > 0)
+}
 
 function scholarshipResultsSummary(
   count: number,
@@ -269,9 +283,16 @@ export function ScholarshipFinder({
                 <div className="absolute inset-0 z-10 rounded-2xl bg-background/60" aria-hidden="true" />
               )}
               <SectionHeading icon={ListChecks}>Results</SectionHeading>
-              <div className={`mt-3 grid grid-cols-1 gap-3 md:grid-cols-2 ${loading ? "opacity-50" : ""}`}>
-                {results.map((result) => (
-                  <ResultCard key={result.id} result={result} />
+              <div className={loading ? "opacity-50" : ""}>
+                {groupedScholarshipResults(results).map((group, index) => (
+                  <div key={group.id} className={index === 0 ? "mt-3" : "mt-6"}>
+                    <h3 className="text-sm font-semibold text-foreground">{group.title}</h3>
+                    <div className="mt-3 grid grid-cols-1 gap-3 md:grid-cols-2">
+                      {group.items.map((result) => (
+                        <ResultCard key={result.id} result={result} />
+                      ))}
+                    </div>
+                  </div>
                 ))}
               </div>
             </section>

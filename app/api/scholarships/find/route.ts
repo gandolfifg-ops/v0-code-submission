@@ -12,13 +12,12 @@ import {
   isApplicationFormListing,
   isClosedOrArchivedListing,
   summarizeScholarshipSnippet,
-  UNLISTED_DEADLINE,
 } from "@/lib/liveResultText"
+import { classifyScholarshipListing, prettyIssuerName } from "@/lib/listingDisplay"
 import {
   compareScholarshipResults,
   guessSchoolDomains,
   isDepartmentOnlySchoolUrl,
-  isOfficialSchoolPortalUrl,
   isSchoolAidHubUrl,
   mentionsSearchedSchool,
   nationalFoundationQueries,
@@ -172,21 +171,19 @@ function mapLiveResults(
   return preferred
     .map((r, i) => {
       const hostname = new URL(r.url!).hostname.replace(/^www\./, "")
-      const provider = hostname.split(".")[0] ?? "Source"
       const content = r.content ?? ""
       const rawPage = r.raw_content ?? r.rawContent ?? ""
       const deadlineSource = [r.title ?? "", r.url, content, rawPage].filter(Boolean).join("\n")
       if (isClosedOrArchivedListing(deadlineSource, r.url!)) return null
       const { keep, deadline } = evaluateScholarshipDeadlines(deadlineSource)
       if (!keep) return null
-      const officialSchool = isOfficialSchoolPortalUrl(r.url!, schoolDomains, searchedSchool)
       const isForm = isApplicationFormListing(r.title ?? "", content, r.url!)
       return {
         id: `live-${i}-${hostname}`,
         title: isForm
           ? applicationFormDisplayTitle(r.title ?? "")
           : cleanDisplayText(r.title ?? "Scholarship listing").slice(0, 100),
-        provider: provider.charAt(0).toUpperCase() + provider.slice(1),
+        provider: prettyIssuerName(r.url!),
         amount: extractScholarshipAmount(deadlineSource, r.url),
         deadline,
         lastChecked: formatCheckedToday(),
@@ -199,7 +196,7 @@ function mapLiveResults(
             }),
         url: r.url!,
         source: "live" as const,
-        listingKind: officialSchool ? ("official-school" as const) : ("active" as const),
+        listingKind: classifyScholarshipListing(r.url!),
       }
     })
     .filter((item): item is ScholarshipResult => item !== null)
@@ -214,28 +211,28 @@ function seededOfficialCards(
   cards.push({
     id: `seed-awards-${school.slug}`,
     title: awards?.title ?? `${school.name} student awards`,
-    provider: school.name,
-    amount: "Varies",
-    deadline: UNLISTED_DEADLINE,
+    provider: prettyIssuerName(school.officialAwardsUrl, school.name),
+    amount: "",
+    deadline: "",
     lastChecked: checked,
     eligibility: awards?.summary ?? school.description,
     url: school.officialAwardsUrl,
     source: "curated",
-    listingKind: "official-school",
+    listingKind: classifyScholarshipListing(school.officialAwardsUrl),
   })
   if (school.officialAidUrl) {
     const aid = school.links.find((link) => canonicalUrl(link.href) === canonicalUrl(school.officialAidUrl ?? ""))
     cards.push({
       id: `seed-aid-${school.slug}`,
       title: aid?.title ?? `${school.region} student aid`,
-      provider: school.region,
-      amount: "Varies",
-      deadline: UNLISTED_DEADLINE,
+      provider: prettyIssuerName(school.officialAidUrl, school.region),
+      amount: "",
+      deadline: "",
       lastChecked: checked,
       eligibility: aid?.summary ?? `Official government student aid for students at ${school.name}.`,
       url: school.officialAidUrl,
       source: "curated",
-      listingKind: "official-school",
+      listingKind: classifyScholarshipListing(school.officialAidUrl),
     })
   }
   const national = school.links.find((link) => link.id === "schulich" || link.id === "loran")
@@ -243,14 +240,14 @@ function seededOfficialCards(
     cards.push({
       id: `seed-national-${school.slug}-${national.id}`,
       title: national.title,
-      provider: national.title,
-      amount: "Varies",
-      deadline: UNLISTED_DEADLINE,
+      provider: prettyIssuerName(national.href, national.title),
+      amount: "",
+      deadline: "",
       lastChecked: checked,
       eligibility: national.summary,
       url: national.href,
       source: "curated",
-      listingKind: "official-school",
+      listingKind: classifyScholarshipListing(national.href),
     })
   }
   return cards.slice(0, 4)
@@ -264,26 +261,26 @@ function seededCountryCards(country: ScholarshipFilters["country"]): Scholarship
         id: "seed-us-aid",
         title: "Federal Student Aid scholarships",
         provider: "U.S. Department of Education",
-        amount: "Varies",
-        deadline: UNLISTED_DEADLINE,
+        amount: "",
+        deadline: "",
         lastChecked: checked,
         eligibility:
           "Official Federal Student Aid hub for scholarships, grants, and other aid. Confirm eligibility on StudentAid.gov.",
         url: "https://studentaid.gov/understand-aid/types/scholarships",
         source: "curated",
-        listingKind: "active",
+        listingKind: classifyScholarshipListing("https://studentaid.gov/understand-aid/types/scholarships"),
       },
       {
         id: "seed-us-fafsa",
         title: "FAFSA",
         provider: "U.S. Department of Education",
-        amount: "Varies",
-        deadline: UNLISTED_DEADLINE,
+        amount: "",
+        deadline: "",
         lastChecked: checked,
         eligibility: "Free Application for Federal Student Aid — the official starting point for U.S. federal aid.",
         url: "https://studentaid.gov/h/apply-for-aid/fafsa",
         source: "curated",
-        listingKind: "active",
+        listingKind: classifyScholarshipListing("https://studentaid.gov/h/apply-for-aid/fafsa"),
       },
     ]
   }
@@ -292,26 +289,28 @@ function seededCountryCards(country: ScholarshipFilters["country"]): Scholarship
       id: "seed-ca-aid",
       title: "Canada Student Grants and Loans",
       provider: "Government of Canada",
-      amount: "Varies",
-      deadline: UNLISTED_DEADLINE,
+      amount: "",
+      deadline: "",
       lastChecked: checked,
       eligibility:
         "Official Government of Canada student grants and loans. Apply through your province or territory.",
       url: "https://www.canada.ca/en/services/benefits/education/student-aid.html",
       source: "curated",
-      listingKind: "active",
+      listingKind: classifyScholarshipListing(
+        "https://www.canada.ca/en/services/benefits/education/student-aid.html",
+      ),
     },
     {
       id: "seed-ca-loran",
       title: "Loran Scholars Award",
       provider: "Loran Scholars Foundation",
-      amount: "Varies",
-      deadline: UNLISTED_DEADLINE,
+      amount: "",
+      deadline: "",
       lastChecked: checked,
       eligibility: "National undergraduate award for Canadian high school students with character, service, and leadership.",
       url: "https://loranscholar.ca/",
       source: "curated",
-      listingKind: "active",
+      listingKind: classifyScholarshipListing("https://loranscholar.ca/"),
     },
   ]
 }

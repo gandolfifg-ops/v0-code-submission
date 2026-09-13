@@ -5,6 +5,7 @@ import {
   tavilyLoanIncludeDomains,
 } from "@/features/loans/data/official"
 import { parseLoanCountry, type LoanResult, type LoanType } from "@/features/loans/types"
+import { classifyLoanListing, prettyIssuerName } from "@/lib/listingDisplay"
 import {
   cleanDisplayText,
   dropApplicationFormsIfProgramPageExists,
@@ -183,17 +184,17 @@ export async function POST(req: Request) {
 
         live = unique.map((r: TavilyHit, i: number) => {
           const hostname = hostnameOf(r.url!) ?? "lender"
-          const name = hostname.split(".")[0] ?? "Lender"
           const content = r.content ?? ""
           const isForm = isApplicationFormListing(r.title ?? "", content, r.url!)
+          const issuer = prettyIssuerName(r.url!)
           return {
             id: `live-${loanType}-${i}-${hostname}`,
             name: isForm
               ? "Official application form"
-              : cleanDisplayText(r.title ?? name).slice(0, 90),
+              : cleanDisplayText(r.title ?? issuer).slice(0, 90),
             country,
             loanType,
-            tagline: name.charAt(0).toUpperCase() + name.slice(1),
+            tagline: issuer,
             advertisedRate: extractLoanAdvertisedRate(`${r.title ?? ""}\n${content}`, r.url),
             highlight: isForm
               ? "Official application form — open the site to apply"
@@ -203,8 +204,9 @@ export async function POST(req: Request) {
                   fallback: "Open the official page for current terms.",
                 }),
             href: r.url!,
-            cta: "Open official site",
+            cta: "Open official page",
             source: "live" as const,
+            listingKind: classifyLoanListing(r.url!),
           }
         })
       }

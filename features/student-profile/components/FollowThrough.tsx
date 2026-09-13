@@ -8,16 +8,16 @@ import type { SavedItem } from "@/features/saved/types"
 type FollowThroughProps = {
   href: string
   cta: string
-  checklist: readonly string[]
   item: SavedItem
+  checklist?: readonly string[]
   requirementsLabel?: string
 }
 
 export function FollowThrough({
   href,
   cta,
-  checklist,
   item,
+  checklist,
   requirementsLabel = "Common requirements:",
 }: FollowThroughProps) {
   const [opened, setOpened] = useState(false)
@@ -26,14 +26,16 @@ export function FollowThrough({
 
   return (
     <div className="mt-3 min-w-0 space-y-3 md:mt-4">
-      <div className="min-w-0">
-        <p className="text-sm font-medium leading-snug text-muted-foreground">{requirementsLabel}</p>
-        <ul className="mt-1.5 list-disc space-y-0.5 break-words pl-5 text-sm leading-snug text-muted-foreground">
-          {checklist.map((line) => (
-            <li key={line}>{line}</li>
-          ))}
-        </ul>
-      </div>
+      {checklist && checklist.length > 0 ? (
+        <div className="min-w-0">
+          <p className="text-sm font-medium leading-snug text-muted-foreground">{requirementsLabel}</p>
+          <ul className="mt-1.5 list-disc space-y-0.5 break-words pl-5 text-sm leading-snug text-muted-foreground">
+            {checklist.map((line) => (
+              <li key={line}>{line}</li>
+            ))}
+          </ul>
+        </div>
+      ) : null}
       <a
         href={href}
         target="_blank"
