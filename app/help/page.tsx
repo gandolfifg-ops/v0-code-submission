@@ -35,7 +35,7 @@ const FAQS = [
       },
       {
         q: "Can I save scholarships and loans?",
-        a: "Yes. Tap Save on a result card. Items appear on the Saved page. If login is not set up, they stay in this browser only.",
+        a: "Yes. Tap Save on a result card (tap Saved again to remove it). Items appear on the Saved page. They stay in this browser only unless you are signed in.",
       },
     ],
   },
@@ -47,8 +47,12 @@ const FAQS = [
         a: "No. See our Privacy Policy for details.",
       },
       {
-        q: "Why is chat unavailable?",
-        a: "Chat needs an Anthropic API key on the server. If that key is missing, the Chat page shows a clear message instead of a broken composer.",
+        q: "Is chat financial advice?",
+        a: "No. Chat is general education only. Confirm scholarships, loans, and banking details on official school and government sites. If chat cannot answer, the page will say so.",
+      },
+      {
+        q: "Why did a live result look wrong?",
+        a: "Live search can miss or rank a weak page. Use the school pages under Schools and official government links, then tap the official URL on the card to confirm.",
       },
     ],
   },

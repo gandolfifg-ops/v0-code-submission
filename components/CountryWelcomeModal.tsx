@@ -1,6 +1,7 @@
 "use client"
 
 import { useEffect, useState } from "react"
+import { usePathname } from "next/navigation"
 import { CountryFlag } from "@/components/CountryFlag"
 import {
   Dialog,
@@ -12,12 +13,23 @@ import {
 import { hasChosenCountry, saveStudentCountry } from "@/features/student-profile/store"
 import type { StudentCountry } from "@/features/student-profile/types"
 
+const SKIP_COUNTRY_MODAL = ["/privacy", "/terms", "/cookies", "/about", "/help", "/contact"]
+
+function shouldSkipCountryModal(pathname: string): boolean {
+  return SKIP_COUNTRY_MODAL.some((path) => pathname === path || pathname.startsWith(`${path}/`))
+}
+
 export function CountryWelcomeModal() {
+  const pathname = usePathname()
   const [open, setOpen] = useState(false)
 
   useEffect(() => {
+    if (shouldSkipCountryModal(pathname)) {
+      setOpen(false)
+      return
+    }
     if (!hasChosenCountry()) setOpen(true)
-  }, [])
+  }, [pathname])
 
   function choose(country: StudentCountry) {
     saveStudentCountry(country)

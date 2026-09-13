@@ -18,6 +18,7 @@ import {
   type ChatMessage,
   type ChatThread,
 } from "@/features/chat/storage"
+import { getStoredCountry } from "@/features/student-profile/store"
 
 type Msg = ChatMessage
 
@@ -130,6 +131,7 @@ export function StudentChat() {
         body: JSON.stringify({
           messages: nextMsgs,
           system: CHAT_SYSTEM_PROMPT,
+          country: getStoredCountry(),
         }),
       })
 

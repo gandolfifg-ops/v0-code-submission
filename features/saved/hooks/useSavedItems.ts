@@ -11,15 +11,28 @@ import {
 } from "@/features/saved/store"
 import type { SavedItem } from "@/features/saved/types"
 
+async function hasSignedInUser(): Promise<boolean> {
+  if (!isSupabaseConfigured()) return false
+  try {
+    const { createClient } = await import("@/lib/supabase/client")
+    const supabase = createClient()
+    const { data } = await supabase.auth.getSession()
+    return Boolean(data.session?.user)
+  } catch {
+    return false
+  }
+}
+
 export function useSavedItems() {
   const [items, setItems] = useState<SavedItem[]>([])
   const [ready, setReady] = useState(false)
-  const cloudEnabled = isSupabaseConfigured()
+  const [signedIn, setSignedIn] = useState(false)
 
   useEffect(() => {
     hydrateSaved()
     setItems(getSavedItems())
     setReady(true)
+    void hasSignedInUser().then(setSignedIn)
     return subscribeSaved(() => setItems(getSavedItems()))
   }, [])
 
@@ -33,5 +46,5 @@ export function useSavedItems() {
     removeSaved(id)
   }, [])
 
-  return { items, ids, ready, cloudEnabled, toggle, remove }
+  return { items, ids, ready, signedIn, toggle, remove }
 }

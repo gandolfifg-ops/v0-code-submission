@@ -38,7 +38,7 @@ function SavedCard({
 }
 
 export function SavedList() {
-  const { items, ready, cloudEnabled, remove } = useSavedItems()
+  const { items, ready, signedIn, remove } = useSavedItems()
   const scholarships = items.filter((item) => item.kind === "scholarship")
   const loans = items.filter((item) => item.kind === "loan")
 
@@ -47,9 +47,9 @@ export function SavedList() {
       <p className="text-xs font-semibold uppercase tracking-widest text-link">Saved</p>
       <h1 className="mt-2 text-3xl font-bold tracking-tight text-foreground">Saved items</h1>
       <p className="mt-3 max-w-2xl text-sm leading-relaxed text-muted-foreground">
-        {cloudEnabled
-          ? "Account sync is configured. Items are also kept in this browser as a backup."
-          : "Login / Supabase is not set up, so saved scholarships and loans stay in this browser only (localStorage). They will not follow you to another device."}
+        {signedIn
+          ? "These items sync to your account. A copy also stays in this browser."
+          : "Saved in this browser only. Clearing site data deletes them. There is no account sync yet."}
       </p>
 
       {!ready && <p className="mt-8 text-sm text-muted-foreground">Loading saved items…</p>}
@@ -61,13 +61,13 @@ export function SavedList() {
               href="/scholarships"
               className="inline-flex min-h-14 items-center justify-center rounded-xl bg-gold px-4 text-base font-bold text-gold-foreground transition-colors hover:bg-gold-hover"
             >
-              Scholarships
+              Find scholarships
             </Link>
             <Link
-              href="/loans"
+              href="/"
               className="inline-flex min-h-14 items-center justify-center rounded-xl border border-border bg-card px-4 text-base font-bold text-foreground transition-colors hover:bg-muted"
             >
-              Loans
+              Browse marketplace
             </Link>
           </div>
           <p className="mt-4 text-sm text-muted-foreground">Save from a card after you search.</p>
