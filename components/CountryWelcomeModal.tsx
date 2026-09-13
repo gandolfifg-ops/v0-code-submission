@@ -53,7 +53,7 @@ export function CountryWelcomeModal() {
           <button
             type="button"
             onClick={() => choose("Canada")}
-            className="inline-flex min-h-14 w-full items-center justify-center gap-3 rounded-xl bg-[#C9A84C] px-4 text-base font-bold text-[#07090d] transition-colors hover:bg-[#b8973f]"
+            className="inline-flex min-h-14 w-full items-center justify-center gap-3 rounded-xl bg-gold px-4 text-base font-bold text-gold-foreground transition-colors hover:bg-gold-hover"
           >
             <CountryFlag code="CA" className="h-5 w-8 rounded-sm" />
             Canada

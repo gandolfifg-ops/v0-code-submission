@@ -223,7 +223,7 @@ export function StudentChat() {
 
   return (
     <div className="mx-auto flex max-w-3xl flex-col px-4 py-8 sm:px-6 sm:py-10">
-      <p className="text-xs font-semibold uppercase tracking-widest text-[#C9A84C]">Chat</p>
+      <p className="text-xs font-semibold uppercase tracking-widest text-link">Chat</p>
       <div className="mt-2 flex flex-wrap items-start justify-between gap-3">
         <h1 className="text-3xl font-bold tracking-tight text-foreground">Student finance chat</h1>
         {showNewChat && (
@@ -239,11 +239,11 @@ export function StudentChat() {
       </div>
       <p className="mt-3 text-sm leading-relaxed text-muted-foreground">
         Ask about scholarships, loans, and student banking. For search tools, use{" "}
-        <Link href="/scholarships" className="font-medium text-[#8B6914] underline dark:text-[#C9A84C]">
+        <Link href="/scholarships" className="font-medium text-link underline">
           Scholarships
         </Link>{" "}
         or{" "}
-        <Link href="/loans" className="font-medium text-[#8B6914] underline dark:text-[#C9A84C]">
+        <Link href="/loans" className="font-medium text-link underline">
           Loans
         </Link>
         . This is general education, not personalized advice. This thread stays in
@@ -251,7 +251,7 @@ export function StudentChat() {
       </p>
 
       {configured === false && (
-        <div className="mt-6 rounded-xl border border-[#C9A84C]/40 bg-[#C9A84C]/10 px-4 py-3 text-sm text-foreground">
+        <div className="mt-6 rounded-xl border border-border bg-muted px-4 py-3 text-sm text-foreground">
           {configError ??
             "Chat is unavailable because ANTHROPIC_API_KEY is missing or invalid. Add the key in your environment, then refresh this page."}
         </div>
@@ -279,7 +279,7 @@ export function StudentChat() {
                     type="button"
                     onClick={() => void send(s)}
                     disabled={loading || configured === null}
-                    className="block w-full rounded-xl border border-border px-3 py-2.5 text-left text-sm text-foreground transition-colors hover:border-[#C9A84C]/40 hover:bg-muted/60 disabled:opacity-50"
+                    className="block w-full rounded-xl border border-border px-3 py-2.5 text-left text-sm text-foreground transition-colors hover:border-border hover:bg-muted/60 disabled:opacity-50"
                   >
                     {s}
                   </button>
@@ -291,7 +291,7 @@ export function StudentChat() {
                 key={`${m.role}-${i}`}
                 className={`max-w-[90%] rounded-2xl px-3 py-2 text-sm leading-relaxed ${
                   m.role === "user"
-                    ? "ml-auto bg-[#C9A84C]/15 text-foreground"
+                    ? "ml-auto bg-muted text-foreground"
                     : "bg-muted text-foreground"
                 }`}
               >
@@ -325,7 +325,7 @@ export function StudentChat() {
             <button
               type="submit"
               disabled={loading || !input.trim() || configured !== true}
-              className="inline-flex min-h-11 min-w-11 items-center justify-center rounded-xl bg-[#C9A84C] text-[#07090d] transition-colors hover:bg-[#b8973f] disabled:opacity-50"
+              className="inline-flex min-h-11 min-w-11 items-center justify-center rounded-xl bg-gold text-gold-foreground transition-colors hover:bg-gold-hover disabled:opacity-50"
               aria-label="Send"
             >
               <Send className="h-4 w-4" />

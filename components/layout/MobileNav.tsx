@@ -57,12 +57,12 @@ export function MobileNav({ open, onClose }: MobileNavProps) {
                 onClick={onClose}
                 className={`inline-flex items-center gap-2 rounded-lg px-4 py-3 text-base font-medium transition-colors ${
                   active
-                    ? "bg-[#C9A84C]/15 text-[#C9A84C]"
+                    ? "bg-muted text-link"
                     : "text-foreground hover:bg-muted"
                 }`}
               >
                 {Icon && (
-                  <Icon className="h-4 w-4 shrink-0 text-[#C9A84C]" strokeWidth={1.75} aria-hidden="true" />
+                  <Icon className="h-4 w-4 shrink-0 text-link" strokeWidth={1.75} aria-hidden="true" />
                 )}
                 {link.label}
               </Link>

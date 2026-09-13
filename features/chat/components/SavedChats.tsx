@@ -38,7 +38,7 @@ export function SavedChats({
     <section className="mt-6" aria-labelledby="saved-chats-heading">
       <h2
         id="saved-chats-heading"
-        className="text-xs font-semibold uppercase tracking-widest text-[#C9A84C]"
+        className="text-xs font-semibold uppercase tracking-widest text-link"
       >
         Saved chats
       </h2>
@@ -53,7 +53,7 @@ export function SavedChats({
                 disabled={disabled}
                 className={`min-h-11 flex-1 px-3 py-2 text-left transition-colors disabled:opacity-50 ${
                   isActive
-                    ? "bg-[#C9A84C]/15"
+                    ? "bg-muted"
                     : "hover:bg-muted/60"
                 }`}
               >

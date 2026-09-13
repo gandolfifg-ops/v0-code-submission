@@ -6,7 +6,7 @@ export function SchoolAwardsPage({ school }: { school: SchoolAwardsData }) {
 
   return (
     <article className="mx-auto max-w-3xl px-4 py-8 sm:px-6 sm:py-10">
-      <p className="text-xs font-semibold uppercase tracking-widest text-[#C9A84C]">Schools</p>
+      <p className="text-xs font-semibold uppercase tracking-widest text-link">Schools</p>
       <h1 className="mt-2 text-3xl font-bold tracking-tight text-foreground sm:text-4xl">
         {school.name} scholarships
       </h1>
@@ -24,7 +24,7 @@ export function SchoolAwardsPage({ school }: { school: SchoolAwardsData }) {
               href={item.href}
               target="_blank"
               rel="noopener noreferrer"
-              className="mt-3 inline-flex min-h-11 items-center text-sm font-semibold text-[#8B6914] underline underline-offset-4 dark:text-[#C9A84C]"
+              className="mt-3 inline-flex min-h-11 items-center text-sm font-semibold text-link underline underline-offset-4"
             >
               Open official site
             </a>
@@ -34,7 +34,7 @@ export function SchoolAwardsPage({ school }: { school: SchoolAwardsData }) {
 
       <Link
         href={searchHref}
-        className="mt-8 inline-flex min-h-11 w-full items-center justify-center rounded-xl bg-[#C9A84C] px-4 text-sm font-bold text-[#07090d] transition-colors hover:bg-[#b8973f] sm:w-auto"
+        className="mt-8 inline-flex min-h-11 w-full items-center justify-center rounded-xl bg-gold px-4 text-sm font-bold text-gold-foreground transition-colors hover:bg-gold-hover sm:w-auto"
       >
         Search more awards
       </Link>

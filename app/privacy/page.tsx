@@ -25,11 +25,11 @@ export default function PrivacyPage() {
       </section>
       <p>
         Questions? See the{" "}
-        <Link href="/help" className="font-medium text-[#8B6914] underline dark:text-[#C9A84C]">
+        <Link href="/help" className="font-medium text-link underline">
           Help Center
         </Link>{" "}
         or{" "}
-        <Link href="/contact" className="font-medium text-[#8B6914] underline dark:text-[#C9A84C]">
+        <Link href="/contact" className="font-medium text-link underline">
           Contact
         </Link>{" "}
         page.

@@ -122,7 +122,7 @@ export function ScholarshipFinder({ initialSchool = "" }: { initialSchool?: stri
 
   return (
     <div className="mx-auto max-w-6xl overflow-x-hidden px-3 py-3 md:px-6 md:py-8">
-      <p className="text-xs font-semibold uppercase tracking-widest text-[#C9A84C]">
+      <p className="text-xs font-semibold uppercase tracking-widest text-link">
         Scholarships
       </p>
       <h1 className="mt-1 text-xl font-bold tracking-tight text-foreground md:mt-2 md:text-4xl">
@@ -210,7 +210,7 @@ export function ScholarshipFinder({ initialSchool = "" }: { initialSchool?: stri
             <button
               type="submit"
               disabled={loading}
-              className="inline-flex min-h-11 w-full items-center justify-center gap-2 rounded-xl bg-[#C9A84C] px-4 text-sm font-bold text-[#07090d] transition-colors hover:bg-[#b8973f] disabled:opacity-60"
+              className="inline-flex min-h-11 w-full items-center justify-center gap-2 rounded-xl bg-gold px-4 text-sm font-bold text-gold-foreground transition-colors hover:bg-gold-hover disabled:opacity-60"
             >
               {loading && <Loader2 className="h-4 w-4 shrink-0 animate-spin" aria-hidden="true" />}
               Find scholarships
@@ -236,7 +236,7 @@ export function ScholarshipFinder({ initialSchool = "" }: { initialSchool?: stri
               className={`break-words rounded-xl border px-3 py-2 text-sm md:px-4 md:py-3 ${
                 source === "live"
                   ? "border-emerald-200 bg-emerald-50 text-emerald-900 dark:border-emerald-900 dark:bg-emerald-950/30 dark:text-emerald-200"
-                  : "border-[#C9A84C]/40 bg-[#C9A84C]/10 text-foreground"
+                  : "border-border bg-muted text-foreground"
               }`}
             >
               {notice}

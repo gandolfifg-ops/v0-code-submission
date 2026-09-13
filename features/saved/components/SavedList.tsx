@@ -22,7 +22,7 @@ function SavedCard({
         href={item.href}
         target="_blank"
         rel="noopener noreferrer"
-        className="mt-4 inline-flex min-h-11 w-full items-center justify-center rounded-xl bg-[#C9A84C] px-4 text-sm font-bold text-[#07090d] transition-colors hover:bg-[#b8973f]"
+        className="mt-4 inline-flex min-h-11 w-full items-center justify-center rounded-xl bg-gold px-4 text-sm font-bold text-gold-foreground transition-colors hover:bg-gold-hover"
       >
         Open official site
       </a>
@@ -44,7 +44,7 @@ export function SavedList() {
 
   return (
     <div className="mx-auto max-w-6xl px-4 py-8 sm:px-6 sm:py-12">
-      <p className="text-xs font-semibold uppercase tracking-widest text-[#C9A84C]">Saved</p>
+      <p className="text-xs font-semibold uppercase tracking-widest text-link">Saved</p>
       <h1 className="mt-2 text-3xl font-bold tracking-tight text-foreground">Saved items</h1>
       <p className="mt-3 max-w-2xl text-sm leading-relaxed text-muted-foreground">
         {cloudEnabled
@@ -59,7 +59,7 @@ export function SavedList() {
           <div className="grid gap-3 sm:grid-cols-2">
             <Link
               href="/scholarships"
-              className="inline-flex min-h-14 items-center justify-center rounded-xl bg-[#C9A84C] px-4 text-base font-bold text-[#07090d] transition-colors hover:bg-[#b8973f]"
+              className="inline-flex min-h-14 items-center justify-center rounded-xl bg-gold px-4 text-base font-bold text-gold-foreground transition-colors hover:bg-gold-hover"
             >
               Scholarships
             </Link>

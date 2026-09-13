@@ -34,7 +34,7 @@ function inlineMarkdown(text: string, keyPrefix: string): ReactNode[] {
             href={link[2]}
             target="_blank"
             rel="noopener noreferrer"
-            className="font-medium text-[#8B6914] underline underline-offset-2 dark:text-[#C9A84C]"
+            className="font-medium text-link underline underline-offset-2"
           >
             {link[1]}
           </a>,

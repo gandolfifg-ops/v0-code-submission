@@ -13,7 +13,7 @@ const CANADA_SCHOOLS = [...SCHOOL_PAGES].sort((a, b) => a.name.localeCompare(b.n
 export default function SchoolsIndexPage() {
   return (
     <article className="mx-auto max-w-6xl px-4 py-8 sm:px-6 sm:py-10">
-      <p className="text-xs font-semibold uppercase tracking-widest text-[#C9A84C]">Schools</p>
+      <p className="text-xs font-semibold uppercase tracking-widest text-link">Schools</p>
       <h1 className="mt-2 text-3xl font-bold tracking-tight text-foreground sm:text-4xl">
         School scholarship pages
       </h1>

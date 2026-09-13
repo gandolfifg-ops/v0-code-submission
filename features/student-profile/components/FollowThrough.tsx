@@ -39,12 +39,12 @@ export function FollowThrough({
         target="_blank"
         rel="noopener noreferrer"
         onClick={() => setOpened(true)}
-        className="inline-flex min-h-11 w-full items-center justify-center rounded-xl bg-[#C9A84C] px-4 text-sm font-bold text-[#07090d] transition-colors hover:bg-[#b8973f]"
+        className="inline-flex min-h-11 w-full items-center justify-center rounded-xl bg-gold px-4 text-sm font-bold text-gold-foreground transition-colors hover:bg-gold-hover"
       >
         {cta}
       </a>
       {opened && !saved && (
-        <p className="rounded-xl border border-[#C9A84C]/40 bg-[#C9A84C]/10 px-3 py-2 text-xs text-foreground">
+        <p className="rounded-xl border border-border bg-muted px-3 py-2 text-xs text-foreground">
           Come back and tap Save so you can track this.
         </p>
       )}

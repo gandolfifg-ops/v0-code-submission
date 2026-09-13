@@ -84,7 +84,7 @@ export function StudentProfileBox({ onProfileChange }: StudentProfileBoxProps) {
         <button
           type="button"
           onClick={() => setEditing(true)}
-          className="mt-3 w-full rounded-2xl border border-dashed border-[#C9A84C]/40 bg-[#C9A84C]/5 p-4 text-left transition-colors hover:bg-[#C9A84C]/10 md:hidden"
+          className="mt-3 w-full rounded-2xl border border-dashed border-border bg-muted/50 p-4 text-left transition-colors hover:bg-muted md:hidden"
         >
           <span className="block text-sm font-semibold text-foreground">Add your profile (optional)</span>
           <span className="mt-1 block text-xs leading-relaxed text-muted-foreground">
@@ -181,7 +181,7 @@ export function StudentProfileBox({ onProfileChange }: StudentProfileBoxProps) {
           </label>
           <button
             type="submit"
-            className="min-h-11 w-full rounded-xl bg-[#C9A84C] text-sm font-bold text-[#07090d] transition-colors hover:bg-[#b8973f]"
+            className="min-h-11 w-full rounded-xl bg-gold text-sm font-bold text-gold-foreground transition-colors hover:bg-gold-hover"
           >
             Save profile
           </button>

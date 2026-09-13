@@ -10,7 +10,7 @@ export const metadata: Metadata = pageMeta(
 export default function OsapVsPrivateLoansPage() {
   return (
     <article className="mx-auto max-w-3xl px-4 py-8 sm:px-6 sm:py-10">
-      <p className="text-xs font-semibold uppercase tracking-widest text-[#C9A84C]">Guides</p>
+      <p className="text-xs font-semibold uppercase tracking-widest text-link">Guides</p>
       <h1 className="mt-2 text-3xl font-bold tracking-tight text-foreground sm:text-4xl">
         OSAP vs private student loans in Canada
       </h1>
@@ -32,7 +32,7 @@ export default function OsapVsPrivateLoansPage() {
             delivered through that provincial process and managed afterward on the{" "}
             <a
               href="https://www.csnpe-nslsc.canada.ca/en/home"
-              className="font-medium text-[#8B6914] underline dark:text-[#C9A84C]"
+              className="font-medium text-link underline"
               target="_blank"
               rel="noopener noreferrer"
             >
@@ -58,7 +58,7 @@ export default function OsapVsPrivateLoansPage() {
             loans — confirm current rules on{" "}
             <a
               href="https://www.ontario.ca/page/osap-ontario-student-assistance-program"
-              className="font-medium text-[#8B6914] underline dark:text-[#C9A84C]"
+              className="font-medium text-link underline"
               target="_blank"
               rel="noopener noreferrer"
             >
@@ -91,13 +91,13 @@ export default function OsapVsPrivateLoansPage() {
 
         <p>
           Find lender starting points on{" "}
-          <Link href="/loans" className="font-medium text-[#8B6914] underline dark:text-[#C9A84C]">
+          <Link href="/loans" className="font-medium text-link underline">
             Loan Tools
           </Link>
           . Official overviews:{" "}
           <a
             href="https://www.canada.ca/en/services/benefits/education/student-aid.html"
-            className="font-medium text-[#8B6914] underline dark:text-[#C9A84C]"
+            className="font-medium text-link underline"
             target="_blank"
             rel="noopener noreferrer"
           >
@@ -106,7 +106,7 @@ export default function OsapVsPrivateLoansPage() {
           ,{" "}
           <a
             href="https://www.csnpe-nslsc.canada.ca/en/home"
-            className="font-medium text-[#8B6914] underline dark:text-[#C9A84C]"
+            className="font-medium text-link underline"
             target="_blank"
             rel="noopener noreferrer"
           >
@@ -115,7 +115,7 @@ export default function OsapVsPrivateLoansPage() {
           , and{" "}
           <a
             href="https://www.ontario.ca/page/osap-ontario-student-assistance-program"
-            className="font-medium text-[#8B6914] underline dark:text-[#C9A84C]"
+            className="font-medium text-link underline"
             target="_blank"
             rel="noopener noreferrer"
           >

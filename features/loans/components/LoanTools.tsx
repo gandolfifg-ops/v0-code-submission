@@ -92,7 +92,7 @@ export function LoanTools() {
 
   return (
     <div className="mx-auto max-w-6xl overflow-x-hidden px-3 py-3 md:px-6 md:py-8">
-      <p className="text-xs font-semibold uppercase tracking-widest text-[#C9A84C]">Loans</p>
+      <p className="text-xs font-semibold uppercase tracking-widest text-link">Loans</p>
       <h1 className="mt-1 text-xl font-bold tracking-tight text-foreground md:mt-2 md:text-4xl">
         Loan Tools
       </h1>
@@ -110,7 +110,7 @@ export function LoanTools() {
         <p className="mt-2 text-sm">
           <Link
             href="/guides/osap-vs-private-loans"
-            className="font-medium text-[#8B6914] underline dark:text-[#C9A84C]"
+            className="font-medium text-link underline"
           >
             OSAP vs private loans
           </Link>
@@ -136,7 +136,7 @@ export function LoanTools() {
           className={`mt-3 break-words rounded-xl border px-3 py-2 text-sm md:mt-4 md:px-4 md:py-3 ${
             source === "live"
               ? "border-emerald-200 bg-emerald-50 text-emerald-900 dark:border-emerald-900 dark:bg-emerald-950/30 dark:text-emerald-200"
-              : "border-[#C9A84C]/40 bg-[#C9A84C]/10 text-foreground"
+              : "border-border bg-muted text-foreground"
           }`}
         >
           {notice}
@@ -185,7 +185,7 @@ export function LoanTools() {
                   onClick={() => setLoanType(type)}
                   className={`inline-flex min-h-11 min-w-0 flex-col items-center justify-center gap-0.5 rounded-xl px-1 text-xs font-semibold sm:flex-row sm:gap-1.5 sm:px-2 md:text-sm transition-colors ${
                     loanType === type
-                      ? "bg-[#C9A84C] text-[#07090d] hover:bg-[#b8973f] [&_svg]:!text-[#FFF8E7] [&_svg]:!stroke-[#FFF8E7]"
+                      ? "bg-gold text-gold-foreground hover:bg-gold-hover [&_svg]:!text-cream [&_svg]:!stroke-cream"
                       : "border border-border text-muted-foreground hover:bg-muted hover:text-foreground"
                   }`}
                 >
@@ -213,7 +213,7 @@ export function LoanTools() {
             <button
               type="submit"
               disabled={loading}
-              className="inline-flex min-h-11 w-full items-center justify-center gap-2 rounded-xl bg-[#C9A84C] px-4 text-sm font-bold text-[#07090d] transition-colors hover:bg-[#b8973f] disabled:opacity-60"
+              className="inline-flex min-h-11 w-full items-center justify-center gap-2 rounded-xl bg-gold px-4 text-sm font-bold text-gold-foreground transition-colors hover:bg-gold-hover disabled:opacity-60"
             >
               {loading && <Loader2 className="h-4 w-4 shrink-0 animate-spin" aria-hidden="true" />}
               Find lenders

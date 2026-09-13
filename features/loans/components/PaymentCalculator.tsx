@@ -131,7 +131,7 @@ export function PaymentCalculator() {
           <span className="ml-2 text-sm font-medium text-muted-foreground">Enter valid numbers</span>
         </p>
       ) : (
-        <p className="text-3xl font-bold tracking-tight text-[#C9A84C]">
+        <p className="text-3xl font-bold tracking-tight text-foreground">
           {formatPayment(payment)}
           <span className="ml-1 text-sm font-medium text-muted-foreground">/month</span>
         </p>

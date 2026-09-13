@@ -16,7 +16,7 @@ export function CreamIcon({ icon: Icon, size = "md", className = "", variant = "
   if (variant === "onGold") {
     return (
       <Icon
-        className={`${glyph} shrink-0 !text-[#FFF8E7] ${className}`}
+        className={`${glyph} shrink-0 !text-cream ${className}`}
         color="#FFF8E7"
         strokeWidth={1.75}
         aria-hidden="true"
@@ -26,7 +26,7 @@ export function CreamIcon({ icon: Icon, size = "md", className = "", variant = "
 
   return (
     <span
-      className={`inline-flex shrink-0 items-center justify-center bg-[#F5E6C8] text-[#8B6914] dark:bg-[#C9A84C]/20 dark:text-[#C9A84C] ${box} ${className}`}
+      className={`inline-flex shrink-0 items-center justify-center bg-muted text-link ${box} ${className}`}
       aria-hidden="true"
     >
       <Icon className={glyph} strokeWidth={1.75} />

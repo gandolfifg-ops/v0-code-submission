@@ -20,15 +20,15 @@ function DesktopNavLink({ href, label }: { href: string; label: string }) {
     <Link
       href={href}
       className={`inline-flex items-center gap-1.5 rounded-md px-2.5 py-2 text-sm font-medium transition-colors ${
-        active ? "text-[#C9A84C]" : "text-muted-foreground hover:text-foreground"
+        active ? "text-link" : "text-muted-foreground hover:text-foreground"
       }`}
       aria-current={active ? "page" : undefined}
     >
-      {Icon && <Icon className="h-3.5 w-3.5 shrink-0 text-[#C9A84C]" strokeWidth={1.75} aria-hidden="true" />}
+      {Icon && <Icon className="h-3.5 w-3.5 shrink-0 text-link" strokeWidth={1.75} aria-hidden="true" />}
       <span className="flex flex-col">
         {label}
         {active && (
-          <span className="mt-0.5 block h-0.5 rounded-full bg-[#C9A84C]" aria-hidden="true" />
+          <span className="mt-0.5 block h-0.5 rounded-full bg-link" aria-hidden="true" />
         )}
       </span>
     </Link>

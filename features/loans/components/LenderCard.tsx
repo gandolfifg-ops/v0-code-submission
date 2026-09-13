@@ -21,7 +21,7 @@ export function LenderCard({ lender }: { lender: LoanResult }) {
     <article
       className={`interactive-card flex min-w-0 max-w-full flex-col overflow-hidden rounded-2xl p-4 md:p-5 ${
         featured
-          ? "border-2 border-[#C9A84C] bg-[#C9A84C]/10 shadow-sm"
+          ? "border-2 border-border bg-card shadow-sm"
           : "border border-border bg-card"
       }`}
     >
@@ -29,7 +29,7 @@ export function LenderCard({ lender }: { lender: LoanResult }) {
         <CreamIcon icon={LOAN_ICONS[lender.loanType]} />
         <div className="flex min-w-0 flex-1 flex-wrap gap-2">
         {featured ? (
-          <span className="inline-flex items-center gap-1 rounded-full bg-[#C9A84C] px-2.5 py-1 text-[11px] font-bold text-[#07090d]">
+          <span className="inline-flex items-center gap-1 rounded-full bg-gold px-2.5 py-1 text-[11px] font-bold text-gold-foreground">
             <Star className="h-3 w-3" fill="currentColor" aria-hidden="true" />
             Live web result
           </span>
@@ -44,7 +44,7 @@ export function LenderCard({ lender }: { lender: LoanResult }) {
         </div>
       </div>
       <h3 className="min-w-0 break-words text-base font-semibold text-foreground">{name}</h3>
-      <p className="mt-1 min-w-0 break-words text-sm font-medium text-[#8B6914] dark:text-[#C9A84C]">{lender.tagline}</p>
+      <p className="mt-1 min-w-0 break-words text-sm font-medium text-link">{lender.tagline}</p>
       <div className="mt-3 min-w-0">
         <ExpandableText
           text={highlight}

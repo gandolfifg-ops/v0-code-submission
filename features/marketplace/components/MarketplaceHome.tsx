@@ -76,7 +76,7 @@ export function MarketplaceHome() {
     <div className="mx-auto max-w-6xl px-4 py-6 sm:px-6 lg:py-8">
       <div className="flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
         <div className="min-w-0 max-w-2xl">
-          <p className="text-xs font-semibold uppercase tracking-widest text-[#C9A84C]">
+          <p className="text-xs font-semibold uppercase tracking-widest text-link">
             Marketplace
           </p>
           <h1 className="mt-2 flex flex-wrap items-center gap-2 text-3xl font-bold tracking-tight text-foreground sm:text-4xl">
@@ -96,7 +96,7 @@ export function MarketplaceHome() {
           <p className="mt-2 text-sm">
             <Link
               href="/scholarships#student-profile"
-              className="font-medium text-[#8B6914] underline dark:text-[#C9A84C]"
+              className="font-medium text-link underline"
             >
               Set your student profile
             </Link>
@@ -105,7 +105,7 @@ export function MarketplaceHome() {
           <p className="mt-2 text-sm">
             <Link
               href="/schools"
-              className="font-medium text-[#8B6914] underline dark:text-[#C9A84C]"
+              className="font-medium text-link underline"
             >
               School scholarship pages
             </Link>
@@ -115,7 +115,7 @@ export function MarketplaceHome() {
             <p className="mt-2 text-sm">
               <Link
                 href="/guides/best-student-bank-canada"
-                className="font-medium text-[#8B6914] underline dark:text-[#C9A84C]"
+                className="font-medium text-link underline"
               >
                 Read the 2026 student bank guide
               </Link>
@@ -162,7 +162,7 @@ export function MarketplaceHome() {
           href="/scholarships"
           className="interactive-card flex items-start gap-3 rounded-2xl border border-border bg-card p-4 sm:p-5"
         >
-          <span className="inline-flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-[#C9A84C]/15 text-[#8B6914]">
+          <span className="inline-flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-muted text-link">
             <Search className="h-4 w-4" aria-hidden="true" />
           </span>
           <div>
@@ -176,7 +176,7 @@ export function MarketplaceHome() {
           href="/schools"
           className="interactive-card flex items-start gap-3 rounded-2xl border border-border bg-card p-4 sm:p-5"
         >
-          <span className="inline-flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-[#C9A84C]/15 text-[#8B6914]">
+          <span className="inline-flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-muted text-link">
             <GraduationCap className="h-4 w-4" aria-hidden="true" />
           </span>
           <div>
@@ -190,7 +190,7 @@ export function MarketplaceHome() {
           href="/loans"
           className="interactive-card flex items-start gap-3 rounded-2xl border border-border bg-card p-4 sm:p-5"
         >
-          <span className="inline-flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-[#C9A84C]/15 text-[#8B6914]">
+          <span className="inline-flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-muted text-link">
             <Building2 className="h-4 w-4" aria-hidden="true" />
           </span>
           <div>

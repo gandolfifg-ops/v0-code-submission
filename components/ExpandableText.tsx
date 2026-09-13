@@ -34,7 +34,7 @@ export function ExpandableText({ text, className = "" }: ExpandableTextProps) {
         <button
           type="button"
           onClick={() => setExpanded((open) => !open)}
-          className="mt-1 min-h-11 text-sm font-semibold text-[#8B6914] underline underline-offset-2 dark:text-[#C9A84C]"
+          className="mt-1 min-h-11 text-sm font-semibold text-link underline underline-offset-2"
         >
           {expanded ? "Read less" : "Read more"}
         </button>

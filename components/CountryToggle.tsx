@@ -30,7 +30,7 @@ export function CountryToggle<T extends string>({
             onClick={() => onChange(option.value)}
             className={`inline-flex min-h-11 min-w-0 items-center justify-center gap-1.5 rounded-xl px-2 text-xs font-semibold md:gap-2 md:px-3 md:text-sm transition-colors ${
               active
-                ? "bg-[#C9A84C] text-[#07090d] hover:bg-[#b8973f]"
+                ? "bg-gold text-gold-foreground hover:bg-gold-hover"
                 : "border border-border text-muted-foreground hover:bg-muted hover:text-foreground"
             }`}
           >

@@ -24,7 +24,7 @@ export default function CookiesPage() {
       </section>
       <p>
         Related:{" "}
-        <Link href="/privacy" className="font-medium text-[#8B6914] underline dark:text-[#C9A84C]">
+        <Link href="/privacy" className="font-medium text-link underline">
           Privacy Policy
         </Link>
         .

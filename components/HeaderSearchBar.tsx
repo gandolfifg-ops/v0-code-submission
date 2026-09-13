@@ -120,7 +120,7 @@ export function HeaderSearchBar({
         aria-controls={listId}
         aria-autocomplete="list"
         aria-activedescendant={activeIndex >= 0 ? `${listId}-${activeIndex}` : undefined}
-        className="h-9 w-full rounded-lg border border-border bg-background py-1.5 pl-9 pr-16 text-sm text-foreground outline-none focus:border-[#C9A84C] focus:ring-1 focus:ring-[#C9A84C]"
+        className="h-9 w-full rounded-lg border border-border bg-background py-1.5 pl-9 pr-16 text-sm text-foreground outline-none focus:border-link focus:ring-1 focus:ring-link"
         placeholder={placeholder}
         value={value}
         onChange={(e) => {
@@ -160,7 +160,7 @@ export function HeaderSearchBar({
               <button
                 type="button"
                 className={`w-full px-4 py-3 text-left text-sm ${
-                  index === activeIndex ? "bg-[#C9A84C]/15 text-foreground" : "text-foreground hover:bg-muted"
+                  index === activeIndex ? "bg-muted text-foreground" : "text-foreground hover:bg-muted"
                 }`}
                 onMouseEnter={() => setActiveIndex(index)}
                 onClick={() => runSearch(item)}

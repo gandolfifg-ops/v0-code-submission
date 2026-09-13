@@ -26,7 +26,7 @@ export default function ContactPage() {
     <InfoPage title="Contact" lede="Email is the fastest way to reach us. Typical reply time is within 24 hours.">
       <div className="grid gap-3 sm:grid-cols-3">
         <div className="rounded-xl border border-border bg-card p-4">
-          <p className="text-xs font-semibold uppercase tracking-wide text-[#C9A84C]">Email</p>
+          <p className="text-xs font-semibold uppercase tracking-wide text-link">Email</p>
           <a
             href="mailto:wealthnutz.official@gmail.com"
             className="mt-1 block text-sm font-medium text-foreground underline"
@@ -35,11 +35,11 @@ export default function ContactPage() {
           </a>
         </div>
         <div className="rounded-xl border border-border bg-card p-4">
-          <p className="text-xs font-semibold uppercase tracking-wide text-[#C9A84C]">Region</p>
+          <p className="text-xs font-semibold uppercase tracking-wide text-link">Region</p>
           <p className="mt-1 text-sm text-foreground">Canada &amp; United States</p>
         </div>
         <div className="rounded-xl border border-border bg-card p-4">
-          <p className="text-xs font-semibold uppercase tracking-wide text-[#C9A84C]">Help</p>
+          <p className="text-xs font-semibold uppercase tracking-wide text-link">Help</p>
           <Link href="/help" className="mt-1 block text-sm font-medium text-foreground underline">
             Help Center
           </Link>
@@ -87,7 +87,7 @@ export default function ContactPage() {
           </label>
           <button
             type="submit"
-            className="min-h-11 w-full rounded-xl bg-[#C9A84C] text-sm font-bold text-[#07090d] transition-colors hover:bg-[#b8973f]"
+            className="min-h-11 w-full rounded-xl bg-gold text-sm font-bold text-gold-foreground transition-colors hover:bg-gold-hover"
           >
             Open email
           </button>

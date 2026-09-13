@@ -33,7 +33,7 @@ function SnapshotBlock({
         {rows.map((row) => (
           <article key={row.productId} className="rounded-2xl border border-border bg-card p-4">
             {heading ? (
-              <p className="text-[11px] font-semibold uppercase tracking-wide text-[#8B6914] dark:text-[#C9A84C]">
+              <p className="text-[11px] font-semibold uppercase tracking-wide text-link">
                 {KIND_LABEL[rowKind(row)]}
               </p>
             ) : null}
@@ -58,7 +58,7 @@ function SnapshotBlock({
               href={row.href}
               target="_blank"
               rel="noopener noreferrer"
-              className="mt-3 inline-flex min-h-11 w-full items-center justify-center rounded-xl bg-[#C9A84C] px-4 text-sm font-bold text-[#07090d] transition-colors hover:bg-[#b8973f]"
+              className="mt-3 inline-flex min-h-11 w-full items-center justify-center rounded-xl bg-gold px-4 text-sm font-bold text-gold-foreground transition-colors hover:bg-gold-hover"
             >
               {row.cta}
             </a>
@@ -89,7 +89,7 @@ function SnapshotBlock({
                     href={row.href}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="inline-flex min-h-11 items-center justify-center rounded-xl bg-[#C9A84C] px-3 text-xs font-bold text-[#07090d] transition-colors hover:bg-[#b8973f]"
+                    className="inline-flex min-h-11 items-center justify-center rounded-xl bg-gold px-3 text-xs font-bold text-gold-foreground transition-colors hover:bg-gold-hover"
                   >
                     {row.cta}
                   </a>

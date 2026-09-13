@@ -85,7 +85,7 @@ export default function HelpPage() {
       ))}
       <p>
         Still stuck?{" "}
-        <Link href="/contact" className="font-medium text-[#8B6914] underline dark:text-[#C9A84C]">
+        <Link href="/contact" className="font-medium text-link underline">
           Contact us
         </Link>
         .
