@@ -4,11 +4,12 @@ import {
   applicationFormDisplayTitle,
   cleanDisplayText,
   dropApplicationFormsIfProgramPageExists,
+  dedupeLiveScholarshipHits,
   evaluateScholarshipDeadlines,
   extractScholarshipAmount,
   isApplicationFormListing,
   isClosedOrArchivedListing,
-  summarizeLiveSnippet,
+  summarizeScholarshipSnippet,
 } from "@/lib/liveResultText"
 import {
   compareScholarshipResults,
@@ -107,8 +108,10 @@ function mapLiveResults(
     seen.add(key)
     return true
   })
-  const preferred = dropApplicationFormsIfProgramPageExists(
-    filtered.sort((a, b) => compareScholarshipResults(a, b, schoolDomains)),
+  const preferred = dedupeLiveScholarshipHits(
+    dropApplicationFormsIfProgramPageExists(
+      filtered.sort((a, b) => compareScholarshipResults(a, b, schoolDomains)),
+    ),
   )
 
   return preferred
@@ -134,7 +137,7 @@ function mapLiveResults(
         lastChecked: formatCheckedToday(),
         eligibility: isForm
           ? "Official application form — open the site to apply"
-          : summarizeLiveSnippet(content, {
+          : summarizeScholarshipSnippet([content, rawPage.slice(0, 4000)].filter(Boolean).join("\n"), {
               url: r.url!,
               title: r.title ?? "",
               fallback: "See the official listing for eligibility details.",

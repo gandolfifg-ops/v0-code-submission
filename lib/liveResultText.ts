@@ -58,6 +58,85 @@ export function dropApplicationFormsIfProgramPageExists<
   })
 }
 
+function hostAndPathKey(url: string): string {
+  try {
+    const parsed = new URL(url)
+    const host = parsed.hostname.replace(/^www\./i, "").toLowerCase()
+    const path = (parsed.pathname.replace(/\/+$/, "") || "/").toLowerCase()
+    return `${host}${path}`
+  } catch {
+    return url.toLowerCase()
+  }
+}
+
+const FAQ_OR_NEWSROOM =
+  /(^|\/)faqs?(\/|$)|frequently[- ]asked([- ]questions)?|(^|\/)newsroom(\/|$)|(^|\/)press[-_]releases?(\/|$)/i
+
+const APPLY_OR_PROGRAM_PATH =
+  /(^|\/)(apply|application|applications)(\/|$)|(^|\/)(awards?|scholarships?|bursar(?:y|ies)?|financial-aid|finaid|student-aid)(\/|$)/i
+
+function isFaqOrNewsroomScholarshipPage(url: string, title = ""): boolean {
+  if (FAQ_OR_NEWSROOM.test(url)) return true
+  if (/\bfaqs?\b|frequently asked questions/i.test(title)) return true
+  if (FAQ_OR_NEWSROOM.test(title)) return true
+  return false
+}
+
+function scholarshipListingKeepScore(url: string, title = ""): number {
+  if (isFaqOrNewsroomScholarshipPage(url, title)) return 0
+  let n = 1
+  try {
+    const path = new URL(url).pathname
+    if (APPLY_OR_PROGRAM_PATH.test(path) || APPLY_OR_PROGRAM_PATH.test(title)) n += 2
+    if (/(^|\/)(apply|application)(\/|$)/i.test(path)) n += 1
+  } catch {
+    /* ignore */
+  }
+  return n
+}
+
+function awardNameKey(title: string): string | null {
+  let n = cleanDisplayText(title).toLowerCase()
+  n = n.replace(/\s*[|\-–—:]\s*(home|faq|faqs|frequently asked questions|newsroom).*$/i, "")
+  n = n.replace(/\b(faq|faqs|frequently asked questions|newsroom|press release)\b/g, " ")
+  n = n.replace(/[^a-z0-9]+/g, " ").replace(/\s+/g, " ").trim()
+  if (n.length < 12) return null
+  if (/^(scholarships?|awards?|student awards?|financial aid|bursaries|grants?)$/.test(n)) return null
+  return n
+}
+
+function pickPreferredScholarshipHit<T extends { url?: string; title?: string }>(current: T, next: T): T {
+  const nextScore = scholarshipListingKeepScore(next.url ?? "", next.title ?? "")
+  const currentScore = scholarshipListingKeepScore(current.url ?? "", current.title ?? "")
+  return nextScore > currentScore ? next : current
+}
+
+/** Same award name or same host+path: keep apply/program pages, drop FAQ and newsroom. */
+export function dedupeLiveScholarshipHits<T extends { url?: string; title?: string }>(hits: T[]): T[] {
+  const byPath = new Map<string, T>()
+  for (const hit of hits) {
+    if (!hit.url) continue
+    const key = hostAndPathKey(hit.url)
+    const prev = byPath.get(key)
+    byPath.set(key, prev ? pickPreferredScholarshipHit(prev, hit) : hit)
+  }
+  const pathWinners = new Set(byPath.values())
+  const pathDeduped = hits.filter((hit) => !hit.url || pathWinners.has(hit))
+
+  const byName = new Map<string, T>()
+  for (const hit of pathDeduped) {
+    const key = awardNameKey(hit.title ?? "")
+    if (!key) continue
+    const prev = byName.get(key)
+    byName.set(key, prev ? pickPreferredScholarshipHit(prev, hit) : hit)
+  }
+  return pathDeduped.filter((hit) => {
+    const key = awardNameKey(hit.title ?? "")
+    if (!key) return true
+    return byName.get(key) === hit
+  })
+}
+
 export function applicationFormDisplayTitle(title: string): string {
   const cleaned = cleanDisplayText(title)
   if (!cleaned || FORM_SIGNALS.test(cleaned) || /^\s*application(?: form)?\s*$/i.test(cleaned)) {
@@ -190,6 +269,66 @@ export function summarizeLiveSnippet(
     }
     return fallback
   }
+  return clip(body, SNIPPET_MAX)
+}
+
+const ORG_HISTORY =
+  /\bestablished in\b|\bfounded in\b|\bsince (?:19|20)\d{2}\b|\bincorporated in\b|\bfor (?:over|more than) \d+ years\b|\bour (?:history|story|heritage|mission|vision)\b|\bcelebrat(?:e|ing) \d+ years\b|\bthe (?:foundation|organization|society) was (?:created|founded|established)\b/i
+
+function keepScholarshipSentence(s: string): boolean {
+  if (!keepSentence(s)) return false
+  if (ORG_HISTORY.test(s)) return false
+  if (/protected\s*b\b|page\s+\d+\s+of\s+\d+/i.test(s)) return false
+  return true
+}
+
+function scoreScholarshipSentence(s: string, title: string): number {
+  const blob = s.toLowerCase()
+  if (ORG_HISTORY.test(blob)) return -99
+  let n = 0
+  if (/\b(scholarship|bursar(?:y|ies)?|award|grant)\b/.test(blob)) n += 3
+  if (/\b(eligib|for students|who (?:can|may) apply|open to|available to|canadian citizen|permanent resident|international|undergraduate|graduate|high school)\b/.test(blob))
+    n += 3
+  if (/\$|full tuition|up to\s+\$/.test(blob)) n += 2
+  if (/\b(canada|canadian|ontario|quebec|university|college|school|at )\b/.test(blob)) n += 2
+  if (title && blob.includes(title.slice(0, 24).toLowerCase())) n += 1
+  return n
+}
+
+/** Live scholarship card copy: what / who / amount / where. Max ~400 chars. */
+export function summarizeScholarshipSnippet(
+  input: string,
+  opts?: { url?: string; title?: string; fallback?: string },
+): string {
+  const url = opts?.url ?? ""
+  const title = opts?.title ?? ""
+  const fallback = opts?.fallback ?? "See the official listing for eligibility details."
+  if (isApplicationFormListing(title, input, url)) {
+    return APPLICATION_FORM_SNIPPET
+  }
+
+  const cleaned = stripOcrAndMarkdown(input)
+  const ranked = splitSentences(cleaned)
+    .filter(keepScholarshipSentence)
+    .map((s) => ({ s, score: scoreScholarshipSentence(s, title) }))
+    .filter((item) => item.score > 0)
+    .sort((a, b) => b.score - a.score)
+
+  const picked: string[] = []
+  let used = 0
+  for (const { s } of ranked) {
+    const nextLen = used + (picked.length ? 1 : 0) + s.length
+    if (nextLen > SNIPPET_MAX) {
+      if (picked.length === 0) return clip(s, SNIPPET_MAX)
+      break
+    }
+    picked.push(s)
+    used = nextLen
+    if (picked.length >= 3 || used >= 280) break
+  }
+
+  const body = picked.join(" ").trim()
+  if (!body) return fallback
   return clip(body, SNIPPET_MAX)
 }
 
