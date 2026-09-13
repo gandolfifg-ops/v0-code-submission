@@ -51,3 +51,19 @@ export function schulichLink(schoolName?: string): SchoolAwardLink {
     href: "https://www.schulichleaders.com/",
   }
 }
+
+export const FAFSA: SchoolAwardLink = {
+  id: "fafsa",
+  title: "FAFSA",
+  summary:
+    "Free Application for Federal Student Aid — start here for U.S. federal grants, loans, and work-study. Confirm deadlines on StudentAid.gov.",
+  href: "https://studentaid.gov/h/apply-for-aid/fafsa",
+}
+
+export const STUDENTAID_GOV: SchoolAwardLink = {
+  id: "studentaid-gov",
+  title: "StudentAid.gov",
+  summary:
+    "U.S. Department of Education hub for federal aid types, FAFSA, and loan tools. Not a lender marketplace.",
+  href: "https://studentaid.gov/",
+}

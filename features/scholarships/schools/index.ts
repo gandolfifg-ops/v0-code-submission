@@ -1,13 +1,25 @@
+import { berkeley } from "@/features/scholarships/schools/berkeley"
 import { carleton } from "@/features/scholarships/schools/carleton"
+import { columbia } from "@/features/scholarships/schools/columbia"
 import { georgeBrown } from "@/features/scholarships/schools/george-brown"
 import { guelph } from "@/features/scholarships/schools/guelph"
+import { harvard } from "@/features/scholarships/schools/harvard"
 import { mcgill } from "@/features/scholarships/schools/mcgill"
 import { mcmaster } from "@/features/scholarships/schools/mcmaster"
+import { nyu } from "@/features/scholarships/schools/nyu"
 import { ontarioTech } from "@/features/scholarships/schools/ontario-tech"
+import { penn } from "@/features/scholarships/schools/penn"
 import { queens } from "@/features/scholarships/schools/queens"
 import type { SchoolAwardsData } from "@/features/scholarships/schools/types"
+import { stanford } from "@/features/scholarships/schools/stanford"
+import { ucla } from "@/features/scholarships/schools/ucla"
+import { uiuc } from "@/features/scholarships/schools/uiuc"
+import { umich } from "@/features/scholarships/schools/umich"
+import { usc } from "@/features/scholarships/schools/usc"
+import { utexas } from "@/features/scholarships/schools/utexas"
 import { uOfT } from "@/features/scholarships/schools/u-of-t"
 import { ubc } from "@/features/scholarships/schools/ubc"
+import { uw } from "@/features/scholarships/schools/uw"
 import { waterloo } from "@/features/scholarships/schools/waterloo"
 import { western } from "@/features/scholarships/schools/western"
 import { york } from "@/features/scholarships/schools/york"
@@ -27,6 +39,18 @@ export const SCHOOL_PAGES: SchoolAwardsData[] = [
   western,
   georgeBrown,
   ubc,
+  ucla,
+  berkeley,
+  umich,
+  nyu,
+  usc,
+  utexas,
+  uiuc,
+  uw,
+  penn,
+  columbia,
+  stanford,
+  harvard,
 ]
 
 const lookup = new Map<string, SchoolAwardsData>()

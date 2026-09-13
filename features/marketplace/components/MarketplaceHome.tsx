@@ -131,6 +131,16 @@ export function MarketplaceHome() {
               </Link>
             </p>
           )}
+          {country === "US" && (
+            <p className="mt-2 text-sm">
+              <Link
+                href="/guides/best-student-bank-usa"
+                className="font-medium text-link underline"
+              >
+                Read the 2026 student bank guide
+              </Link>
+            </p>
+          )}
         </div>
         <CountryToggle
           className="grid w-full grid-cols-2 gap-2 lg:w-[22rem] lg:shrink-0"

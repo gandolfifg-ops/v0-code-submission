@@ -5,11 +5,33 @@ import { pageMeta } from "@/lib/seo"
 
 export const metadata: Metadata = pageMeta(
   "School scholarship pages — WealthNutz",
-  "Official starting points for scholarships and student aid at Canadian schools. US school pages coming later.",
+  "Official starting points for scholarships and student aid at Canadian and U.S. schools. Confirm eligibility on each official site.",
   "/schools",
 )
 
-const CANADA_SCHOOLS = [...SCHOOL_PAGES].sort((a, b) => a.name.localeCompare(b.name))
+const CANADA_SCHOOLS = SCHOOL_PAGES.filter((school) => school.country === "Canada").sort((a, b) =>
+  a.name.localeCompare(b.name),
+)
+const US_SCHOOLS = SCHOOL_PAGES.filter((school) => school.country === "USA").sort((a, b) =>
+  a.name.localeCompare(b.name),
+)
+
+function SchoolList({ schools }: { schools: typeof SCHOOL_PAGES }) {
+  return (
+    <ul className="mt-3 divide-y divide-border rounded-2xl border border-border bg-card">
+      {schools.map((school) => (
+        <li key={school.slug}>
+          <Link
+            href={schoolPagePath(school)}
+            className="flex min-h-11 items-center px-4 py-3 text-sm font-medium text-foreground transition-colors hover:bg-muted"
+          >
+            {school.name}
+          </Link>
+        </li>
+      ))}
+    </ul>
+  )
+}
 
 export default function SchoolsIndexPage() {
   return (
@@ -19,49 +41,19 @@ export default function SchoolsIndexPage() {
         School scholarship pages
       </h1>
       <p className="mt-3 max-w-2xl text-sm leading-relaxed text-muted-foreground">
-        Curated official awards and aid links by school. These pages are not a live search.
-        Confirm eligibility on each official site.
+        Curated official awards and aid links by school. These pages are not a live search
+        and not a complete awards database. Confirm eligibility on each official site.
       </p>
 
       <div className="mt-8 grid gap-8 md:grid-cols-2">
         <section>
           <h2 className="text-lg font-semibold text-foreground">Canada</h2>
-          <ul className="mt-3 divide-y divide-border rounded-2xl border border-border bg-card">
-            {CANADA_SCHOOLS.map((school) => (
-              <li key={school.slug}>
-                <Link
-                  href={schoolPagePath(school)}
-                  className="flex min-h-11 items-center px-4 py-3 text-sm font-medium text-foreground transition-colors hover:bg-muted"
-                >
-                  {school.name}
-                </Link>
-              </li>
-            ))}
-          </ul>
+          <SchoolList schools={CANADA_SCHOOLS} />
         </section>
 
         <section>
           <h2 className="text-lg font-semibold text-foreground">United States</h2>
-          <div className="mt-3 rounded-2xl border border-border bg-card p-4 md:p-5">
-            <p className="text-sm leading-relaxed text-muted-foreground">
-              US school pages ship next. Use Scholarships search and{" "}
-              <a
-                href="https://studentaid.gov"
-                target="_blank"
-                rel="noopener noreferrer"
-                className="font-medium text-link underline underline-offset-4"
-              >
-                studentaid.gov
-              </a>{" "}
-              meanwhile.
-            </p>
-            <Link
-              href="/scholarships"
-              className="mt-4 inline-flex min-h-11 w-full items-center justify-center rounded-xl bg-gold px-4 text-sm font-bold text-gold-foreground transition-colors hover:bg-gold-hover sm:w-auto"
-            >
-              Search scholarships
-            </Link>
-          </div>
+          <SchoolList schools={US_SCHOOLS} />
         </section>
       </div>
     </article>

@@ -72,6 +72,7 @@ export function buildSiteSearchCatalog(): SiteSearchHit[] {
 
   const guides: SiteSearchHit[] = GUIDE_NAV.map((item) => {
     const osap = item.href.includes("osap")
+    const usa = item.href.includes("bank-usa")
     return {
       id: `guide-${item.href}`,
       kind: "guide" as const,
@@ -80,7 +81,9 @@ export function buildSiteSearchCatalog(): SiteSearchHit[] {
       blurb: "Guide",
       keywords: osap
         ? [item.label, "osap", "ontario student assistance", "student loans"]
-        : [item.label, "student bank", "canada bank"],
+        : usa
+          ? [item.label, "student bank", "usa bank", "us bank"]
+          : [item.label, "student bank", "canada bank"],
     }
   })
 

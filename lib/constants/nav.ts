@@ -28,6 +28,7 @@ export const FOOTER_NAV: NavLink[] = [
 
 export const GUIDE_NAV: NavLink[] = [
   { href: "/guides/best-student-bank-canada", label: "Best student bank accounts (Canada)" },
+  { href: "/guides/best-student-bank-usa", label: "Best student bank accounts (United States)" },
   { href: "/guides/osap-vs-private-loans", label: "OSAP vs private loans" },
 ]
 

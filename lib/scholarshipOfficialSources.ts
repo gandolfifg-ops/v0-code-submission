@@ -92,6 +92,15 @@ const SCHOOL_HINTS: { match: RegExp; hint: SchoolHint }[] = [
   { match: /\b(harvard)\b/i, hint: { name: "Harvard University", domain: "harvard.edu" } },
   { match: /\b(ucla)\b/i, hint: { name: "UCLA", domain: "ucla.edu" } },
   { match: /\b(stanford)\b/i, hint: { name: "Stanford University", domain: "stanford.edu" } },
+  { match: /\b(uc berkeley|berkeley)\b/i, hint: { name: "UC Berkeley", domain: "berkeley.edu" } },
+  { match: /\b(umich|university of michigan)\b/i, hint: { name: "University of Michigan", domain: "umich.edu" } },
+  { match: /\b(nyu|new york university)\b/i, hint: { name: "New York University", domain: "nyu.edu" } },
+  { match: /\b(usc|university of southern california)\b/i, hint: { name: "University of Southern California", domain: "usc.edu" } },
+  { match: /\b(ut austin|utexas|university of texas at austin)\b/i, hint: { name: "University of Texas at Austin", domain: "utexas.edu" } },
+  { match: /\b(uiuc|university of illinois)\b/i, hint: { name: "University of Illinois Urbana-Champaign", domain: "illinois.edu" } },
+  { match: /\b(university of washington|uw seattle)\b/i, hint: { name: "University of Washington", domain: "washington.edu" } },
+  { match: /\b(upenn|university of pennsylvania)\b/i, hint: { name: "University of Pennsylvania", domain: "upenn.edu" } },
+  { match: /\b(columbia university|columbia college)\b/i, hint: { name: "Columbia University", domain: "columbia.edu" } },
   { match: /\b(guelph|uoguelph|university of guelph)\b/i, hint: { name: "University of Guelph", domain: "uoguelph.ca" } },
   { match: /\b(ontario tech|ontariotechu|uoit)\b/i, hint: { name: "Ontario Tech University", domain: "ontariotechu.ca" } },
   { match: /\b(george brown)\b/i, hint: { name: "George Brown College", domain: "georgebrown.ca" } },
@@ -136,6 +145,7 @@ const CONFUSABLE_SCHOOLS: { test: RegExp; allow: string[]; reject: string[] }[] 
   { test: /queen/i, allow: ["queensu.ca"], reject: ["queens.edu"] },
   { test: /\byork\b/i, allow: ["yorku.ca"], reject: ["york.edu", "york.ac.uk"] },
   { test: /\bwestern\b/i, allow: ["uwo.ca", "westernu.ca"], reject: ["western.edu"] },
+  { test: /\b(upenn|university of pennsylvania|\bpenn\b)/i, allow: ["upenn.edu"], reject: ["penn.edu"] },
   { test: /mcdonald|trinity|st\.?\s*mary/i, allow: [], reject: [] },
 ]
 

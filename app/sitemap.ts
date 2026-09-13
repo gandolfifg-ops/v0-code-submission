@@ -17,6 +17,7 @@ const STATIC_PATHS = [
   "/cookies",
   "/search",
   "/guides/best-student-bank-canada",
+  "/guides/best-student-bank-usa",
   "/guides/osap-vs-private-loans",
 ] as const
 
