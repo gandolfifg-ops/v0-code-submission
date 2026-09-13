@@ -199,7 +199,7 @@ function mapLiveResults(
         listingKind: classifyScholarshipListing(r.url!),
       }
     })
-    .filter((item): item is ScholarshipResult => item !== null)
+    .filter((item): item is NonNullable<typeof item> => item !== null)
 }
 
 function seededOfficialCards(

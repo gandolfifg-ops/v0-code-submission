@@ -410,7 +410,7 @@ export function titleNamesOtherSchool(title: string, searchedSchool: string): bo
   return false
 }
 
-export function isNationalAwardHit(url: string, title: string, content = ""): boolean {
+export function isNationalAwardHit(url: string, title: string, _content = ""): boolean {
   const host = hostnameOf(url)
   if (host && isFoundationHost(host)) return true
   if (host && (host === "canada.ca" || host.endsWith(".canada.ca")) && /student\s+grant|student\s+aid|student\s+loan/i.test(`${title} ${url}`)) {

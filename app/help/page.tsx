@@ -35,7 +35,7 @@ const FAQS = [
       },
       {
         q: "Can I save scholarships and loans?",
-        a: "Yes. Tap Save on a result card (tap Saved again to remove it). Items appear on the Saved page. They stay in this browser only unless you are signed in.",
+        a: "Yes. Tap Save on a result card (tap Saved again to remove it). Items appear on the Saved page. They stay in this browser only. There is no account sync yet.",
       },
     ],
   },

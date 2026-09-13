@@ -359,7 +359,6 @@ export function summarizeLiveSnippet(
 
   const body = `${prefix}${picked.join(" ")}`.trim()
   if (!body) {
-    if (kind === "form") return APPLICATION_FORM_SNIPPET
     if (kind === "pdf") {
       return "This listing is a PDF — open the official site for the full document."
     }
