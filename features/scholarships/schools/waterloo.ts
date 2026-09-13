@@ -3,12 +3,16 @@ import type { SchoolAwardsData } from "@/features/scholarships/schools/types"
 
 export const waterloo: SchoolAwardsData = {
   slug: "waterloo",
-  aliases: ["uwaterloo", "university-of-waterloo"],
+  aliases: ["uwaterloo", "university-of-waterloo", "university of waterloo"],
   name: "University of Waterloo",
+  country: "Canada",
   region: "Ontario",
   searchName: "University of Waterloo",
   description:
     "Official starting points for Waterloo awards, OSAP, NSLSC, Loran, and Schulich Leaders.",
+  domains: ["uwaterloo.ca"],
+  officialAwardsUrl: "https://uwaterloo.ca/awards-directory/",
+  officialAidUrl: "https://www.ontario.ca/page/osap-ontario-student-assistance-program",
   links: [
     {
       id: "waterloo-awards",

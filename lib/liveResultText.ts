@@ -1,8 +1,20 @@
 const SNIPPET_MAX = 400
 
+const PAGE_CHROME =
+  /language selection|search menu|skip to(?: main)? content|you are here|breadcrumb|\bfrançais\b|\benglish\b\s*\/|\bcookie (?:consent|banner|settings|policy)\b|we use cookies|apply nowapply now/gi
+
+function stripPageChrome(input: string): string {
+  let text = input.replace(/\r\n/g, "\n")
+  text = text.replace(/apply now\s*apply now/gi, "Apply now")
+  text = text.replace(PAGE_CHROME, " ")
+  text = text.replace(/^(?:\s*(?:menu|home|search|:)\s*)+/gi, " ")
+  text = text.replace(/^[:\-–—]+\s*/, "")
+  return text
+}
+
 /** Strip leftover markdown and labels from live search titles/snippets. */
 export function cleanDisplayText(input: string): string {
-  let text = input.replace(/\r\n/g, "\n")
+  let text = stripPageChrome(input.replace(/\r\n/g, "\n"))
   text = text.replace(/^\s*Title:\s*/gim, "")
   text = text.replace(/\bTitle:\s*/gi, "")
   text = text.replace(/^#{1,6}\s+/gm, "")
@@ -105,10 +117,48 @@ function awardNameKey(title: string): string | null {
   return n
 }
 
+function urlQualityScore(url: string): number {
+  let n = 0
+  const lower = url.toLowerCase()
+  if (/\/node(\/|$)/i.test(lower)) n += 8
+  if (/index\.php/i.test(lower)) n += 5
+  if (/[?&](sid|session|php|utm_)/i.test(lower)) n += 4
+  if (/\/about(\/|$)/i.test(lower)) n += 3
+  try {
+    const parsed = new URL(url)
+    n += parsed.pathname.length / 40
+    n += parsed.search.length / 20
+  } catch {
+    n += url.length / 80
+  }
+  return n
+}
+
+function similarAwardTitle(a: string, b: string): boolean {
+  const left = awardNameKey(a)
+  const right = awardNameKey(b)
+  if (left && right && (left === right || left.includes(right) || right.includes(left))) return true
+  const compact = (value: string) =>
+    cleanDisplayText(value)
+      .toLowerCase()
+      .replace(/[^a-z0-9]+/g, " ")
+      .replace(/\b(about|home|official|welcome)\b/g, " ")
+      .replace(/\s+/g, " ")
+      .trim()
+  const ca = compact(a)
+  const cb = compact(b)
+  if (!ca || !cb || ca.length < 8 || cb.length < 8) return false
+  return ca === cb || ca.includes(cb) || cb.includes(ca)
+}
+
 function pickPreferredScholarshipHit<T extends { url?: string; title?: string }>(current: T, next: T): T {
   const nextScore = scholarshipListingKeepScore(next.url ?? "", next.title ?? "")
   const currentScore = scholarshipListingKeepScore(current.url ?? "", current.title ?? "")
-  return nextScore > currentScore ? next : current
+  if (nextScore !== currentScore) return nextScore > currentScore ? next : current
+  const nextJunk = urlQualityScore(next.url ?? "")
+  const currentJunk = urlQualityScore(current.url ?? "")
+  if (nextJunk !== currentJunk) return nextJunk < currentJunk ? next : current
+  return (next.url ?? "").length < (current.url ?? "").length ? next : current
 }
 
 /** Same award name or same host+path: keep apply/program pages, drop FAQ and newsroom. */
@@ -131,15 +181,39 @@ export function dedupeLiveScholarshipHits<T extends { url?: string; title?: stri
     const prev = byName.get(key)
     byName.set(key, prev ? pickPreferredScholarshipHit(prev, hit) : hit)
   }
-  return pathDeduped.filter((hit) => {
+  const nameDeduped = pathDeduped.filter((hit) => {
     const key = awardNameKey(hit.title ?? "")
     if (!key) return true
     return byName.get(key) === hit
   })
+
+  const byHostTitle: T[] = []
+  for (const hit of nameDeduped) {
+    const host = hostnameKey(hit.url ?? "")
+    const title = hit.title ?? ""
+    const prevIndex = byHostTitle.findIndex(
+      (existing) => hostnameKey(existing.url ?? "") === host && similarAwardTitle(existing.title ?? "", title),
+    )
+    if (prevIndex === -1) {
+      byHostTitle.push(hit)
+      continue
+    }
+    byHostTitle[prevIndex] = pickPreferredScholarshipHit(byHostTitle[prevIndex], hit)
+  }
+  return byHostTitle
 }
 
 /** Aggregators kept only when no official (non-aggregator) hit exists. Does not change Tavily allowlists. */
-const POST_FILTER_AGGREGATOR_HOSTS = ["scholartree.ca"] as const
+const POST_FILTER_AGGREGATOR_HOSTS = [
+  "scholartree.ca",
+  "fastweb.com",
+  "bold.org",
+  "scholarships.com",
+  "cappex.com",
+  "yconic.com",
+  "scholarshipscanada.com",
+  "immigrationnewscanada.ca",
+] as const
 
 export function isPostFilterScholarshipAggregator(url: string): boolean {
   const host = hostnameKey(url)
@@ -162,7 +236,7 @@ export function applicationFormDisplayTitle(title: string): string {
 }
 
 const JUNK =
-  /protected\s*b\b|copyright|all rights reserved|privacy (?:policy|statement)|terms of (?:use|service)|skip to(?: main)? content|javascript must be enabled|enable cookies|click here to (?:download|print|apply)|print this (?:form|page)|fill(?:able)? form|date of birth|social insurance|sin number|income table|household income|line \d+|box \d+|ocr error|�{2,}/i
+  /protected\s*b\b|copyright|all rights reserved|privacy (?:policy|statement)|terms of (?:use|service)|skip to(?: main)? content|language selection|search menu|you are here|breadcrumb|javascript must be enabled|enable cookies|click here to (?:download|print|apply)|print this (?:form|page)|fill(?:able)? form|date of birth|social insurance|sin number|income table|household income|line \d+|box \d+|ocr error|�{2,}/i
 
 const FORM_NOISE =
   /please (?:print|complete|fill|sign)|block letters|for office use|applicant must|instructions?:|section [a-z0-9]+ of this form/i
@@ -670,8 +744,18 @@ function prettyMoneyPhrase(match: string): string {
   return match.replace(/\s+/g, " ").trim()
 }
 
-/** Skip $1/$5 page artifacts; keep hundreds/thousands or tuition phrases. */
-export function extractScholarshipAmount(text: string): string {
+const COST_CONTEXT =
+  /\b(?:tuition|fees?|comprehensive fee|cost of attendance|room and board|meal plan|housing|residence fee|affordability|cost to attend|net price)\b/i
+
+const AWARD_CONTEXT = /\b(?:scholarship|bursar(?:y|ies)?|award|grant|stipend)\b/i
+
+/** Skip $1/$5 page artifacts; keep hundreds/thousands or tuition phrases. Never treat sticker price as an award. */
+export function extractScholarshipAmount(text: string, url = ""): string {
+  const blob = `${url}\n${text}`
+  if (/\/afford(?:ability)?(?:\/|$)/i.test(url) || /cost[-_ ]of[-_ ]attendance|tuition[-_ ]and[-_ ]fees/i.test(url)) {
+    return "Varies"
+  }
+
   const phrase = text.match(/\bfull[\s-]*(tuition|ride)\b|\btuition\s+waiver\b/i)
   if (phrase) {
     const raw = phrase[0].toLowerCase()
@@ -690,6 +774,9 @@ export function extractScholarshipAmount(text: string): string {
     const high = match[2] ? parseMoneyToken(match[2]) : null
     const best = Math.max(low, high ?? low)
     if (best < MIN_SCHOLARSHIP_AMOUNT) continue
+    const window = text.slice(Math.max(0, match.index - 90), Math.min(text.length, match.index + match[0].length + 90))
+    if (COST_CONTEXT.test(window) && !AWARD_CONTEXT.test(window)) continue
+    if (COST_CONTEXT.test(blob) && !AWARD_CONTEXT.test(blob) && best >= 20000) continue
     let display = prettyMoneyPhrase(match[0])
     if (low < MIN_SCHOLARSHIP_AMOUNT && high !== null && high >= MIN_SCHOLARSHIP_AMOUNT) {
       display = `$${match[2]}${match[3] ?? ""}`

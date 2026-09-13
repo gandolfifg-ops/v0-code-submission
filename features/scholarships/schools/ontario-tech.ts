@@ -2,13 +2,17 @@ import { LORAN, NSLSC, osapLink, schulichLink } from "@/features/scholarships/sc
 import type { SchoolAwardsData } from "@/features/scholarships/schools/types"
 
 export const ontarioTech: SchoolAwardsData = {
-  slug: "OntarioTech",
-  aliases: ["ontariotech", "ontario-tech", "ontario-tech-university"],
+  slug: "ontario-tech",
+  aliases: ["OntarioTech", "ontariotech", "ontario-tech-university", "ontario tech"],
   name: "Ontario Tech University",
+  country: "Canada",
   region: "Ontario",
   searchName: "Ontario Tech University",
   description:
     "Official starting points for Ontario Tech awards, OSAP, NSLSC, Loran, and Schulich Leaders.",
+  domains: ["ontariotechu.ca"],
+  officialAwardsUrl: "https://safa.ontariotechu.ca/awards-bursaries-and-scholarships/undergraduate-student-finances/index.php",
+  officialAidUrl: "https://www.ontario.ca/page/osap-ontario-student-assistance-program",
   links: [
     {
       id: "ontariotech-awards",

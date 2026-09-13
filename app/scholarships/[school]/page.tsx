@@ -1,7 +1,7 @@
 import type { Metadata } from "next"
-import { notFound } from "next/navigation"
+import { notFound, redirect } from "next/navigation"
 import { SchoolAwardsPage } from "@/features/scholarships/components/SchoolAwardsPage"
-import { getSchoolAwards, schoolStaticParams } from "@/features/scholarships/schools"
+import { getSchoolAwards, schoolPagePath, schoolStaticParams } from "@/features/scholarships/schools"
 import { pageMeta } from "@/lib/seo"
 
 type SchoolRouteProps = {
@@ -34,5 +34,14 @@ export default async function SchoolScholarshipsRoute({ params }: SchoolRoutePro
   const { school: slug } = await params
   const school = getSchoolAwards(slug)
   if (!school) notFound()
+  let decoded = slug
+  try {
+    decoded = decodeURIComponent(slug)
+  } catch {
+    decoded = slug
+  }
+  if (decoded !== school.slug) {
+    redirect(schoolPagePath(school))
+  }
   return <SchoolAwardsPage school={school} />
 }

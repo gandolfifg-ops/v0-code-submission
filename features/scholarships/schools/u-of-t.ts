@@ -3,12 +3,16 @@ import type { SchoolAwardsData } from "@/features/scholarships/schools/types"
 
 export const uOfT: SchoolAwardsData = {
   slug: "u-of-t",
-  aliases: ["uoft", "utoronto", "university-of-toronto"],
+  aliases: ["uoft", "utoronto", "university-of-toronto", "university of toronto", "u of t"],
   name: "University of Toronto",
+  country: "Canada",
   region: "Ontario",
   searchName: "University of Toronto",
   description:
     "Official starting points for U of T awards and aid, OSAP, NSLSC, Loran, and Schulich Leaders.",
+  domains: ["utoronto.ca"],
+  officialAwardsUrl: "https://www.registrar.utoronto.ca/financial-aid-awards/awards-scholarships/",
+  officialAidUrl: "https://www.ontario.ca/page/osap-ontario-student-assistance-program",
   links: [
     {
       id: "uoft-awards",

@@ -3,12 +3,16 @@ import type { SchoolAwardsData } from "@/features/scholarships/schools/types"
 
 export const mcmaster: SchoolAwardsData = {
   slug: "mcmaster",
-  aliases: ["mcmaster-university"],
+  aliases: ["mcmaster-university", "mcmaster university"],
   name: "McMaster University",
+  country: "Canada",
   region: "Ontario",
   searchName: "McMaster University",
   description:
     "Official starting points for McMaster financial support, OSAP, NSLSC, Loran, and Schulich Leaders.",
+  domains: ["mcmaster.ca"],
+  officialAwardsUrl: "https://registrar.mcmaster.ca/financial-support/",
+  officialAidUrl: "https://www.ontario.ca/page/osap-ontario-student-assistance-program",
   links: [
     {
       id: "mcmaster-aid",

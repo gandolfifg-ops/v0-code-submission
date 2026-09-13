@@ -2,12 +2,12 @@
 
 import { useEffect, useState, type FormEvent } from "react"
 import { GraduationCap, ListChecks, Loader2, Search } from "lucide-react"
-import { CountryToggle } from "@/components/CountryToggle"
 import { useSmartSearch } from "@/components/SmartSearchProvider"
 import { SectionHeading } from "@/components/layout/SectionHeading"
 import { ResultCard } from "@/features/scholarships/components/ResultCard"
 import { StudentProfileBox } from "@/features/student-profile/components/StudentProfileBox"
 import { isProfileFilled, type StudentProfile } from "@/features/student-profile/types"
+import { resolveSchool } from "@/features/scholarships/schools"
 import {
   SCHOLARSHIP_LEVELS,
   SCHOLARSHIP_MAJORS,
@@ -17,7 +17,6 @@ import {
   type ScholarshipResult,
 } from "@/features/scholarships/types"
 import { isExpiredDeadline } from "@/lib/liveResultText"
-import { saveStudentCountry } from "@/features/student-profile/store"
 
 type SearchResponse = {
   source: "live" | "curated"
@@ -71,27 +70,27 @@ export function ScholarshipFinder({ initialSchool = "" }: { initialSchool?: stri
   async function runSearch(next: { query: string; university?: string; fromHeader?: boolean }) {
     setLoading(true)
     setError(null)
-    setNotice(null)
-    setSource(null)
-    setResults([])
     setHasSearched(true)
     const fromHeader = Boolean(next.fromHeader)
+    const schoolName = fromHeader ? "" : (next.university ?? university)
+    const registered = resolveSchool(schoolName)
+    const requestCountry = registered?.country ?? country
     try {
       const res = await fetch("/api/scholarships/find", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          country,
+          country: requestCountry,
           major: fromHeader ? "Any major" : major,
           level: fromHeader ? "Any level" : level,
           query: next.query,
-          university: fromHeader ? "" : (next.university ?? university),
+          university: schoolName,
         }),
       })
       if (!res.ok) throw new Error("Search failed")
       const data: SearchResponse = await res.json()
-      const results = (data.results ?? []).filter((item) => !isExpiredDeadline(item.deadline))
-      setResults(results)
+      const nextResults = (data.results ?? []).filter((item) => !isExpiredDeadline(item.deadline))
+      setResults(nextResults)
       setSource(data.source)
       setNotice(data.notice)
     } catch {
@@ -150,18 +149,6 @@ export function ScholarshipFinder({ initialSchool = "" }: { initialSchool?: stri
             className="space-y-2 rounded-2xl border border-border bg-card p-4 md:space-y-3 md:p-5"
           >
             <SectionHeading icon={Search}>Search awards</SectionHeading>
-            <CountryToggle
-              value={country}
-              onChange={(next) => {
-                setCountry(next)
-                setSearchCountry(next)
-                saveStudentCountry(next)
-              }}
-              options={[
-                { value: "Canada", flag: "CA", label: "Canada" },
-                { value: "USA", flag: "US", label: "United States" },
-              ]}
-            />
 
             <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-1">
               <label className="block text-xs font-medium text-muted-foreground">
@@ -213,7 +200,7 @@ export function ScholarshipFinder({ initialSchool = "" }: { initialSchool?: stri
               className="inline-flex min-h-11 w-full items-center justify-center gap-2 rounded-xl bg-gold px-4 text-sm font-bold text-gold-foreground transition-colors hover:bg-gold-hover disabled:opacity-60"
             >
               {loading && <Loader2 className="h-4 w-4 shrink-0 animate-spin" aria-hidden="true" />}
-              Find scholarships
+              {loading ? "Searching official pages…" : "Find scholarships"}
             </button>
           </form>
         </div>
@@ -231,7 +218,7 @@ export function ScholarshipFinder({ initialSchool = "" }: { initialSchool?: stri
             </p>
           )}
 
-          {notice && (
+          {notice && !loading && (
             <p
               className={`break-words rounded-xl border px-3 py-2 text-sm md:px-4 md:py-3 ${
                 source === "live"
@@ -243,10 +230,27 @@ export function ScholarshipFinder({ initialSchool = "" }: { initialSchool?: stri
             </p>
           )}
 
-          {results.length > 0 && (
-            <section className={notice || error ? "mt-4" : ""}>
+          {loading && results.length === 0 && (
+            <section className={error ? "mt-4" : ""} aria-hidden="true">
               <SectionHeading icon={ListChecks}>Results</SectionHeading>
               <div className="mt-3 grid grid-cols-1 gap-3 md:grid-cols-2">
+                {[0, 1, 2].map((key) => (
+                  <div
+                    key={key}
+                    className="h-40 animate-pulse rounded-2xl border border-border bg-muted/50"
+                  />
+                ))}
+              </div>
+            </section>
+          )}
+
+          {results.length > 0 && (
+            <section className={`relative ${notice || error || loading ? "mt-4" : ""}`}>
+              {loading && (
+                <div className="absolute inset-0 z-10 rounded-2xl bg-background/60" aria-hidden="true" />
+              )}
+              <SectionHeading icon={ListChecks}>Results</SectionHeading>
+              <div className={`mt-3 grid grid-cols-1 gap-3 md:grid-cols-2 ${loading ? "opacity-50" : ""}`}>
                 {results.map((result) => (
                   <ResultCard key={result.id} result={result} />
                 ))}

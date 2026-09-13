@@ -2,13 +2,17 @@ import { LORAN, NSLSC, osapLink, schulichLink } from "@/features/scholarships/sc
 import type { SchoolAwardsData } from "@/features/scholarships/schools/types"
 
 export const guelph: SchoolAwardsData = {
-  slug: "Guelph",
-  aliases: ["guelph", "university-of-guelph", "uoguelph"],
+  slug: "guelph",
+  aliases: ["Guelph", "university-of-guelph", "uoguelph", "university of guelph"],
   name: "University of Guelph",
+  country: "Canada",
   region: "Ontario",
   searchName: "University of Guelph",
   description:
     "Official starting points for Guelph financial aid, OSAP, NSLSC, Loran, and Schulich Leaders.",
+  domains: ["uoguelph.ca"],
+  officialAwardsUrl: "https://www.uoguelph.ca/registrar/finances-fees/financial-aid",
+  officialAidUrl: "https://www.ontario.ca/page/osap-ontario-student-assistance-program",
   links: [
     {
       id: "guelph-aid",

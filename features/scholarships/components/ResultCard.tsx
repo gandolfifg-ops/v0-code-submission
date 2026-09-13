@@ -37,7 +37,7 @@ export function ResultCard({ result }: ResultCardProps) {
   return (
     <article
       className={`interactive-card flex min-w-0 max-w-full flex-col overflow-hidden rounded-2xl p-4 md:p-5 ${
-        featured
+        featured || result.listingKind === "official-school"
           ? "border-2 border-border bg-card shadow-sm"
           : "border border-border bg-card"
       }`}
@@ -45,7 +45,7 @@ export function ResultCard({ result }: ResultCardProps) {
       <div className="mb-3 flex min-w-0 items-start gap-3">
         <CreamIcon icon={GraduationCap} />
         <div className="flex min-w-0 flex-1 flex-wrap gap-2">
-        {featured ? (
+        {featured || result.listingKind === "official-school" ? (
           result.listingKind === "official-school" ? (
             <span className="inline-flex items-center gap-1 rounded-full bg-gold px-2.5 py-1 text-[11px] font-semibold text-gold-foreground">
               <GraduationCap className="h-3 w-3 shrink-0" aria-hidden="true" />

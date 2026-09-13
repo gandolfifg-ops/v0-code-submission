@@ -3,12 +3,16 @@ import type { SchoolAwardsData } from "@/features/scholarships/schools/types"
 
 export const carleton: SchoolAwardsData = {
   slug: "carleton",
-  aliases: ["carleton-university"],
+  aliases: ["carleton-university", "carleton university"],
   name: "Carleton University",
+  country: "Canada",
   region: "Ontario",
   searchName: "Carleton University",
   description:
     "Official starting points for Carleton awards and financial aid, OSAP, NSLSC, Loran, and Schulich Leaders.",
+  domains: ["carleton.ca"],
+  officialAwardsUrl: "https://carleton.ca/awards/",
+  officialAidUrl: "https://www.ontario.ca/page/osap-ontario-student-assistance-program",
   links: [
     {
       id: "carleton-awards",

@@ -2,13 +2,18 @@ import { LORAN, NSLSC, osapLink, schulichLink } from "@/features/scholarships/sc
 import type { SchoolAwardsData } from "@/features/scholarships/schools/types"
 
 export const western: SchoolAwardsData = {
-  slug: "Western University",
-  aliases: ["western", "western-university", "uwo"],
+  slug: "western",
+  aliases: ["Western University", "western-university", "uwo", "western university"],
   name: "Western University",
+  country: "Canada",
   region: "Ontario",
   searchName: "Western University",
   description:
     "Official starting points for Western scholarships and awards, OSAP, NSLSC, Loran, and Schulich Leaders.",
+  domains: ["uwo.ca", "westernu.ca"],
+  officialAwardsUrl: "https://registrar.uwo.ca/student_finances/scholarships_awards/index.html",
+  officialAidUrl: "https://www.ontario.ca/page/osap-ontario-student-assistance-program",
+  rejectDomains: ["western.edu"],
   links: [
     {
       id: "western-awards",
