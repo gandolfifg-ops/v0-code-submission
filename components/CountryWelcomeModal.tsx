@@ -9,14 +9,14 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog"
-import { getStudentProfile, saveStudentCountry } from "@/features/student-profile/store"
+import { hasChosenCountry, saveStudentCountry } from "@/features/student-profile/store"
 import type { StudentCountry } from "@/features/student-profile/types"
 
 export function CountryWelcomeModal() {
   const [open, setOpen] = useState(false)
 
   useEffect(() => {
-    if (!getStudentProfile()) setOpen(true)
+    if (!hasChosenCountry()) setOpen(true)
   }, [])
 
   function choose(country: StudentCountry) {
@@ -25,7 +25,7 @@ export function CountryWelcomeModal() {
   }
 
   function dismissWithCanada() {
-    if (!getStudentProfile()) saveStudentCountry("Canada")
+    if (!hasChosenCountry()) saveStudentCountry("Canada")
     setOpen(false)
   }
 

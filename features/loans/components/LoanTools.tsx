@@ -2,7 +2,7 @@
 
 import { useEffect, useState, type FormEvent } from "react"
 import Link from "next/link"
-import { Banknote, Car, GraduationCap, ListChecks, Search } from "lucide-react"
+import { Banknote, Car, GraduationCap, ListChecks, Loader2, Search } from "lucide-react"
 import { CountryToggle } from "@/components/CountryToggle"
 import { CreamIcon } from "@/components/CreamIcon"
 import { useSmartSearch } from "@/components/SmartSearchProvider"
@@ -11,6 +11,7 @@ import { LenderCard } from "@/features/loans/components/LenderCard"
 import { PaymentCalculator } from "@/features/loans/components/PaymentCalculator"
 import { StudentProfileBox } from "@/features/student-profile/components/StudentProfileBox"
 import { type StudentProfile } from "@/features/student-profile/types"
+import { saveStudentCountry } from "@/features/student-profile/store"
 import type { LoanCountry, LoanResult, LoanType } from "@/features/loans/types"
 
 const LOAN_TYPES: LoanType[] = ["Student", "Personal", "Auto"]
@@ -50,6 +51,9 @@ export function LoanTools() {
   async function runSearch(nextQuery = "") {
     setLoading(true)
     setError(null)
+    setNotice(null)
+    setSource(null)
+    setResults([])
     try {
       const res = await fetch("/api/loans/find", {
         method: "POST",
@@ -62,7 +66,7 @@ export function LoanTools() {
       setSource(data.source)
       setNotice(data.notice)
     } catch {
-      setError("Could not run the search. Check your connection and try again.")
+      setError("Search didn’t work — try again")
       setResults([])
       setSource(null)
       setNotice(null)
@@ -115,6 +119,12 @@ export function LoanTools() {
 
       <div className="mt-3 flex min-w-0 flex-col md:mt-6">
         <div className="order-1 min-w-0 lg:order-2">
+      {loading && (
+        <p className="mt-3 text-sm text-muted-foreground md:mt-4" aria-live="polite">
+          Searching official pages…
+        </p>
+      )}
+
       {error && (
         <p className="mt-3 break-words rounded-xl border border-red-300 bg-red-50 px-3 py-2 text-sm text-red-700 md:mt-4 md:px-4 md:py-3 dark:border-red-900 dark:bg-red-950/40 dark:text-red-300">
           {error}
@@ -159,6 +169,7 @@ export function LoanTools() {
               onChange={(next) => {
                 setCountry(next)
                 setSearchCountry(next)
+                saveStudentCountry(next)
               }}
               options={[
                 { value: "Canada", flag: "CA", label: "Canada" },
@@ -174,7 +185,7 @@ export function LoanTools() {
                   onClick={() => setLoanType(type)}
                   className={`inline-flex min-h-11 min-w-0 flex-col items-center justify-center gap-0.5 rounded-xl px-1 text-xs font-semibold sm:flex-row sm:gap-1.5 sm:px-2 md:text-sm transition-colors ${
                     loanType === type
-                      ? "bg-[#C9A84C] text-[#07090d] hover:bg-[#b8973f]"
+                      ? "bg-[#C9A84C] text-[#07090d] hover:bg-[#b8973f] [&_svg]:!text-[#FFF8E7] [&_svg]:!stroke-[#FFF8E7]"
                       : "border border-border text-muted-foreground hover:bg-muted hover:text-foreground"
                   }`}
                 >
@@ -202,9 +213,10 @@ export function LoanTools() {
             <button
               type="submit"
               disabled={loading}
-              className="min-h-11 w-full rounded-xl bg-[#C9A84C] text-sm font-bold text-[#07090d] transition-colors hover:bg-[#b8973f] disabled:opacity-60"
+              className="inline-flex min-h-11 w-full items-center justify-center gap-2 rounded-xl bg-[#C9A84C] px-4 text-sm font-bold text-[#07090d] transition-colors hover:bg-[#b8973f] disabled:opacity-60"
             >
-              {loading ? "Searching…" : "Find lenders"}
+              {loading && <Loader2 className="h-4 w-4 shrink-0 animate-spin" aria-hidden="true" />}
+              Find lenders
             </button>
           </form>
         </div>

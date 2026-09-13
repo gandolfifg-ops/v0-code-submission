@@ -1,9 +1,12 @@
 import { CURATED_SCHOLARSHIPS } from "@/features/scholarships/data/curated"
 import type { ScholarshipFilters, ScholarshipResult } from "@/features/scholarships/types"
 import {
+  applicationFormDisplayTitle,
   cleanDisplayText,
+  dropApplicationFormsIfProgramPageExists,
   evaluateScholarshipDeadlines,
   extractScholarshipAmount,
+  isApplicationFormListing,
   isClosedOrArchivedListing,
   summarizeLiveSnippet,
 } from "@/lib/liveResultText"
@@ -88,24 +91,27 @@ function mapLiveResults(
   searchedSchool = "",
 ): ScholarshipResult[] {
   const seen = new Set<string>()
-  return hits
-    .filter((r) => {
-      if (!r.url || !isValidHttpUrl(r.url)) return false
-      if (r.url.includes("404") || r.url.includes("not-found")) return false
-      if (typeof r.score === "number" && r.score < 0.3) return false
-      const title = r.title ?? ""
-      const content = `${r.content ?? ""} ${r.raw_content ?? r.rawContent ?? ""}`
-      if (searchedSchool) {
-        if (!shouldKeepSchoolKeywordHit(r.url, title, content, searchedSchool)) return false
-      } else if (!shouldKeepScholarshipHit(r.url, title)) {
-        return false
-      }
-      const key = canonicalUrl(r.url)
-      if (seen.has(key)) return false
-      seen.add(key)
-      return true
-    })
-    .sort((a, b) => compareScholarshipResults(a, b, schoolDomains))
+  const filtered = hits.filter((r) => {
+    if (!r.url || !isValidHttpUrl(r.url)) return false
+    if (r.url.includes("404") || r.url.includes("not-found")) return false
+    if (typeof r.score === "number" && r.score < 0.3) return false
+    const title = r.title ?? ""
+    const content = `${r.content ?? ""} ${r.raw_content ?? r.rawContent ?? ""}`
+    if (searchedSchool) {
+      if (!shouldKeepSchoolKeywordHit(r.url, title, content, searchedSchool)) return false
+    } else if (!shouldKeepScholarshipHit(r.url, title)) {
+      return false
+    }
+    const key = canonicalUrl(r.url)
+    if (seen.has(key)) return false
+    seen.add(key)
+    return true
+  })
+  const preferred = dropApplicationFormsIfProgramPageExists(
+    filtered.sort((a, b) => compareScholarshipResults(a, b, schoolDomains)),
+  )
+
+  return preferred
     .map((r, i) => {
       const hostname = new URL(r.url!).hostname.replace(/^www\./, "")
       const provider = hostname.split(".")[0] ?? "Source"
@@ -116,18 +122,23 @@ function mapLiveResults(
       const { keep, deadline } = evaluateScholarshipDeadlines(deadlineSource)
       if (!keep) return null
       const officialSchool = isOfficialSchoolPortalUrl(r.url!, schoolDomains)
+      const isForm = isApplicationFormListing(r.title ?? "", content, r.url!)
       return {
         id: `live-${i}-${hostname}`,
-        title: cleanDisplayText(r.title ?? "Scholarship listing").slice(0, 100),
+        title: isForm
+          ? applicationFormDisplayTitle(r.title ?? "")
+          : cleanDisplayText(r.title ?? "Scholarship listing").slice(0, 100),
         provider: provider.charAt(0).toUpperCase() + provider.slice(1),
         amount: extractScholarshipAmount(deadlineSource),
         deadline,
         lastChecked: formatCheckedToday(),
-        eligibility: summarizeLiveSnippet(content, {
-          url: r.url!,
-          title: r.title ?? "",
-          fallback: "See the official listing for eligibility details.",
-        }),
+        eligibility: isForm
+          ? "Official application form — open the site to apply"
+          : summarizeLiveSnippet(content, {
+              url: r.url!,
+              title: r.title ?? "",
+              fallback: "See the official listing for eligibility details.",
+            }),
         url: r.url!,
         source: "live" as const,
         listingKind: officialSchool ? "official-school" : "active",
@@ -172,22 +183,12 @@ export async function POST(req: Request) {
       )
       const live = mapLiveResults(hitSets.flat(), schoolDomains, school)
 
-      if (school) {
-        return Response.json({
-          source: "live",
-          notice:
-            live.length > 0
-              ? "These are live results from this school's aid pages and major national awards. Amounts and deadlines may be incomplete — always confirm on the official page."
-              : "No current listings matched this school search. Try a broader keyword, or open the school's financial aid site directly.",
-          results: live,
-        })
-      }
-
       if (live.length > 0) {
         return Response.json({
           source: "live",
-          notice:
-            "These are live results from university, government, and official foundation pages. Amounts and deadlines may be incomplete — always confirm on the official page.",
+          notice: school
+            ? "These are live results from this school's aid pages and major national awards. Amounts and deadlines may be incomplete — always confirm on the official page."
+            : "These are live results from university, government, and official foundation pages. Amounts and deadlines may be incomplete — always confirm on the official page.",
           results: live,
         })
       }
@@ -199,8 +200,8 @@ export async function POST(req: Request) {
   return Response.json({
     source: "curated",
     notice: apiKey
-      ? "Live web search returned no usable results. Showing curated official starting points instead — not a complete scholarship database."
-      : "Live web search is not configured (missing TAVILY_API_KEY). Showing curated official starting points — not a complete scholarship database.",
+      ? "Live search didn’t find a match — here are official starting points."
+      : "Showing official starting points.",
     results: filterCurated(filters),
   })
 }

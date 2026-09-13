@@ -41,7 +41,7 @@ export function Header() {
   return (
     <>
       <header className="sticky top-0 z-40 border-b border-border bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/80">
-        <div className="mx-auto flex h-12 max-w-6xl min-w-0 items-center justify-between gap-2 overflow-x-hidden px-3 md:h-16 md:gap-4 md:px-6">
+        <div className="mx-auto flex h-12 max-w-6xl min-w-0 flex-nowrap items-center justify-between gap-3 overflow-x-hidden px-3 md:h-16 md:gap-4 md:px-6">
           <Logo size={26} showText />
 
           <nav className="hidden items-center gap-1 md:flex" aria-label="Main">
@@ -50,26 +50,24 @@ export function Header() {
             ))}
           </nav>
 
-          <div className="flex min-w-0 flex-1 items-center justify-end gap-2">
-            <div className="min-w-0 flex-1 md:max-w-xs md:flex-none">
+          <div className="flex shrink-0 items-center gap-2">
+            <div className="hidden md:block">
               <HeaderSearchBar />
             </div>
-            <div className="flex shrink-0 items-center gap-2">
-              <nav className="hidden items-center gap-1 md:flex" aria-label="Secondary">
-                {SECONDARY_NAV.map((link) => (
-                  <DesktopNavLink key={link.href} href={link.href} label={link.label} />
-                ))}
-              </nav>
-              <ThemeToggle />
-              <button
-                type="button"
-                className="inline-flex h-9 w-9 items-center justify-center rounded-lg border border-border text-muted-foreground hover:bg-muted md:hidden"
-                onClick={() => setMobileOpen(true)}
-                aria-label="Open menu"
-              >
-                <Menu className="h-5 w-5" />
-              </button>
-            </div>
+            <nav className="hidden items-center gap-1 md:flex" aria-label="Secondary">
+              {SECONDARY_NAV.map((link) => (
+                <DesktopNavLink key={link.href} href={link.href} label={link.label} />
+              ))}
+            </nav>
+            <ThemeToggle />
+            <button
+              type="button"
+              className="inline-flex h-9 w-9 shrink-0 items-center justify-center rounded-lg border border-border text-muted-foreground hover:bg-muted md:hidden"
+              onClick={() => setMobileOpen(true)}
+              aria-label="Open menu"
+            >
+              <Menu className="h-5 w-5" />
+            </button>
           </div>
         </div>
       </header>

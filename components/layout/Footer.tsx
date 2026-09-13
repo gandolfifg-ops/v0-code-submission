@@ -19,6 +19,17 @@ export function Footer() {
           ))}
         </nav>
         <div>
+          <p className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">Schools</p>
+          <nav className="mt-2 flex flex-wrap gap-x-5 gap-y-2" aria-label="Schools">
+            <Link
+              href="/schools"
+              className="text-sm text-muted-foreground transition-colors hover:text-foreground"
+            >
+              School scholarship pages
+            </Link>
+          </nav>
+        </div>
+        <div>
           <p className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">Guides</p>
           <nav className="mt-2 flex flex-wrap gap-x-5 gap-y-2" aria-label="Guides">
             {GUIDE_NAV.map((link) => (
@@ -32,10 +43,13 @@ export function Footer() {
             ))}
           </nav>
         </div>
-        <p className="max-w-2xl text-xs leading-relaxed text-muted-foreground">
+        <p className="max-w-2xl pb-[max(0.75rem,env(safe-area-inset-bottom))] text-sm leading-relaxed text-foreground md:text-xs md:text-muted-foreground">
           WealthNutz provides general financial education only and is not a licensed
-          advisor, broker, or lender. Some links are affiliate links — see our Terms for
-          details.
+          advisor, broker, or lender. Some links are affiliate links — see our{" "}
+          <Link href="/terms" className="underline underline-offset-2">
+            Terms
+          </Link>{" "}
+          for details.
         </p>
         <p className="text-xs text-muted-foreground">
           © {new Date().getFullYear()} WealthNutz

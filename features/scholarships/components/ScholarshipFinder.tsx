@@ -1,7 +1,7 @@
 "use client"
 
 import { useEffect, useState, type FormEvent } from "react"
-import { GraduationCap, ListChecks, Search } from "lucide-react"
+import { GraduationCap, ListChecks, Loader2, Search } from "lucide-react"
 import { CountryToggle } from "@/components/CountryToggle"
 import { useSmartSearch } from "@/components/SmartSearchProvider"
 import { SectionHeading } from "@/components/layout/SectionHeading"
@@ -12,10 +12,12 @@ import {
   SCHOLARSHIP_LEVELS,
   SCHOLARSHIP_MAJORS,
   scholarshipLevelLabel,
+  normalizeScholarshipLevel,
   type ScholarshipCountry,
   type ScholarshipResult,
 } from "@/features/scholarships/types"
 import { isExpiredDeadline } from "@/lib/liveResultText"
+import { saveStudentCountry } from "@/features/student-profile/store"
 
 type SearchResponse = {
   source: "live" | "curated"
@@ -41,13 +43,14 @@ function scholarshipResultsSummary(
   return parts.join(" · ")
 }
 
-export function ScholarshipFinder() {
+export function ScholarshipFinder({ initialSchool = "" }: { initialSchool?: string }) {
+  const schoolFromUrl = initialSchool.trim()
   const { setCountry: setSearchCountry, ticket } = useSmartSearch()
   const [country, setCountry] = useState<ScholarshipCountry>("Canada")
   const [major, setMajor] = useState<string>("Any major")
   const [level, setLevel] = useState<string>("Any level")
   const [query, setQuery] = useState("")
-  const [university, setUniversity] = useState("")
+  const [university, setUniversity] = useState(schoolFromUrl)
   const [loading, setLoading] = useState(false)
   const [notice, setNotice] = useState<string | null>(null)
   const [source, setSource] = useState<"live" | "curated" | null>(null)
@@ -59,16 +62,18 @@ export function ScholarshipFinder() {
     if (!profile) return
     setCountry(profile.country)
     setSearchCountry(profile.country)
+    setLevel(normalizeScholarshipLevel(profile.level))
     if (!isProfileFilled(profile)) return
     if (profile.major) setMajor(profile.major)
-    if (profile.level) setLevel(profile.level)
-    if (profile.school.trim()) setUniversity(profile.school.trim())
+    if (profile.school.trim() && !schoolFromUrl) setUniversity(profile.school.trim())
   }
 
   async function runSearch(next: { query: string; university?: string; fromHeader?: boolean }) {
     setLoading(true)
     setError(null)
     setNotice(null)
+    setSource(null)
+    setResults([])
     setHasSearched(true)
     const fromHeader = Boolean(next.fromHeader)
     try {
@@ -90,7 +95,7 @@ export function ScholarshipFinder() {
       setSource(data.source)
       setNotice(data.notice)
     } catch {
-      setError("Could not run the search. Check your connection and try again.")
+      setError("Search didn’t work — try again")
       setResults([])
       setSource(null)
     } finally {
@@ -137,7 +142,7 @@ export function ScholarshipFinder() {
       )}
 
       <div className="mt-3 grid min-w-0 gap-3 md:mt-6 md:gap-4 lg:grid-cols-[minmax(0,22rem)_minmax(0,1fr)] lg:items-start">
-        <div className={`min-w-0 space-y-3 lg:sticky lg:top-20 lg:space-y-4 ${results.length > 0 ? "order-2" : "order-1"} lg:order-none`}>
+        <div className={`min-w-0 space-y-3 lg:sticky lg:top-20 lg:space-y-4 ${results.length > 0 || loading ? "order-2" : "order-1"} lg:order-none`}>
           <StudentProfileBox onProfileChange={applyProfile} />
 
           <form
@@ -150,6 +155,7 @@ export function ScholarshipFinder() {
               onChange={(next) => {
                 setCountry(next)
                 setSearchCountry(next)
+                saveStudentCountry(next)
               }}
               options={[
                 { value: "Canada", flag: "CA", label: "Canada" },
@@ -171,7 +177,7 @@ export function ScholarshipFinder() {
 
               <label className="block text-xs font-medium text-muted-foreground">
                 School level
-                <select className={`${selectClass} mt-1`} value={level} onChange={(e) => setLevel(e.target.value)}>
+                <select className={`${selectClass} mt-1`} value={normalizeScholarshipLevel(level)} onChange={(e) => setLevel(e.target.value)}>
                   {SCHOLARSHIP_LEVELS.map((l) => (
                     <option key={l} value={l}>
                       {scholarshipLevelLabel(l)}
@@ -204,14 +210,21 @@ export function ScholarshipFinder() {
             <button
               type="submit"
               disabled={loading}
-              className="min-h-11 w-full rounded-xl bg-[#C9A84C] text-sm font-bold text-[#07090d] transition-colors hover:bg-[#b8973f] disabled:opacity-60"
+              className="inline-flex min-h-11 w-full items-center justify-center gap-2 rounded-xl bg-[#C9A84C] px-4 text-sm font-bold text-[#07090d] transition-colors hover:bg-[#b8973f] disabled:opacity-60"
             >
-              {loading ? "Searching…" : "Find scholarships"}
+              {loading && <Loader2 className="h-4 w-4 shrink-0 animate-spin" aria-hidden="true" />}
+              Find scholarships
             </button>
           </form>
         </div>
 
-        <div className={`min-w-0 ${results.length > 0 ? "order-1" : "order-2"} lg:order-none`}>
+        <div className={`min-w-0 ${results.length > 0 || loading ? "order-1" : "order-2"} lg:order-none`}>
+          {loading && (
+            <p className="text-sm text-muted-foreground" aria-live="polite">
+              Searching official pages…
+            </p>
+          )}
+
           {error && (
             <p className="break-words rounded-xl border border-red-300 bg-red-50 px-3 py-2 text-sm text-red-700 md:px-4 md:py-3 dark:border-red-900 dark:bg-red-950/40 dark:text-red-300">
               {error}

@@ -19,7 +19,11 @@ import {
   MARKETPLACE_PRODUCTS,
 } from "@/features/marketplace/data/products"
 import type { Country, ProductCategory } from "@/features/marketplace/types"
-import { getStudentProfile, subscribeStudentProfile } from "@/features/student-profile/store"
+import {
+  getStoredCountry,
+  saveStudentCountry,
+  subscribeStudentProfile,
+} from "@/features/student-profile/store"
 
 const COUNTRY_COPY: Record<Country, { name: string; intro: string }> = {
   CA: {
@@ -47,8 +51,8 @@ export function MarketplaceHome() {
 
   useEffect(() => {
     const sync = () => {
-      const profile = getStudentProfile()
-      if (profile) setCountry(profile.country === "USA" ? "US" : "CA")
+      const stored = getStoredCountry()
+      if (stored) setCountry(stored === "USA" ? "US" : "CA")
     }
     sync()
     return subscribeStudentProfile(sync)
@@ -98,6 +102,15 @@ export function MarketplaceHome() {
             </Link>
             <span className="text-muted-foreground"> — optional, saved in this browser.</span>
           </p>
+          <p className="mt-2 text-sm">
+            <Link
+              href="/schools"
+              className="font-medium text-[#8B6914] underline dark:text-[#C9A84C]"
+            >
+              School scholarship pages
+            </Link>
+            <span className="text-muted-foreground"> — official awards and aid by school.</span>
+          </p>
           {country === "CA" && (
             <p className="mt-2 text-sm">
               <Link
@@ -112,7 +125,10 @@ export function MarketplaceHome() {
         <CountryToggle
           className="grid w-full grid-cols-2 gap-2 lg:w-[22rem] lg:shrink-0"
           value={country}
-          onChange={setCountry}
+          onChange={(next) => {
+            setCountry(next)
+            saveStudentCountry(next === "US" ? "USA" : "Canada")
+          }}
           options={[
             { value: "CA", flag: "CA", label: "Canada" },
             { value: "US", flag: "US", label: "United States" },
@@ -141,7 +157,7 @@ export function MarketplaceHome() {
         </section>
       ))}
 
-      <section className="mt-8 grid gap-3 sm:grid-cols-2 lg:mt-10">
+      <section className="mt-8 grid gap-3 sm:grid-cols-2 lg:mt-10 lg:grid-cols-3">
         <Link
           href="/scholarships"
           className="interactive-card flex items-start gap-3 rounded-2xl border border-border bg-card p-4 sm:p-5"
@@ -153,6 +169,20 @@ export function MarketplaceHome() {
             <h2 className="font-semibold text-foreground">Scholarship Finder</h2>
             <p className="mt-1 text-sm text-muted-foreground">
               Search awards by country and major →
+            </p>
+          </div>
+        </Link>
+        <Link
+          href="/schools"
+          className="interactive-card flex items-start gap-3 rounded-2xl border border-border bg-card p-4 sm:p-5"
+        >
+          <span className="inline-flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-[#C9A84C]/15 text-[#8B6914]">
+            <GraduationCap className="h-4 w-4" aria-hidden="true" />
+          </span>
+          <div>
+            <h2 className="font-semibold text-foreground">Schools</h2>
+            <p className="mt-1 text-sm text-muted-foreground">
+              Official awards pages by school →
             </p>
           </div>
         </Link>

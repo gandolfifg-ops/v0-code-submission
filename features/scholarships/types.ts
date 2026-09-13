@@ -52,8 +52,23 @@ export const SCHOLARSHIP_LEVEL_LABELS: Record<(typeof SCHOLARSHIP_LEVELS)[number
 }
 
 export function scholarshipLevelLabel(level: string): string {
-  if (level in SCHOLARSHIP_LEVEL_LABELS) {
-    return SCHOLARSHIP_LEVEL_LABELS[level as (typeof SCHOLARSHIP_LEVELS)[number]]
+  return SCHOLARSHIP_LEVEL_LABELS[normalizeScholarshipLevel(level)]
+}
+
+/** Map saved or display text onto the shared internal level values. */
+export function normalizeScholarshipLevel(level: string): (typeof SCHOLARSHIP_LEVELS)[number] {
+  const trimmed = level.trim()
+  if (!trimmed) return "Any level"
+  for (const value of SCHOLARSHIP_LEVELS) {
+    if (value === trimmed || SCHOLARSHIP_LEVEL_LABELS[value] === trimmed) return value
   }
-  return level
+  const lower = trimmed.toLowerCase()
+  if (lower.includes("high school") || lower.includes("applying to") || lower.includes("entering college")) {
+    return "High school / entering college"
+  }
+  if (/\bgraduate\b/.test(lower) && !/under/.test(lower)) return "Graduate"
+  if (lower.includes("undergrad") || lower.includes("first-year") || lower.includes("first year")) {
+    return "Undergraduate"
+  }
+  return "Any level"
 }

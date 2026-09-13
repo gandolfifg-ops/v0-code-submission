@@ -2,20 +2,21 @@ import { Fragment, type ReactNode } from "react"
 
 function inlineMarkdown(text: string, keyPrefix: string): ReactNode[] {
   const nodes: ReactNode[] = []
-  const re = /(\*\*[^*]+?\*\*|`[^`]+?`)/g
+  const re =
+    /(\*\*[^*]+?\*\*|__[^_]+?__|`[^`]+?`|\[[^\]]+\]\(https?:\/\/[^)]+\)|\*[^*\n]+?\*)/g
   let last = 0
   let i = 0
   let match: RegExpExecArray | null
   while ((match = re.exec(text))) {
-    if (match.index > last) nodes.push(text.slice(last, match.index))
+    if (match.index > last) nodes.push(stripLeftoverMarkers(text.slice(last, match.index)))
     const token = match[0]
-    if (token.startsWith("**")) {
+    if (token.startsWith("**") || token.startsWith("__")) {
       nodes.push(
         <strong key={`${keyPrefix}-b-${i++}`} className="font-semibold text-foreground">
           {token.slice(2, -2)}
         </strong>,
       )
-    } else {
+    } else if (token.startsWith("`")) {
       nodes.push(
         <code
           key={`${keyPrefix}-c-${i++}`}
@@ -24,28 +25,62 @@ function inlineMarkdown(text: string, keyPrefix: string): ReactNode[] {
           {token.slice(1, -1)}
         </code>,
       )
+    } else if (token.startsWith("[")) {
+      const link = token.match(/^\[([^\]]+)\]\((https?:\/\/[^)]+)\)$/)
+      if (link) {
+        nodes.push(
+          <a
+            key={`${keyPrefix}-a-${i++}`}
+            href={link[2]}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="font-medium text-[#8B6914] underline underline-offset-2 dark:text-[#C9A84C]"
+          >
+            {link[1]}
+          </a>,
+        )
+      }
+    } else {
+      nodes.push(
+        <em key={`${keyPrefix}-i-${i++}`} className="italic">
+          {token.slice(1, -1)}
+        </em>,
+      )
     }
     last = match.index + token.length
   }
-  if (last < text.length) nodes.push(text.slice(last))
+  if (last < text.length) nodes.push(stripLeftoverMarkers(text.slice(last)))
   return nodes
 }
 
-function headingLevel(line: string): 1 | 2 | 3 | null {
-  if (line.startsWith("### ")) return 3
-  if (line.startsWith("## ")) return 2
-  if (line.startsWith("# ")) return 1
-  return null
+/** Drop unmatched heading/bold markers the model leaves in prose. */
+function stripLeftoverMarkers(text: string): string {
+  return text
+    .replace(/#{2,6}/g, "")
+    .replace(/\*\*/g, "")
+    .replace(/__/g, "")
+}
+
+function parseHeading(line: string): { level: 1 | 2 | 3; text: string } | null {
+  const match = line.match(/^\s{0,3}(#{1,6})(?:\s+|$)(.*?)(?:\s+#+\s*)?$/)
+  if (!match) {
+    const glued = line.match(/^\s{0,3}(#{1,6})(\S.*)$/)
+    if (!glued) return null
+    const level = Math.min(glued[1].length, 3) as 1 | 2 | 3
+    return { level, text: glued[2].replace(/\s+#+\s*$/, "").trim() }
+  }
+  const level = Math.min(match[1].length, 3) as 1 | 2 | 3
+  return { level, text: match[2].trim() }
 }
 
 function listMarker(line: string): "ul" | "ol" | null {
-  if (/^\s*[-*]\s+/.test(line)) return "ul"
-  if (/^\s*\d+\.\s+/.test(line)) return "ol"
+  if (/^\s*[-*+•]\s+/.test(line)) return "ul"
+  if (/^\s*\d+[.)]\s+/.test(line)) return "ol"
   return null
 }
 
 function listItemText(line: string): string {
-  return line.replace(/^\s*(?:[-*]|\d+\.)\s+/, "")
+  return line.replace(/^\s*(?:[-*+•]|\d+[.)])\s+/, "")
 }
 
 export function ChatMarkdown({ content }: { content: string }) {
@@ -55,26 +90,27 @@ export function ChatMarkdown({ content }: { content: string }) {
 
   while (i < lines.length) {
     const line = lines[i]
-    if (line.trim() === "") {
+    if (line.trim() === "" || /^[-_*]{3,}$/.test(line.trim())) {
       i += 1
       continue
     }
 
-    const level = headingLevel(line)
-    if (level) {
-      const text = line.replace(/^#{1,3}\s+/, "")
-      const className =
-        level === 1
-          ? "text-base font-bold text-foreground"
-          : level === 2
-            ? "text-sm font-bold text-foreground"
-            : "text-sm font-semibold text-foreground"
-      const Tag = `h${level}` as "h1" | "h2" | "h3"
-      blocks.push(
-        <Tag key={`h-${i}`} className={className}>
-          {inlineMarkdown(text, `h-${i}`)}
-        </Tag>,
-      )
+    const heading = parseHeading(line)
+    if (heading) {
+      if (heading.text) {
+        const className =
+          heading.level === 1
+            ? "text-base font-bold text-foreground"
+            : heading.level === 2
+              ? "text-sm font-bold text-foreground"
+              : "text-sm font-semibold text-foreground"
+        const Tag = `h${heading.level}` as "h1" | "h2" | "h3"
+        blocks.push(
+          <Tag key={`h-${i}`} className={className}>
+            {inlineMarkdown(heading.text, `h-${i}`)}
+          </Tag>,
+        )
+      }
       i += 1
       continue
     }
@@ -101,7 +137,12 @@ export function ChatMarkdown({ content }: { content: string }) {
 
     const start = i
     const para: string[] = []
-    while (i < lines.length && lines[i].trim() !== "" && !headingLevel(lines[i]) && !listMarker(lines[i])) {
+    while (
+      i < lines.length &&
+      lines[i].trim() !== "" &&
+      !parseHeading(lines[i]) &&
+      !listMarker(lines[i])
+    ) {
       para.push(lines[i])
       i += 1
     }

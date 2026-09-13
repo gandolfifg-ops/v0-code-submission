@@ -1,11 +1,11 @@
 import type { Metadata } from "next"
 import Link from "next/link"
+import { pageMeta } from "@/lib/seo"
 
-export const metadata: Metadata = {
-  title: "OSAP vs private student loans in Canada — WealthNutz",
-  description:
-    "How government student aid in Canada compares with private bank lines of credit. Education only — not a loan offer.",
-}
+export const metadata: Metadata = pageMeta(
+  "OSAP vs private student loans in Canada — WealthNutz",
+  "How government student aid in Canada compares with private bank lines of credit. Education only — not a loan offer.",
+)
 
 export default function OsapVsPrivateLoansPage() {
   return (

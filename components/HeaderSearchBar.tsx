@@ -7,7 +7,17 @@ import { useSmartSearch } from "@/components/SmartSearchProvider"
 
 const DEBOUNCE_MS = 200
 
-export function HeaderSearchBar() {
+type HeaderSearchBarProps = {
+  className?: string
+  inputId?: string
+  onRanSearch?: () => void
+}
+
+export function HeaderSearchBar({
+  className,
+  inputId = "header-smart-search",
+  onRanSearch,
+}: HeaderSearchBarProps) {
   const pathname = usePathname()
   const { countryCode, submitQuery } = useSmartSearch()
   const listId = useId()
@@ -68,6 +78,7 @@ export function HeaderSearchBar() {
     setValue(next)
     setOpen(false)
     submitQuery(next)
+    onRanSearch?.()
   }
 
   function onKeyDown(event: KeyboardEvent<HTMLInputElement>) {
@@ -92,8 +103,8 @@ export function HeaderSearchBar() {
   if (!show) return null
 
   return (
-    <div ref={wrapRef} className="relative min-w-0 w-full md:w-64 lg:w-72">
-      <label className="sr-only" htmlFor="header-smart-search">
+    <div ref={wrapRef} className={className ?? "relative min-w-0 w-full md:w-64 lg:w-72"}>
+      <label className="sr-only" htmlFor={inputId}>
         {placeholder}
       </label>
       <Search
@@ -101,7 +112,7 @@ export function HeaderSearchBar() {
         aria-hidden="true"
       />
       <input
-        id="header-smart-search"
+        id={inputId}
         type="text"
         autoComplete="off"
         role="combobox"

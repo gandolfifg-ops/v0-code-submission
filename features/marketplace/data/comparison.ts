@@ -3,6 +3,8 @@ import { MARKETPLACE_PRODUCTS } from "@/features/marketplace/data/products"
 export const COMPARISON_DISCLAIMER =
   "Advertised details as of September 2026. Confirm on the official site."
 
+export type ComparisonKind = "banking" | "investing" | "credit"
+
 export type ComparisonRow = {
   productId: string
   account: string
@@ -12,6 +14,7 @@ export type ComparisonRow = {
   bestFor: string
   href: string
   cta: string
+  kind?: ComparisonKind
 }
 
 function hrefFor(id: string): { href: string; cta: string } {
@@ -188,6 +191,7 @@ export const US_COMPARISON: ComparisonRow[] = [
     bestFor: "Best if you have earned income and want a Roth IRA",
     href: fidelity.href,
     cta: fidelity.cta,
+    kind: "investing",
   },
   {
     productId: "betterment",
@@ -198,6 +202,7 @@ export const US_COMPARISON: ComparisonRow[] = [
     bestFor: "Best for automated investing",
     href: betterment.href,
     cta: betterment.cta,
+    kind: "investing",
   },
   {
     productId: "discover-student",
@@ -208,5 +213,6 @@ export const US_COMPARISON: ComparisonRow[] = [
     bestFor: "Best for building credit (student card)",
     href: discover.href,
     cta: discover.cta,
+    kind: "credit",
   },
 ]

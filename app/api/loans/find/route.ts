@@ -1,6 +1,11 @@
 import { CURATED_LENDERS } from "@/features/loans/data/curated"
 import type { LoanCountry, LoanResult, LoanType } from "@/features/loans/types"
-import { cleanDisplayText, summarizeLiveSnippet } from "@/lib/liveResultText"
+import {
+  cleanDisplayText,
+  dropApplicationFormsIfProgramPageExists,
+  isApplicationFormListing,
+  summarizeLiveSnippet,
+} from "@/lib/liveResultText"
 
 export const dynamic = "force-dynamic"
 export const maxDuration = 30
@@ -76,37 +81,45 @@ export async function POST(req: Request) {
 
       if (tavilyResponse.ok) {
         const tavilyData = await tavilyResponse.json()
-        const live: LoanResult[] = (tavilyData.results ?? [])
-          .filter((r: { url?: string; score?: number }) => {
+        const liveHits = dropApplicationFormsIfProgramPageExists(
+          (tavilyData.results ?? []).filter((r: { url?: string; score?: number }) => {
             if (!r.url || !isValidHttpUrl(r.url)) return false
             if (r.url.includes("404") || r.url.includes("not-found")) return false
             if (typeof r.score === "number" && r.score < 0.3) return false
             return true
-          })
-          .map((r: { title?: string; url: string; content?: string }, i: number) => {
+          }),
+        )
+        const live: LoanResult[] = liveHits.map(
+          (r: { title?: string; url: string; content?: string }, i: number) => {
             const hostname = new URL(r.url).hostname.replace(/^www\./, "")
             const name = hostname.split(".")[0] ?? "Lender"
             const content = r.content ?? ""
+            const isForm = isApplicationFormListing(r.title ?? "", content, r.url)
             const rateMatch = content.match(/\d+\.?\d*\s*%(?:\s*APR)?/i)
             return {
               id: `live-${loanType}-${i}-${hostname}`,
-              name: cleanDisplayText(r.title ?? name).slice(0, 90),
+              name: isForm
+                ? "Official application form"
+                : cleanDisplayText(r.title ?? name).slice(0, 90),
               country,
               loanType,
               tagline: name.charAt(0).toUpperCase() + name.slice(1),
               advertisedRate: rateMatch
                 ? `Advertised ${rateMatch[0]} — confirm on official site`
                 : "Advertised rate — confirm on official site",
-              highlight: summarizeLiveSnippet(content, {
-                url: r.url,
-                title: r.title ?? "",
-                fallback: "Open the lender page for current terms.",
-              }),
+              highlight: isForm
+                ? "Official application form — open the site to apply"
+                : summarizeLiveSnippet(content, {
+                    url: r.url,
+                    title: r.title ?? "",
+                    fallback: "Open the lender page for current terms.",
+                  }),
               href: r.url,
               cta: "Open official site",
               source: "live" as const,
             }
-          })
+          },
+        )
 
         if (live.length > 0) {
           return Response.json({
@@ -125,8 +138,8 @@ export async function POST(req: Request) {
   return Response.json({
     source: "curated",
     notice: apiKey
-      ? "Live web search returned no usable results. Showing curated official lender pages — rates are advertised, not guaranteed quotes."
-      : "Live web search is not configured (missing TAVILY_API_KEY). Showing curated official lender pages — rates are advertised, not guaranteed quotes.",
+      ? "Live search didn’t find a match — here are official starting points."
+      : "Showing official starting points.",
     results: CURATED_LENDERS.filter((l) => l.country === country && l.loanType === loanType),
   })
 }

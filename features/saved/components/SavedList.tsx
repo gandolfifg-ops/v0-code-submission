@@ -55,25 +55,22 @@ export function SavedList() {
       {!ready && <p className="mt-8 text-sm text-muted-foreground">Loading saved items…</p>}
 
       {ready && items.length === 0 && (
-        <div className="mt-8 rounded-2xl border border-dashed border-border bg-muted/30 p-6">
-          <p className="font-semibold text-foreground">Nothing saved yet</p>
-          <p className="mt-2 text-sm text-muted-foreground">
-            Open a search result and tap Save. Your list will show up here.
-          </p>
-          <div className="mt-4 grid gap-3 sm:grid-cols-2">
+        <div className="mt-8 max-w-2xl">
+          <div className="grid gap-3 sm:grid-cols-2">
             <Link
               href="/scholarships"
-              className="inline-flex min-h-11 items-center justify-center rounded-xl bg-[#C9A84C] px-4 text-sm font-bold text-[#07090d] transition-colors hover:bg-[#b8973f]"
+              className="inline-flex min-h-14 items-center justify-center rounded-xl bg-[#C9A84C] px-4 text-base font-bold text-[#07090d] transition-colors hover:bg-[#b8973f]"
             >
-              Find scholarships
+              Scholarships
             </Link>
             <Link
               href="/loans"
-              className="inline-flex min-h-11 items-center justify-center rounded-xl border border-border px-4 text-sm font-semibold text-foreground transition-colors hover:bg-muted"
+              className="inline-flex min-h-14 items-center justify-center rounded-xl border border-border bg-card px-4 text-base font-bold text-foreground transition-colors hover:bg-muted"
             >
-              Find loans
+              Loans
             </Link>
           </div>
+          <p className="mt-4 text-sm text-muted-foreground">Save from a card after you search.</p>
         </div>
       )}
 

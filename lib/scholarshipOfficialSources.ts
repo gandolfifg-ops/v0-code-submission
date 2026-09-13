@@ -81,6 +81,9 @@ const SCHOOL_HINTS: { match: RegExp; hint: SchoolHint }[] = [
   { match: /\b(harvard)\b/i, hint: { name: "Harvard University", domain: "harvard.edu" } },
   { match: /\b(ucla)\b/i, hint: { name: "UCLA", domain: "ucla.edu" } },
   { match: /\b(stanford)\b/i, hint: { name: "Stanford University", domain: "stanford.edu" } },
+  { match: /\b(guelph|uoguelph|university of guelph)\b/i, hint: { name: "University of Guelph", domain: "uoguelph.ca" } },
+  { match: /\b(ontario tech|ontariotechu|uoit)\b/i, hint: { name: "Ontario Tech University", domain: "ontariotechu.ca" } },
+  { match: /\b(george brown)\b/i, hint: { name: "George Brown College", domain: "georgebrown.ca" } },
 ]
 
 function hostnameOf(url: string): string | null {
@@ -216,10 +219,44 @@ export function isOfficialSchoolPortalUrl(url: string, schoolDomains: string[] =
 const NATIONAL_AWARD_HINT =
   /\bloran\b|schulich leader|canada student grant|canada student grants|td scholarships for community|terry fox humanitarian|horatio alger|vanier canada/i
 
-export function isNationalAwardHit(url: string, title: string, content: string): boolean {
+const GENERIC_SCHOOL_TITLE_HIT = /^(western|york)$/i
+
+function isSameSearchedSchool(other: SchoolHint, searchedSchool: string): boolean {
+  const searchedHint = resolveSchoolHint(searchedSchool)
+  const searchedDomains = guessSchoolDomains(searchedSchool)
+  const searchedLabel = (searchedHint?.name ?? searchedSchool).toLowerCase()
+  return (
+    searchedHint?.domain === other.domain ||
+    searchedDomains.includes(other.domain) ||
+    searchedLabel === other.name.toLowerCase()
+  )
+}
+
+/** Title clearly names a different university than the one the user searched. */
+export function titleNamesOtherSchool(title: string, searchedSchool: string): boolean {
+  const text = title.trim()
+  if (!text || !searchedSchool.trim()) return false
+  for (const row of SCHOOL_HINTS) {
+    if (isSameSearchedSchool(row.hint, searchedSchool)) continue
+    if (text.toLowerCase().includes(row.hint.name.toLowerCase())) return true
+    const matched = text.match(row.match)
+    if (!matched) continue
+    const hit = matched[0].replace(/\s+/g, " ").trim()
+    if (GENERIC_SCHOOL_TITLE_HIT.test(hit) && !/\b(university|college|institute|université)\b/i.test(text)) {
+      continue
+    }
+    return true
+  }
+  return false
+}
+
+export function isNationalAwardHit(url: string, title: string, content = ""): boolean {
   const host = hostnameOf(url)
   if (host && isFoundationHost(host)) return true
-  return NATIONAL_AWARD_HINT.test(`${title} ${content}`)
+  if (host && (host === "canada.ca" || host.endsWith(".canada.ca")) && /student\s+grant|student\s+aid|student\s+loan/i.test(`${title} ${url}`)) {
+    return true
+  }
+  return NATIONAL_AWARD_HINT.test(title) || NATIONAL_AWARD_HINT.test(url)
 }
 
 export function isCirnacOrPolicyExplainer(url: string, title: string, content: string): boolean {
@@ -232,15 +269,6 @@ export function isCirnacOrPolicyExplainer(url: string, title: string, content: s
   return false
 }
 
-function schoolNameTokens(name: string): string[] {
-  return name
-    .toLowerCase()
-    .replace(/['’]/g, "")
-    .split(/\s+/)
-    .map((part) => part.trim())
-    .filter((part) => part.length >= 4 && !/^(university|college|institute|state)$/.test(part))
-}
-
 export function isRivalSchoolHit(
   url: string,
   title: string,
@@ -248,31 +276,18 @@ export function isRivalSchoolHit(
   searchedSchool: string,
 ): boolean {
   if (!searchedSchool.trim()) return false
-  if (isNationalAwardHit(url, title, content)) return false
+  if (titleNamesOtherSchool(title, searchedSchool)) return true
+
+  const national = isNationalAwardHit(url, title, content)
+  if (national) return false
+
   const host = hostnameOf(url)
   const searchedDomains = guessSchoolDomains(searchedSchool)
   if (host && searchedDomains.some((domain) => hostMatches(host, domain))) return false
 
-  const haystack = `${title} ${url} ${content.slice(0, 800)}`.toLowerCase()
-  const searchedHint = resolveSchoolHint(searchedSchool)
-  const searchedLabel = (searchedHint?.name ?? searchedSchool).toLowerCase()
-  const mentionsSearched =
-    haystack.includes(searchedLabel) ||
-    schoolNameTokens(searchedHint?.name ?? searchedSchool).some((token) => haystack.includes(token))
-
   for (const row of SCHOOL_HINTS) {
-    const other = row.hint
-    const isSameSchool =
-      searchedHint?.domain === other.domain ||
-      searchedDomains.includes(other.domain) ||
-      searchedLabel === other.name.toLowerCase()
-    if (isSameSchool) continue
-    if (host && hostMatches(host, other.domain)) return true
-    const otherTokens = schoolNameTokens(other.name)
-    const mentionsOther =
-      haystack.includes(other.name.toLowerCase()) ||
-      otherTokens.some((token) => new RegExp(`\\b${token}\\b`, "i").test(title))
-    if (mentionsOther && !mentionsSearched) return true
+    if (isSameSearchedSchool(row.hint, searchedSchool)) continue
+    if (host && hostMatches(host, row.hint.domain)) return true
   }
   return false
 }
@@ -349,6 +364,24 @@ export function officialSourceRank(url: string): number {
   return 2
 }
 
+/** Lower is better: award/aid paths above newsroom and press releases. */
+export function awardListingPathRank(url: string): number {
+  try {
+    const path = new URL(url).pathname.toLowerCase()
+    const isAid =
+      /(^|\/)awards(\/|$)/.test(path) ||
+      /(^|\/)scholarships(\/|$)/.test(path) ||
+      /(^|\/)financial-aid(\/|$)/.test(path) ||
+      /(^|\/)bursar/.test(path)
+    const isNews = /(^|\/)newsroom(\/|$)|(^|\/)press-releases?(\/|$)/.test(path)
+    if (isAid) return 0
+    if (isNews) return 2
+    return 1
+  } catch {
+    return 1
+  }
+}
+
 export function compareScholarshipResults(
   a: { url?: string; score?: number },
   b: { url?: string; score?: number },
@@ -357,6 +390,9 @@ export function compareScholarshipResults(
   const aidA = isSchoolAidHubUrl(a.url ?? "", schoolDomains) ? 0 : 1
   const aidB = isSchoolAidHubUrl(b.url ?? "", schoolDomains) ? 0 : 1
   if (aidA !== aidB) return aidA - aidB
+  const pathA = awardListingPathRank(a.url ?? "")
+  const pathB = awardListingPathRank(b.url ?? "")
+  if (pathA !== pathB) return pathA - pathB
   const schoolA = isOfficialSchoolPortalUrl(a.url ?? "", schoolDomains) ? 0 : 1
   const schoolB = isOfficialSchoolPortalUrl(b.url ?? "", schoolDomains) ? 0 : 1
   if (schoolA !== schoolB) return schoolA - schoolB

@@ -16,6 +16,56 @@ export function cleanDisplayText(input: string): string {
   return text.trim()
 }
 
+const APPLICATION_FORM_SNIPPET = "Official application form — open the site to apply"
+
+const FORM_SIGNALS =
+  /protected\s*b\b|page\s+\d+\s+of\s+\d+|\bapplication form\b|\bfillable (?:pdf|form)\b|\bpdf form\b|\bfor office use only\b|\bplease (?:print|complete|fill|sign)\b|\bblock letters\b/i
+
+/** Title/snippet looks like a downloadable or government application form — not a program page. */
+export function isApplicationFormListing(title: string, snippet: string, url = ""): boolean {
+  const titleText = title.trim()
+  const blob = `${titleText}\n${snippet}`
+  if (FORM_SIGNALS.test(blob) || FORM_SIGNALS.test(titleText)) return true
+  if (/^\s*(application(?: form)?|formulaire)\s*$/i.test(titleText)) return true
+  if (/\.pdf(\?|$)/i.test(url) && /(?:\bapply\b|\bapplication\b|\bform\b)/i.test(blob)) return true
+  return false
+}
+
+function hostnameKey(url: string): string {
+  try {
+    return new URL(url).hostname.replace(/^www\./i, "").toLowerCase()
+  } catch {
+    return ""
+  }
+}
+
+/** Drop form/PDF hits when the same host already has a normal program page. */
+export function dropApplicationFormsIfProgramPageExists<
+  T extends { url?: string; title?: string; content?: string },
+>(hits: T[]): T[] {
+  const programHosts = new Set<string>()
+  for (const hit of hits) {
+    if (!hit.url) continue
+    if (isApplicationFormListing(hit.title ?? "", hit.content ?? "", hit.url)) continue
+    const host = hostnameKey(hit.url)
+    if (host) programHosts.add(host)
+  }
+  return hits.filter((hit) => {
+    if (!hit.url) return true
+    if (!isApplicationFormListing(hit.title ?? "", hit.content ?? "", hit.url)) return true
+    const host = hostnameKey(hit.url)
+    return !host || !programHosts.has(host)
+  })
+}
+
+export function applicationFormDisplayTitle(title: string): string {
+  const cleaned = cleanDisplayText(title)
+  if (!cleaned || FORM_SIGNALS.test(cleaned) || /^\s*application(?: form)?\s*$/i.test(cleaned)) {
+    return "Official application form"
+  }
+  return cleaned.slice(0, 100)
+}
+
 const JUNK =
   /protected\s*b\b|copyright|all rights reserved|privacy (?:policy|statement)|terms of (?:use|service)|skip to(?: main)? content|javascript must be enabled|enable cookies|click here to (?:download|print|apply)|print this (?:form|page)|fill(?:able)? form|date of birth|social insurance|sin number|income table|household income|line \d+|box \d+|ocr error|�{2,}/i
 
@@ -66,9 +116,12 @@ function scoreSentence(s: string, title: string): number {
   return n
 }
 
-function detectListingKind(url: string, text: string): "pdf" | "news" | "page" {
+function detectListingKind(url: string, text: string): "form" | "pdf" | "news" | "page" {
   const blob = `${url} ${text}`.toLowerCase()
-  if (/\.pdf(\?|$)/i.test(url) || blob.includes("application form") || blob.includes("fillable pdf")) {
+  if (isApplicationFormListing("", text, url) || blob.includes("application form") || blob.includes("fillable pdf")) {
+    return "form"
+  }
+  if (/\.pdf(\?|$)/i.test(url)) {
     return "pdf"
   }
   if (/news[- ]?release|press release|media release/.test(blob)) return "news"
@@ -93,10 +146,13 @@ export function summarizeLiveSnippet(
   const url = opts?.url ?? ""
   const title = opts?.title ?? ""
   const fallback = opts?.fallback ?? "See the official listing for eligibility details."
-  const kind = detectListingKind(url, input)
+  const kind = detectListingKind(url, `${title}\n${input}`)
+  if (kind === "form" || isApplicationFormListing(title, input, url)) {
+    return APPLICATION_FORM_SNIPPET
+  }
   const prefix =
     kind === "pdf"
-      ? "This listing is a PDF application form — open the official site to apply. "
+      ? "This listing is a PDF — open the official site for the full document. "
       : kind === "news"
         ? "This is a news release. Confirm current details on the official page. "
         : ""
@@ -125,8 +181,9 @@ export function summarizeLiveSnippet(
 
   const body = `${prefix}${picked.join(" ")}`.trim()
   if (!body) {
+    if (kind === "form") return APPLICATION_FORM_SNIPPET
     if (kind === "pdf") {
-      return "This listing is a PDF application form — open the official site to apply."
+      return "This listing is a PDF — open the official site for the full document."
     }
     if (kind === "news") {
       return "This is a news release. Confirm current details on the official page."

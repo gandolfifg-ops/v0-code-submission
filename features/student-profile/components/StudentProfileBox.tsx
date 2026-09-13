@@ -8,6 +8,7 @@ import {
   SCHOLARSHIP_LEVELS,
   SCHOLARSHIP_MAJORS,
   scholarshipLevelLabel,
+  normalizeScholarshipLevel,
 } from "@/features/scholarships/types"
 import {
   getStudentProfile,
@@ -60,6 +61,7 @@ export function StudentProfileBox({ onProfileChange }: StudentProfileBoxProps) {
     persist({
       ...draft,
       school: draft.school.trim(),
+      level: normalizeScholarshipLevel(draft.level),
     })
   }
 
@@ -150,10 +152,10 @@ export function StudentProfileBox({ onProfileChange }: StudentProfileBoxProps) {
             />
           </label>
           <label className="block text-xs font-medium text-muted-foreground">
-            Year / level
+            School level
             <select
               className={`${fieldClass} mt-1`}
-              value={draft.level}
+              value={normalizeScholarshipLevel(draft.level)}
               onChange={(e) => setDraft((prev) => ({ ...prev, level: e.target.value }))}
             >
               {SCHOLARSHIP_LEVELS.map((level) => (

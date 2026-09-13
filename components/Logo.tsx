@@ -28,7 +28,7 @@ export function Logo({ size = 32, showText = false, href = "/" }: LogoProps) {
         />
       </span>
       {showText && (
-        <span className="text-xs font-black uppercase tracking-tight text-[#C9A84C] sm:text-sm md:text-base">
+        <span className="whitespace-nowrap text-xs font-black uppercase tracking-tight text-[#C9A84C] sm:text-sm md:text-base">
           WealthNutz
         </span>
       )}

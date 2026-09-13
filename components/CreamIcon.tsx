@@ -14,7 +14,14 @@ export function CreamIcon({ icon: Icon, size = "md", className = "", variant = "
   const glyph = size === "sm" ? "h-3.5 w-3.5" : size === "lg" ? "h-6 w-6" : "h-4 w-4"
 
   if (variant === "onGold") {
-    return <Icon className={`${glyph} shrink-0 text-[#F5E6C8] ${className}`} strokeWidth={1.75} aria-hidden="true" />
+    return (
+      <Icon
+        className={`${glyph} shrink-0 !text-[#FFF8E7] ${className}`}
+        color="#FFF8E7"
+        strokeWidth={1.75}
+        aria-hidden="true"
+      />
+    )
   }
 
   return (

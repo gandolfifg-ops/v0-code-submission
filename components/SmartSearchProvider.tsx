@@ -1,7 +1,7 @@
 "use client"
 
 import { createContext, useCallback, useContext, useEffect, useMemo, useState, type ReactNode } from "react"
-import { getStudentProfile, subscribeStudentProfile } from "@/features/student-profile/store"
+import { getStoredCountry, subscribeStudentProfile } from "@/features/student-profile/store"
 
 export type SearchCountry = "Canada" | "USA"
 
@@ -26,8 +26,8 @@ export function SmartSearchProvider({ children }: { children: ReactNode }) {
 
   useEffect(() => {
     const sync = () => {
-      const profile = getStudentProfile()
-      if (profile) setCountry(profile.country)
+      const stored = getStoredCountry()
+      if (stored) setCountry(stored)
     }
     sync()
     return subscribeStudentProfile(sync)

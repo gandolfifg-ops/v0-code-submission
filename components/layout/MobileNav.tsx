@@ -2,6 +2,7 @@
 
 import Link from "next/link"
 import { usePathname } from "next/navigation"
+import { HeaderSearchBar } from "@/components/HeaderSearchBar"
 import { ALL_NAV, isActivePath } from "@/lib/constants/nav"
 import { NAV_ICONS } from "@/lib/constants/navIcons"
 import { X } from "lucide-react"
@@ -36,6 +37,15 @@ export function MobileNav({ open, onClose }: MobileNavProps) {
             <X className="h-5 w-5" />
           </button>
         </div>
+        {(pathname === "/scholarships" || pathname === "/loans") && (
+          <div className="border-b border-border px-3 py-3">
+            <HeaderSearchBar
+              className="relative min-w-0 w-full"
+              inputId="mobile-smart-search"
+              onRanSearch={onClose}
+            />
+          </div>
+        )}
         <nav className="flex flex-1 flex-col gap-1 overflow-y-auto p-3">
           {ALL_NAV.map((link) => {
             const active = isActivePath(pathname, link.href)
