@@ -1,9 +1,15 @@
 import { Fragment, type ReactNode } from "react"
 
+function markdownLink(token: string): { label: string; href: string; external: boolean } | null {
+  const match = token.match(/^\[([^\]]+)\]\((https?:\/\/[^)]+|\/[a-zA-Z0-9/_\-#?=&%.]+)\)$/)
+  if (!match) return null
+  return { label: match[1], href: match[2], external: match[2].startsWith("http") }
+}
+
 function inlineMarkdown(text: string, keyPrefix: string): ReactNode[] {
   const nodes: ReactNode[] = []
   const re =
-    /(\*\*[^*]+?\*\*|__[^_]+?__|`[^`]+?`|\[[^\]]+\]\(https?:\/\/[^)]+\)|\*[^*\n]+?\*)/g
+    /(\*\*[^*]+?\*\*|__[^_]+?__|`[^`]+?`|\[[^\]]+\]\((?:https?:\/\/[^)]+|\/[a-zA-Z0-9/_\-#?=&%.]+)\)|\*[^*\n]+?\*|\/(?:scholarships|guides|loans|schools)(?:\/[a-z0-9-]+)?)(?![a-zA-Z0-9/])/g
   let last = 0
   let i = 0
   let match: RegExpExecArray | null
@@ -26,20 +32,31 @@ function inlineMarkdown(text: string, keyPrefix: string): ReactNode[] {
         </code>,
       )
     } else if (token.startsWith("[")) {
-      const link = token.match(/^\[([^\]]+)\]\((https?:\/\/[^)]+)\)$/)
+      const link = markdownLink(token)
       if (link) {
         nodes.push(
           <a
             key={`${keyPrefix}-a-${i++}`}
-            href={link[2]}
-            target="_blank"
-            rel="noopener noreferrer"
+            href={link.href}
+            {...(link.external
+              ? { target: "_blank", rel: "noopener noreferrer" }
+              : {})}
             className="font-medium text-link underline underline-offset-2"
           >
-            {link[1]}
+            {link.label}
           </a>,
         )
       }
+    } else if (token.startsWith("/")) {
+      nodes.push(
+        <a
+          key={`${keyPrefix}-p-${i++}`}
+          href={token}
+          className="font-medium text-link underline underline-offset-2"
+        >
+          {token}
+        </a>,
+      )
     } else {
       nodes.push(
         <em key={`${keyPrefix}-i-${i++}`} className="italic">

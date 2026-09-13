@@ -6,7 +6,7 @@ import { Send } from "lucide-react"
 import { ChatMarkdown } from "@/features/chat/components/ChatMarkdown"
 import { ChatDeepLinks } from "@/features/chat/components/ChatDeepLinks"
 import { SavedChats } from "@/features/chat/components/SavedChats"
-import { CHAT_SYSTEM_PROMPT, SUGGESTIONS } from "@/features/chat/constants"
+import { chatSuggestions } from "@/features/chat/constants"
 import {
   createEmptyThread,
   deleteChatThread,
@@ -18,7 +18,12 @@ import {
   type ChatMessage,
   type ChatThread,
 } from "@/features/chat/storage"
-import { getStoredCountry } from "@/features/student-profile/store"
+import {
+  getStoredCountry,
+  getStudentProfile,
+  subscribeStudentProfile,
+} from "@/features/student-profile/store"
+import type { StudentCountry } from "@/features/student-profile/types"
 
 type Msg = ChatMessage
 
@@ -61,9 +66,20 @@ export function StudentChat() {
   const [input, setInput] = useState("")
   const [loading, setLoading] = useState(false)
   const [threadReady, setThreadReady] = useState(false)
+  const [country, setCountry] = useState<StudentCountry | null>(null)
+  const [school, setSchool] = useState("")
   const bottomRef = useRef<HTMLDivElement>(null)
   const threadsRef = useRef<ChatThread[]>([])
   const activeIdRef = useRef("")
+
+  useEffect(() => {
+    const sync = () => {
+      setCountry(getStoredCountry())
+      setSchool(getStudentProfile()?.school.trim() ?? "")
+    }
+    sync()
+    return subscribeStudentProfile(sync)
+  }, [])
 
   useEffect(() => {
     const loaded = readChatThreads()
@@ -130,8 +146,8 @@ export function StudentChat() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           messages: nextMsgs,
-          system: CHAT_SYSTEM_PROMPT,
-          country: getStoredCountry(),
+          country: getStoredCountry() ?? country,
+          school: getStudentProfile()?.school.trim() || school,
         }),
       })
 
@@ -220,6 +236,7 @@ export function StudentChat() {
     return `${userText}\n${assistantContent}`
   }
 
+  const suggestions = chatSuggestions(country)
   const hasSaved = threads.some((t) => t.messages.length > 0)
   const showNewChat = threadReady && (msgs.length > 0 || hasSaved)
 
@@ -275,7 +292,14 @@ export function StudentChat() {
             {threadReady && msgs.length === 0 && (
               <div className="space-y-2">
                 <p className="text-sm text-muted-foreground">Try a question:</p>
-                {SUGGESTIONS.map((s) => (
+                <p className="text-xs text-muted-foreground">
+                  These follow your profile country (
+                  {country === "USA" ? "United States" : "Canada"}).{" "}
+                  <Link href="/scholarships#student-profile" className="font-medium text-link underline">
+                    Change in profile
+                  </Link>
+                </p>
+                {suggestions.map((s) => (
                   <button
                     key={s}
                     type="button"
@@ -301,7 +325,10 @@ export function StudentChat() {
                   m.content ? (
                     <>
                       <ChatMarkdown content={m.content} />
-                      <ChatDeepLinks content={deepLinkContext(i, m.content)} />
+                      <ChatDeepLinks
+                        content={deepLinkContext(i, m.content)}
+                        country={country}
+                      />
                     </>
                   ) : loading && i === msgs.length - 1 ? (
                     "…"

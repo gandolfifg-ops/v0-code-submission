@@ -1,25 +1,33 @@
 import Link from "next/link"
 import { extractChatDeepLinks } from "@/features/chat/deepLinks"
+import type { StudentCountry } from "@/features/student-profile/types"
 
-export function ChatDeepLinks({ content }: { content: string }) {
-  const links = extractChatDeepLinks(content)
+export function ChatDeepLinks({
+  content,
+  country = null,
+}: {
+  content: string
+  country?: StudentCountry | null
+}) {
+  const links = extractChatDeepLinks(content, country)
   if (links.length === 0) return null
 
   return (
-    <div className="mt-3 flex flex-wrap gap-2">
-      {links.map((link) => (
-        <Link
-          key={link.href}
-          href={link.href}
-          className={
-            link.label === "Loans" || link.label === "Marketplace"
-              ? "inline-flex min-h-12 items-center rounded-xl border-2 border-gold bg-gold px-5 py-2.5 text-base font-bold text-gold-foreground underline underline-offset-4 transition-colors hover:bg-gold-hover"
-              : "inline-flex min-h-11 items-center rounded-xl border-2 border-gold bg-gold px-3.5 text-sm font-semibold text-gold-foreground underline underline-offset-4 transition-colors hover:bg-gold-hover"
-          }
-        >
-          {link.label}
-        </Link>
-      ))}
+    <div className="mt-3">
+      <p className="text-[11px] font-semibold uppercase tracking-wide text-muted-foreground">
+        Sources
+      </p>
+      <div className="mt-1.5 flex flex-wrap gap-1.5">
+        {links.map((link) => (
+          <Link
+            key={link.href}
+            href={link.href}
+            className="inline-flex min-h-11 items-center rounded-full border border-border bg-muted/70 px-3 text-xs font-medium text-foreground transition-colors hover:bg-muted"
+          >
+            {link.label}
+          </Link>
+        ))}
+      </div>
     </div>
   )
 }
