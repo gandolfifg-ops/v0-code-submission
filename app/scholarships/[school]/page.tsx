@@ -19,15 +19,21 @@ export async function generateMetadata({ params }: SchoolRouteProps): Promise<Me
     return pageMeta(
       "School scholarships — WealthNutz",
       "Official starting points for scholarships and student aid at Canadian schools.",
+      "/schools",
     )
   }
-  if (slug === "queens") {
+  if (slug === "queens" || school.slug === "queens") {
     return pageMeta(
       "Queen’s University scholarships and student awards — WealthNutz",
       "Official Queen’s Student Awards, Smith Engineering bursaries, OSAP, NSLSC, Loran, and Schulich Leaders. Confirm amounts and deadlines on Queen’s and government sites.",
+      "/scholarships/queens",
     )
   }
-  return pageMeta(`${school.name} scholarships — WealthNutz`, school.description)
+  return pageMeta(
+    `${school.name} scholarships — WealthNutz`,
+    school.description,
+    schoolPagePath(school),
+  )
 }
 
 export default async function SchoolScholarshipsRoute({ params }: SchoolRouteProps) {

@@ -7,6 +7,7 @@ import { pageMeta } from "@/lib/seo"
 export const metadata: Metadata = pageMeta(
   "Best student bank accounts in Canada (2026) — WealthNutz",
   "Compare advertised no-fee student and everyday bank accounts in Canada. Confirm fees and offers on the official site before you apply.",
+  "/guides/best-student-bank-canada",
 )
 
 export default function BestStudentBankCanadaPage() {

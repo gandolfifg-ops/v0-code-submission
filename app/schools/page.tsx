@@ -1,12 +1,13 @@
 import type { Metadata } from "next"
 import Link from "next/link"
 import { SCHOOL_PAGES, schoolPagePath } from "@/features/scholarships/schools"
+import { pageMeta } from "@/lib/seo"
 
-export const metadata: Metadata = {
-  title: "School scholarship pages — WealthNutz",
-  description:
-    "Official starting points for scholarships and student aid at Canadian schools. US school pages coming later.",
-}
+export const metadata: Metadata = pageMeta(
+  "School scholarship pages — WealthNutz",
+  "Official starting points for scholarships and student aid at Canadian schools. US school pages coming later.",
+  "/schools",
+)
 
 const CANADA_SCHOOLS = [...SCHOOL_PAGES].sort((a, b) => a.name.localeCompare(b.name))
 

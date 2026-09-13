@@ -13,14 +13,21 @@ const nextConfig = {
   productionBrowserSourceMaps: false,
   async redirects() {
     return [
-      { source: "/scholarships/York", destination: "/scholarships/york", permanent: true },
-      { source: "/scholarships/OntarioTech", destination: "/scholarships/ontario-tech", permanent: true },
-      { source: "/scholarships/Guelph", destination: "/scholarships/guelph", permanent: true },
-      { source: "/scholarships/UBC", destination: "/scholarships/ubc", permanent: true },
-      { source: "/scholarships/Western University", destination: "/scholarships/western", permanent: true },
-      { source: "/scholarships/Western%20University", destination: "/scholarships/western", permanent: true },
-      { source: "/scholarships/George Brown College", destination: "/scholarships/george-brown", permanent: true },
-      { source: "/scholarships/George%20Brown%20College", destination: "/scholarships/george-brown", permanent: true },
+      { source: "/scholarships/York", destination: "/scholarships/york", statusCode: 308 },
+      { source: "/scholarships/OntarioTech", destination: "/scholarships/ontario-tech", statusCode: 308 },
+      { source: "/scholarships/Guelph", destination: "/scholarships/guelph", statusCode: 308 },
+      { source: "/scholarships/UBC", destination: "/scholarships/ubc", statusCode: 308 },
+      { source: "/scholarships/Western University", destination: "/scholarships/western", statusCode: 308 },
+      { source: "/scholarships/Western%20University", destination: "/scholarships/western", statusCode: 308 },
+      { source: "/scholarships/George Brown College", destination: "/scholarships/george-brown", statusCode: 308 },
+      { source: "/scholarships/George%20Brown%20College", destination: "/scholarships/george-brown", statusCode: 308 },
+      { source: "/scholarships/university-of-toronto", destination: "/scholarships/u-of-t", statusCode: 308 },
+    ]
+  },
+  async rewrites() {
+    return [
+      { source: "/favicon.ico", destination: "/icon" },
+      { source: "/og.png", destination: "/opengraph-image" },
     ]
   },
 }

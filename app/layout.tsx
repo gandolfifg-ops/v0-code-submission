@@ -11,6 +11,7 @@ const inter = Inter({ subsets: ["latin"] })
 export const metadata: Metadata = pageMeta(
   "WealthNutz — Student finance for Canada and the US",
   "Student banking, scholarships, and loans in Canada and the US. Education only — confirm details on official sites.",
+  "/",
 )
 
 export default function RootLayout({

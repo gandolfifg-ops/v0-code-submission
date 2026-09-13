@@ -5,6 +5,7 @@ import { pageMeta } from "@/lib/seo"
 export const metadata: Metadata = pageMeta(
   "Scholarship search for Canada and the US — WealthNutz",
   "Search university, government, and foundation scholarship pages. Amounts and deadlines may be incomplete — confirm on the official award page.",
+  "/scholarships",
 )
 
 type ScholarshipsPageProps = {

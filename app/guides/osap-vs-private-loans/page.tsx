@@ -5,6 +5,7 @@ import { pageMeta } from "@/lib/seo"
 export const metadata: Metadata = pageMeta(
   "OSAP vs private student loans in Canada — WealthNutz",
   "How government student aid in Canada compares with private bank lines of credit. Education only — not a loan offer.",
+  "/guides/osap-vs-private-loans",
 )
 
 export default function OsapVsPrivateLoansPage() {

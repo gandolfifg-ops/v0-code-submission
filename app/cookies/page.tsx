@@ -1,5 +1,13 @@
 import Link from "next/link"
+import type { Metadata } from "next"
 import { InfoPage } from "@/components/layout/InfoPage"
+import { pageMeta } from "@/lib/seo"
+
+export const metadata: Metadata = pageMeta(
+  "Cookies — WealthNutz",
+  "How WealthNutz uses cookies to run the site and measure affiliate referrals. Last updated September 2026.",
+  "/cookies",
+)
 
 export default function CookiesPage() {
   return (

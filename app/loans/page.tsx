@@ -5,6 +5,7 @@ import { pageMeta } from "@/lib/seo"
 export const metadata: Metadata = pageMeta(
   "Student loan tools for Canada and the US — WealthNutz",
   "Find advertised student, personal, and auto lenders and estimate a payment. Listed rates are not guaranteed quotes.",
+  "/loans",
 )
 
 export default function LoansPage() {

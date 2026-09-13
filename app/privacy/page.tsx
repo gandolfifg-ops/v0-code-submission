@@ -1,5 +1,13 @@
+import type { Metadata } from "next"
 import Link from "next/link"
 import { InfoPage } from "@/components/layout/InfoPage"
+import { pageMeta } from "@/lib/seo"
+
+export const metadata: Metadata = pageMeta(
+  "Privacy — WealthNutz",
+  "How WealthNutz handles data. We do not sell personal information. Last updated September 2026.",
+  "/privacy",
+)
 
 export default function PrivacyPage() {
   return (

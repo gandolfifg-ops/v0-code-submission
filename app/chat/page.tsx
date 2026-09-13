@@ -5,6 +5,7 @@ import { pageMeta } from "@/lib/seo"
 export const metadata: Metadata = pageMeta(
   "Student finance chat — WealthNutz",
   "Ask about scholarships, student loans, and banking in Canada or the US. General education only — not personalized financial advice.",
+  "/chat",
 )
 
 export default function ChatPage() {

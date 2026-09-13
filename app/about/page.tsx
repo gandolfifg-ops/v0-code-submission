@@ -1,4 +1,12 @@
+import type { Metadata } from "next"
 import { InfoPage } from "@/components/layout/InfoPage"
+import { pageMeta } from "@/lib/seo"
+
+export const metadata: Metadata = pageMeta(
+  "About — WealthNutz",
+  "WealthNutz helps students in Canada and the US find scholarships, loans, and student banking. Education only — not a licensed advisor.",
+  "/about",
+)
 
 export default function AboutPage() {
   return (
