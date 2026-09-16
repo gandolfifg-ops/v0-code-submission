@@ -29,7 +29,7 @@ export function HeaderSearchBar({
   const [loading, setLoading] = useState(false)
   const [activeIndex, setActiveIndex] = useState(-1)
 
-  const placeholder = "Search schools, OSAP, EQ Bank…"
+  const placeholder = "Search"
 
   useEffect(() => {
     const q = value.trim()

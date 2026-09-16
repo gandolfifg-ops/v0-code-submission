@@ -1,5 +1,8 @@
+"use client"
+
 import { Banknote, Car, GraduationCap, Landmark } from "lucide-react"
 import { CreamIcon } from "@/components/CreamIcon"
+import { ExpandableText } from "@/components/ExpandableText"
 import type { LoanListingKind, LoanResult, LoanType } from "@/features/loans/types"
 import { FollowThrough } from "@/features/student-profile/components/FollowThrough"
 import { loanCardKind, prettyIssuerName } from "@/lib/listingDisplay"
@@ -51,9 +54,12 @@ export function LenderCard({ lender }: { lender: LoanResult }) {
         </div>
       </div>
       <h3 className="min-w-0 break-words text-base font-semibold text-foreground">{name}</h3>
-      <p className="mt-2 line-clamp-2 min-w-0 break-words text-sm leading-relaxed text-muted-foreground">
-        {highlight}
-      </p>
+      <div className="mt-2 min-w-0">
+        <ExpandableText
+          text={highlight}
+          className="text-sm leading-relaxed text-muted-foreground"
+        />
+      </div>
       {rate ? (
         <p className="mt-3 text-xs text-muted-foreground">
           <span className="font-semibold text-foreground">Advertised rate: </span>

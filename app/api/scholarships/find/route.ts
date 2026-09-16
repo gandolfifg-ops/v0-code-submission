@@ -16,6 +16,7 @@ import {
 import { classifyScholarshipListing, prettyIssuerName } from "@/lib/listingDisplay"
 import {
   compareScholarshipResults,
+  expandedScholarshipQuery,
   guessSchoolDomains,
   isDepartmentOnlySchoolUrl,
   isSchoolAidHubUrl,
@@ -321,10 +322,21 @@ function mergeSeededAndLive(seeded: ScholarshipResult[], live: ScholarshipResult
   return [...seeded, ...extra]
 }
 
+function excludedUrlSet(raw: unknown): Set<string> {
+  if (!Array.isArray(raw)) return new Set()
+  return new Set(
+    raw
+      .filter((item): item is string => typeof item === "string" && item.trim().length > 0)
+      .map((item) => canonicalUrl(item)),
+  )
+}
+
 export async function POST(req: Request) {
   const body = await req.json().catch(() => ({}))
-  const university = typeof body?.university === "string" ? body.university : ""
-  const registered = resolveSchool(university) ?? resolveSchool(typeof body?.query === "string" ? body.query : "")
+  const university = typeof body?.university === "string" ? body.university.trim() : ""
+  const expand = Boolean(body?.expand)
+  const excluded = excludedUrlSet(body?.excludeUrls)
+  const registered = resolveSchool(university)
   const country = registered?.country ?? parseScholarshipCountry(body?.country)
   const filters: ScholarshipFilters = {
     country,
@@ -338,60 +350,92 @@ export async function POST(req: Request) {
 
   if (apiKey) {
     try {
-      const schoolQuery = schoolFocusedScholarshipQuery(filters)
       const school = schoolSearchName(filters)
       const resolved = resolveSchool(school)
       const schoolDomains = school ? guessSchoolDomains(school) : []
-      const includeDomains = tavilyIncludeDomains({
-        country: filters.country,
-        schoolDomains,
-        namedSchool: Boolean(school && schoolDomains.length > 0),
-      })
       const officialUrls = {
         officialAwardsUrl: resolved?.officialAwardsUrl,
         officialAidUrl: resolved?.officialAidUrl,
       }
 
-      const searches: Promise<TavilyHit[]>[] = [tavilySearch(apiKey, schoolQuery, school ? 10 : 8, includeDomains)]
-      if (!school) {
+      const searches: Promise<TavilyHit[]>[] = []
+      if (expand) {
+        const broadDomains = tavilyIncludeDomains({
+          country: filters.country,
+          schoolDomains: [],
+          namedSchool: false,
+        })
+        searches.push(tavilySearch(apiKey, expandedScholarshipQuery(filters), 8, broadDomains))
         for (const query of nationalFoundationQueries(filters.country)) {
-          searches.push(tavilySearch(apiKey, query, 2, includeDomains))
+          searches.push(tavilySearch(apiKey, query, 2, broadDomains))
+        }
+      } else {
+        const includeDomains = tavilyIncludeDomains({
+          country: filters.country,
+          schoolDomains,
+          namedSchool: Boolean(school && schoolDomains.length > 0),
+        })
+        searches.push(
+          tavilySearch(apiKey, schoolFocusedScholarshipQuery(filters), school ? 10 : 8, includeDomains),
+        )
+        if (!school) {
+          for (const query of nationalFoundationQueries(filters.country)) {
+            searches.push(tavilySearch(apiKey, query, 2, includeDomains))
+          }
         }
       }
+
       const hitSets = await Promise.all(searches)
-      const liveHits = school
-        ? hitSets.flat().filter((hit) => {
-            if (!hit.url) return false
-            const hostOk = schoolDomains.some((domain) => {
-              try {
-                const host = new URL(hit.url!).hostname.replace(/^www\./i, "").toLowerCase()
-                return host === domain || host.endsWith(`.${domain}`)
-              } catch {
-                return false
+      const liveHits = expand
+        ? hitSets.flat()
+        : school
+          ? hitSets.flat().filter((hit) => {
+              if (!hit.url) return false
+              const hostOk = schoolDomains.some((domain) => {
+                try {
+                  const host = new URL(hit.url!).hostname.replace(/^www\./i, "").toLowerCase()
+                  return host === domain || host.endsWith(`.${domain}`)
+                } catch {
+                  return false
+                }
+              })
+              if (hostOk) return true
+              if (shouldKeepScholarshipHit(hit.url, hit.title ?? "", school)) {
+                if (/loran|schulich|horatio|terry fox|canada student/i.test(`${hit.title ?? ""} ${hit.url}`)) {
+                  return mentionsSearchedSchool(hit.url, hit.title ?? "", school)
+                }
+                return true
               }
+              return false
             })
-            if (hostOk) return true
-            if (shouldKeepScholarshipHit(hit.url, hit.title ?? "", school)) {
-              if (/loran|schulich|horatio|terry fox|canada student/i.test(`${hit.title ?? ""} ${hit.url}`)) {
-                return mentionsSearchedSchool(hit.url, hit.title ?? "", school)
-              }
-              return true
-            }
-            return false
-          })
-        : hitSets.flat()
+          : hitSets.flat()
 
-      const live = mapLiveResults(liveHits, schoolDomains, school, officialUrls, filters.major)
-      const seeded = resolved ? seededOfficialCards(resolved) : seededCountryCards(filters.country)
-      const results = dropAggregatorScholarshipHitsIfOfficialExists(mergeSeededAndLive(seeded, live))
+      const live = mapLiveResults(
+        liveHits,
+        expand ? [] : schoolDomains,
+        expand ? "" : school,
+        expand ? {} : officialUrls,
+        filters.major,
+      ).filter((item) => !excluded.has(canonicalUrl(item.url)))
+      const seeded = expand
+        ? []
+        : resolved
+          ? seededOfficialCards(resolved)
+          : seededCountryCards(filters.country)
+      const results = dropAggregatorScholarshipHitsIfOfficialExists(
+        expand ? live : mergeSeededAndLive(seeded, live),
+      ).filter((item) => !excluded.has(canonicalUrl(item.url)))
 
-      if (results.length > 0) {
+      if (results.length > 0 || expand) {
         return Response.json({
-          source: live.length > 0 ? "live" : "curated",
-          notice: school
-            ? "These are live results from this school's aid pages and major national awards. Amounts and deadlines may be incomplete — always confirm on the official page."
-            : "These are live results from university, government, and official foundation pages. Amounts and deadlines may be incomplete — always confirm on the official page.",
+          source: live.length > 0 ? "live" : expand ? "live" : "curated",
+          notice: expand
+            ? "More official university, government, and foundation pages. Amounts and deadlines may be incomplete — always confirm on the official page."
+            : school
+              ? "These are live results from this school's aid pages and major national awards. Amounts and deadlines may be incomplete — always confirm on the official page."
+              : "These are live results from university, government, and official foundation pages. Amounts and deadlines may be incomplete — always confirm on the official page.",
           results,
+          hasMore: expand ? results.length > 0 : Boolean(apiKey),
         })
       }
     } catch (error) {
@@ -399,18 +443,22 @@ export async function POST(req: Request) {
     }
   }
 
-  const registeredFallback = resolveSchool(filters.university) ?? resolveSchool(filters.query)
+  const registeredFallback = resolveSchool(filters.university)
+  const fallbackResults = registeredFallback
+    ? dropAggregatorScholarshipHitsIfOfficialExists(
+        mergeSeededAndLive(seededOfficialCards(registeredFallback), filterCurated(filters)),
+      )
+    : dropAggregatorScholarshipHitsIfOfficialExists(
+        mergeSeededAndLive(seededCountryCards(filters.country), filterCurated(filters)),
+      )
   return Response.json({
     source: "curated",
-    notice: apiKey
-      ? "Live search didn’t find a match — here are official starting points."
-      : "Showing official starting points.",
-    results: registeredFallback
-      ? dropAggregatorScholarshipHitsIfOfficialExists(
-          mergeSeededAndLive(seededOfficialCards(registeredFallback), filterCurated(filters)),
-        )
-      : dropAggregatorScholarshipHitsIfOfficialExists(
-          mergeSeededAndLive(seededCountryCards(filters.country), filterCurated(filters)),
-        ),
+    notice: expand
+      ? "No more official pages for this search."
+      : apiKey
+        ? "Live search didn’t find a match — here are official starting points."
+        : "Showing official starting points.",
+    results: expand ? [] : fallbackResults.filter((item) => !excluded.has(canonicalUrl(item.url))),
+    hasMore: false,
   })
 }

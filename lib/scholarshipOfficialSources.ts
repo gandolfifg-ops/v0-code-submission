@@ -284,6 +284,33 @@ export function schoolFocusedScholarshipQuery(filters: {
     .join(" ")
 }
 
+/** Broader official follow-up query — named awards and government pages, not listicles. */
+export function expandedScholarshipQuery(filters: {
+  country: string
+  major: string
+  level: string
+  query: string
+}): string {
+  const levelHint = filters.level.includes("High school")
+    ? "entrance"
+    : filters.level.includes("Graduate")
+      ? "graduate"
+      : filters.level.includes("Undergraduate")
+        ? "undergraduate"
+        : ""
+  return [
+    filters.query.trim(),
+    filters.major !== "Any major" ? filters.major : "",
+    levelHint,
+    filters.country === "USA" ? "United States" : "Canada",
+    "scholarships grants bursaries awards official 2026 2027",
+  ]
+    .filter(Boolean)
+    .join(" ")
+    .replace(/\s+/g, " ")
+    .trim()
+}
+
 export function isSchoolAidHubUrl(url: string, schoolDomains: string[]): boolean {
   try {
     const parsed = new URL(url)

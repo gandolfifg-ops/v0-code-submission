@@ -1,4 +1,4 @@
-const SNIPPET_MAX = 220
+const SNIPPET_MAX = 400
 
 const PAGE_CHROME =
   /language selection|search menu|skip to(?: main)? content|you are here|breadcrumb(?: trail)?|date modified|share this page|toggle submenu|main navigation|secondary menu|\bfrançais\b|\benglish\b\s*\/|\bcookie (?:consent|banner|settings|policy)\b|we use cookies|apply nowapply now/gi
@@ -354,7 +354,7 @@ export function summarizeLiveSnippet(
     }
     picked.push(s)
     used = nextLen
-    if (picked.length >= 2 || used >= 180) break
+    if (picked.length >= 4 || used >= 320) break
   }
 
   const body = `${prefix}${picked.join(" ")}`.trim()
@@ -393,7 +393,7 @@ function scoreScholarshipSentence(s: string, title: string): number {
   return n
 }
 
-/** Live scholarship card copy: what / who / amount / where. Max two sentences. */
+/** Live scholarship card copy: what / who / amount / where. Confirm details on the official page. */
 export function summarizeScholarshipSnippet(
   input: string,
   opts?: { url?: string; title?: string; fallback?: string },
@@ -422,7 +422,7 @@ export function summarizeScholarshipSnippet(
     }
     picked.push(s)
     used = nextLen
-    if (picked.length >= 2 || used >= 180) break
+    if (picked.length >= 4 || used >= 320) break
   }
 
   const body = picked.join(" ").trim()

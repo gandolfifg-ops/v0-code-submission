@@ -1,17 +1,12 @@
+"use client"
+
 import { GraduationCap } from "lucide-react"
 import { CreamIcon } from "@/components/CreamIcon"
+import { ExpandableText } from "@/components/ExpandableText"
 import type { ScholarshipListingKind, ScholarshipResult } from "@/features/scholarships/types"
 import { FollowThrough } from "@/features/student-profile/components/FollowThrough"
 import { prettyIssuerName, scholarshipCardBadge } from "@/lib/listingDisplay"
 import { cleanDisplayText, isDisplayableAwardAmount, isDisplayableDeadline } from "@/lib/liveResultText"
-
-function clipTwoLineSnippet(text: string): string {
-  const cleaned = cleanDisplayText(text)
-  if (cleaned.length <= 220) return cleaned
-  const cut = cleaned.slice(0, 219)
-  const at = cut.lastIndexOf(" ")
-  return `${(at > 80 ? cut.slice(0, at) : cut).trimEnd()}…`
-}
 
 const BADGE_LABEL: Record<ScholarshipListingKind, string> = {
   "official-school": "Official school",
@@ -28,7 +23,7 @@ export function ResultCard({ result }: ResultCardProps) {
   const title = cleanDisplayText(result.title)
   const issuer = prettyIssuerName(result.url, result.provider)
   const badge = scholarshipCardBadge(result.url, result.listingKind)
-  const eligibility = clipTwoLineSnippet(result.eligibility)
+  const eligibility = cleanDisplayText(result.eligibility)
   const amount = isDisplayableAwardAmount(result.amount) ? result.amount.trim() : ""
   const deadline = isDisplayableDeadline(result.deadline) ? result.deadline.trim() : ""
   const featured = badge === "official-school" || badge === "government"
@@ -57,9 +52,12 @@ export function ResultCard({ result }: ResultCardProps) {
         </div>
       </div>
       <h3 className="min-w-0 break-words text-base font-semibold text-foreground">{title}</h3>
-      <p className="mt-2 line-clamp-2 min-w-0 break-words text-sm leading-relaxed text-muted-foreground">
-        {eligibility}
-      </p>
+      <div className="mt-2 min-w-0">
+        <ExpandableText
+          text={eligibility}
+          className="text-sm leading-relaxed text-muted-foreground"
+        />
+      </div>
       {amount || deadline ? (
         <dl className={`mt-3 grid gap-2 text-xs ${amount && deadline ? "grid-cols-2" : "grid-cols-1"}`}>
           {amount ? (

@@ -26,6 +26,7 @@ type SearchResponse = {
   source: "live" | "curated"
   notice: string
   results: ScholarshipResult[]
+  hasMore?: boolean
 }
 
 const selectClass =
@@ -36,6 +37,8 @@ const RESULT_GROUPS = [
   { id: "government" as const, title: "Government aid" },
   { id: "other" as const, title: "Other awards" },
 ]
+
+const PAGE_SIZE = 6
 
 function groupedScholarshipResults(results: ScholarshipResult[]) {
   return RESULT_GROUPS.map((group) => ({
@@ -82,6 +85,9 @@ export function ScholarshipFinder({
   const [results, setResults] = useState<ScholarshipResult[]>([])
   const [error, setError] = useState<string | null>(null)
   const [hasSearched, setHasSearched] = useState(shouldAutoSearch)
+  const [visibleCount, setVisibleCount] = useState(PAGE_SIZE)
+  const [loadingMore, setLoadingMore] = useState(false)
+  const [canSearchMore, setCanSearchMore] = useState(false)
 
   function applyProfile(profile: StudentProfile | null) {
     if (!profile) return
@@ -89,7 +95,6 @@ export function ScholarshipFinder({
     setSearchCountry(profile.country)
     setLevel(normalizeScholarshipLevel(profile.level))
     if (profile.major) setMajor(profile.major)
-    if (profile.school.trim() && !schoolFromUrl) setUniversity(profile.school.trim())
     setProvinceOrState(profile.provinceOrState ?? "")
   }
 
@@ -104,10 +109,9 @@ export function ScholarshipFinder({
     setLoading(true)
     setError(null)
     setHasSearched(true)
+    setCanSearchMore(false)
     const fromHeader = Boolean(next.fromHeader)
-    const schoolName = fromHeader
-      ? ""
-      : (next.university ?? university).trim() || getStudentProfile()?.school.trim() || ""
+    const schoolName = fromHeader ? "" : (next.university ?? university).trim()
     const registered = resolveSchool(schoolName)
     const stored = getStudentProfile()
     const requestCountry = registered?.country ?? stored?.country ?? country
@@ -129,14 +133,58 @@ export function ScholarshipFinder({
       const data: SearchResponse = await res.json()
       const nextResults = (data.results ?? []).filter((item) => !isExpiredDeadline(item.deadline))
       setResults(nextResults)
+      setVisibleCount(PAGE_SIZE)
       setSource(data.source)
       setNotice(data.notice)
+      setCanSearchMore(data.hasMore !== false && data.source === "live")
     } catch {
       setError("Search didn’t work — try again")
       setResults([])
       setSource(null)
+      setCanSearchMore(false)
     } finally {
       setLoading(false)
+    }
+  }
+
+  async function searchMoreOfficialAwards() {
+    if (loadingMore || loading) return
+    setLoadingMore(true)
+    setError(null)
+    const schoolName = university.trim()
+    const registered = resolveSchool(schoolName)
+    const stored = getStudentProfile()
+    const requestCountry = registered?.country ?? stored?.country ?? country
+    try {
+      const res = await fetch("/api/scholarships/find", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          country: requestCountry,
+          major,
+          level,
+          query,
+          university: schoolName,
+          expand: true,
+          excludeUrls: results.map((item) => item.url),
+        }),
+      })
+      if (!res.ok) throw new Error("Search failed")
+      const data: SearchResponse = await res.json()
+      const extra = (data.results ?? []).filter((item) => !isExpiredDeadline(item.deadline))
+      const seen = new Set(results.map((item) => item.url))
+      const unique = extra.filter((item) => !seen.has(item.url))
+      if (unique.length === 0) {
+        setCanSearchMore(false)
+        return
+      }
+      setResults((prev) => [...prev, ...unique])
+      setVisibleCount((count) => count + unique.length)
+      setCanSearchMore(data.hasMore !== false)
+    } catch {
+      setError("Search didn’t work — try again")
+    } finally {
+      setLoadingMore(false)
     }
   }
 
@@ -311,7 +359,7 @@ export function ScholarshipFinder({
               )}
               <SectionHeading icon={ListChecks}>Results</SectionHeading>
               <div className={loading ? "opacity-50" : ""}>
-                {groupedScholarshipResults(results).map((group, index) => (
+                {groupedScholarshipResults(results.slice(0, visibleCount)).map((group, index) => (
                   <div key={group.id} className={index === 0 ? "mt-3" : "mt-6"}>
                     <h3 className="text-sm font-semibold text-foreground">{group.title}</h3>
                     <div className="mt-3 grid grid-cols-1 gap-3 md:grid-cols-2">
@@ -321,6 +369,30 @@ export function ScholarshipFinder({
                     </div>
                   </div>
                 ))}
+                {(visibleCount < results.length || canSearchMore) && (
+                  <div className="mt-4 flex flex-col gap-2 sm:flex-row">
+                    {visibleCount < results.length ? (
+                      <button
+                        type="button"
+                        onClick={() => setVisibleCount((count) => count + PAGE_SIZE)}
+                        className="inline-flex min-h-11 flex-1 items-center justify-center rounded-xl border border-border bg-card px-4 text-sm font-semibold text-foreground transition-colors hover:bg-muted"
+                      >
+                        Show more results
+                      </button>
+                    ) : null}
+                    {canSearchMore ? (
+                      <button
+                        type="button"
+                        disabled={loadingMore || loading}
+                        onClick={() => void searchMoreOfficialAwards()}
+                        className="inline-flex min-h-11 flex-1 items-center justify-center gap-2 rounded-xl border border-border bg-card px-4 text-sm font-semibold text-foreground transition-colors hover:bg-muted disabled:opacity-60"
+                      >
+                        {loadingMore && <Loader2 className="h-4 w-4 shrink-0 animate-spin" aria-hidden="true" />}
+                        {loadingMore ? "Searching more official pages…" : "Search more official awards"}
+                      </button>
+                    ) : null}
+                  </div>
+                )}
               </div>
             </section>
           )}
@@ -335,7 +407,7 @@ export function ScholarshipFinder({
             <section className="rounded-2xl border border-dashed border-border bg-muted/30 p-4 md:p-5">
               <SectionHeading icon={GraduationCap}>How it works</SectionHeading>
               <ol className="mt-3 list-decimal space-y-2 pl-5 text-sm text-muted-foreground">
-                <li>Save your student profile (optional) so filters start filled in.</li>
+                <li>Save your student profile (optional) so country, major, and level start filled in.</li>
                 <li>Search public sites — we do not apply for you.</li>
                 <li>Open the official page, then Save the listing to track it here.</li>
               </ol>

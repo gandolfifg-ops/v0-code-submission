@@ -4,6 +4,7 @@ import { extractScholarshipAmount, isDroppedLoanHit, summarizeScholarshipSnippet
 import {
   compareScholarshipResults,
   guessSchoolDomains,
+  schoolSearchName,
   shouldKeepSchoolKeywordHit,
 } from "@/lib/scholarshipOfficialSources"
 import { assertSchoolPageSlugs, schoolPageSlugs, SCHOOL_SLUG_PATTERN } from "@/scripts/smoke-slugs"
@@ -63,6 +64,17 @@ describe("official school ranking", () => {
     expect(official[0].url).toContain("queensu.ca")
     expect(official[0].url.toLowerCase()).toMatch(/financial[-_]?aid/)
     expect(official.some((hit) => /queens\.edu/i.test(hit.url))).toBe(false)
+  })
+})
+
+describe("schoolSearchName", () => {
+  it("does not treat an empty school field as a named school", () => {
+    expect(schoolSearchName({ university: "", query: "Indigenous" })).toBe("")
+    expect(schoolSearchName({ university: "  ", query: "Engineering" })).toBe("")
+  })
+
+  it("uses the school field when the user typed one", () => {
+    expect(schoolSearchName({ university: "Queen's University", query: "" })).toBe("Queen's University")
   })
 })
 

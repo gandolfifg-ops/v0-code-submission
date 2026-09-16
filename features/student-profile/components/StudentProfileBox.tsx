@@ -105,8 +105,7 @@ export function StudentProfileBox({ onProfileChange }: StudentProfileBoxProps) {
     >
       <SectionHeading icon={UserRound}>Your profile</SectionHeading>
       <p className="mt-1 text-xs text-muted-foreground">
-        Stored in this browser only. We use it to pre-fill searches and pin official aid — not
-        to apply on other sites.
+        Stored in this browser only. We use it to pre-fill country, major, and level, and to pin official aid — not to lock search to your school unless you type that school.
       </p>
 
       {!filled && !editing && (
