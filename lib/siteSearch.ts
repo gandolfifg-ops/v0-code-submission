@@ -1,3 +1,4 @@
+import { STUDENT_CARDS } from "@/features/marketplace/data/cards"
 import { MARKETPLACE_PRODUCTS } from "@/features/marketplace/data/products"
 import { SCHOOL_PAGES, schoolPagePath } from "@/features/scholarships/schools"
 import { GUIDE_NAV, PRIMARY_NAV, SECONDARY_NAV } from "@/lib/constants/nav"
@@ -135,7 +136,17 @@ export function buildSiteSearchCatalog(): SiteSearchHit[] {
     country: product.country === "US" ? "USA" : "Canada",
   }))
 
-  return [...schools, ...tools, ...guides, ...namedAid, ...products]
+  const cards: SiteSearchHit[] = STUDENT_CARDS.map((card) => ({
+    id: `card-${card.id}`,
+    kind: "product",
+    label: card.name,
+    href: `/cards#${card.id}`,
+    blurb: card.tagline,
+    keywords: [card.id, card.name, "student credit card", "credit card", card.network],
+    country: card.country === "US" ? "USA" : "Canada",
+  }))
+
+  return [...schools, ...tools, ...guides, ...namedAid, ...products, ...cards]
 }
 
 const CATALOG = buildSiteSearchCatalog()

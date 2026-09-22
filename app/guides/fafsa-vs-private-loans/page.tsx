@@ -2,6 +2,7 @@ import type { Metadata } from "next"
 import Link from "next/link"
 import { Breadcrumbs } from "@/components/layout/Breadcrumbs"
 import { JsonLd } from "@/components/JsonLd"
+import { GuideToolsRail } from "@/features/guides/components/GuideToolsRail"
 import { articleJsonLd, pageMeta } from "@/lib/seo"
 
 export const metadata: Metadata = pageMeta(
@@ -102,6 +103,7 @@ export default function FafsaVsPrivateLoansPage() {
           </ul>
         </section>
       </div>
+      <GuideToolsRail country="US" />
     </article>
   )
 }

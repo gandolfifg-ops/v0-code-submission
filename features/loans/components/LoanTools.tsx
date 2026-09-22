@@ -10,7 +10,11 @@ import { useSmartSearch } from "@/components/SmartSearchProvider"
 import { SectionHeading } from "@/components/layout/SectionHeading"
 import { LenderCard } from "@/features/loans/components/LenderCard"
 import { PaymentCalculator } from "@/features/loans/components/PaymentCalculator"
+import { PrivateLoanLeadForm } from "@/features/loans/components/PrivateLoanLeadForm"
+import { SponsoredSlot } from "@/features/marketplace/components/SponsoredSlot"
+import { MARKETPLACE_PRODUCTS } from "@/features/marketplace/data/products"
 import { StudentProfileBox } from "@/features/student-profile/components/StudentProfileBox"
+import { DigestSignup } from "@/features/digest/components/DigestSignup"
 import { RegionalAidStrip } from "@/features/student-profile/components/RegionalAidStrip"
 import { type StudentProfile } from "@/features/student-profile/types"
 import { getStudentProfile, patchStudentProfile, saveStudentCountry } from "@/features/student-profile/store"
@@ -307,6 +311,15 @@ export function LoanTools({ initialQuery = "" }: { initialQuery?: string }) {
           {groupedLoanResults(results.slice(0, visibleCount)).map((group, index) => (
             <section key={group.id} className={index === 0 ? "" : "mt-6"}>
               <SectionHeading icon={ListChecks}>{group.title}</SectionHeading>
+              {group.id === "private-lender" ? (
+                <SponsoredSlot
+                  products={MARKETPLACE_PRODUCTS.filter((p) =>
+                    country === "USA" ? p.country === "US" : p.country === "CA",
+                  )}
+                  placement="loans"
+                  className="mb-3 mt-2"
+                />
+              ) : null}
               <div className="mt-3 grid grid-cols-1 gap-3 md:grid-cols-2">
                 {group.items.map((lender) => (
                   <LenderCard key={lender.id} lender={lender} />
@@ -413,6 +426,11 @@ export function LoanTools({ initialQuery = "" }: { initialQuery?: string }) {
           <PaymentCalculator />
         </div>
       </div>
+      </div>
+
+      <PrivateLoanLeadForm />
+      <div className="mt-6">
+        <DigestSignup collapsed heading="Get a weekly loans & aid digest" />
       </div>
     </div>
   )

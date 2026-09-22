@@ -8,6 +8,7 @@ import { CountryToggle } from "@/components/CountryToggle"
 import { SectionHeading } from "@/components/layout/SectionHeading"
 import { ProductCard } from "@/features/marketplace/components/ProductCard"
 import { ComparisonTable } from "@/features/marketplace/components/ComparisonTable"
+import { SponsoredSlot } from "@/features/marketplace/components/SponsoredSlot"
 import {
   CANADA_COMPARISON,
   US_COMPARISON,
@@ -182,6 +183,9 @@ export function MarketplaceHome() {
         rows={country === "CA" ? CANADA_COMPARISON : US_COMPARISON}
         title={country === "CA" ? "Canada banking snapshot" : "United States snapshot"}
       />
+
+      {/* Paid slots sit above banking — never above official student-aid hubs. */}
+      <SponsoredSlot products={products} placement="marketplace" className="mt-8" />
 
       {grouped.map((group) => (
         <section key={group.category} className="mt-10 lg:mt-12">

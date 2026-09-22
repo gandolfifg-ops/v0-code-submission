@@ -12,28 +12,32 @@ const FAQS = [
     items: [
       {
         q: "Is WealthNutz free?",
-        a: "Yes. Scholarship search, loan tools, marketplace links, and chat are free to use. We may earn a referral commission if you open a product through an affiliate link.",
+        a: "Yes. Scholarship search, loan tools, marketplace links, cards, and chat are free to use. We may earn a referral commission if you open a product through an affiliate link. An optional Kit (if launched) would be $9 or less — search stays free.",
       },
       {
         q: "How do I apply for a loan?",
-        a: "WealthNutz does not issue loans. Use Loan Tools to find official lender pages, then apply on the lender’s site.",
+        a: "WealthNutz does not issue loans. Use Loan Tools to find official lender pages, then apply on the lender’s site. Private-loan interest forms are optional and are not applications.",
       },
       {
         q: "Which countries are supported?",
-        a: "Canada and the United States. Use the country toggle on Marketplace, Scholarships, and Loans.",
+        a: "Canada and the United States. Use the country toggle on Marketplace, Scholarships, Loans, and Cards.",
       },
     ],
   },
   {
-    category: "Scholarships & Loans",
+    category: "Scholarships, Loans & Cards",
     items: [
       {
         q: "Is scholarship data a live official database?",
         a: "No. We try live web search when configured. If that fails, we show curated official starting points. Always confirm deadlines on the awarding site.",
       },
       {
-        q: "Are loan rates guaranteed quotes?",
-        a: "No. Rates are advertised on public pages. Confirm APR, fees, and eligibility with the lender.",
+        q: "Are loan rates or card offers guaranteed quotes?",
+        a: "No. Rates and welcome offers are advertised on public pages. Confirm APR, fees, and eligibility with the lender or issuer.",
+      },
+      {
+        q: "What does Featured vs Paid placement mean?",
+        a: "Featured is editorial. Paid placement (sponsored) is a paid slot with a clear badge. Organic table order stays editorial. Government aid hubs are never sponsored.",
       },
       {
         q: "Can I save scholarships and loans?",
@@ -42,15 +46,19 @@ const FAQS = [
     ],
   },
   {
-    category: "Privacy & Chat",
+    category: "Digest, Partners & Privacy",
     items: [
       {
+        q: "What is the weekly digest?",
+        a: "An optional email with aid reminders and Marketplace highlights. Partner banking/card updates are unchecked by default. See /digest and Privacy.",
+      },
+      {
         q: "Do you sell my personal information?",
-        a: "No. See our Privacy Policy for details.",
+        a: "No. See our Privacy Policy for details. We do not collect SIN, SSN, date of birth, full address, or credit score.",
       },
       {
         q: "Is chat financial advice?",
-        a: "No. Chat is general education only. Confirm scholarships, loans, and banking details on official school and government sites. If chat cannot answer, the page will say so.",
+        a: "No. Chat is general education only. Confirm scholarships, loans, banking, and cards on official school and government sites. Official aid is preferred over sponsored products.",
       },
       {
         q: "Why did a live result look wrong?",
@@ -66,7 +74,7 @@ export default function HelpPage() {
   const flatFaqs = FAQS.flatMap((cat) => cat.items)
 
   return (
-    <InfoPage title="Help Center" lede="Answers about scholarships, loans, marketplace links, and chat.">
+    <InfoPage title="Help Center" lede="Answers about scholarships, loans, cards, marketplace links, digest, and chat.">
       <JsonLd data={faqPageJsonLd(flatFaqs)} />
       {FAQS.map((cat) => (
         <section key={cat.category}>

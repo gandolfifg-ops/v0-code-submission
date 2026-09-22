@@ -7,6 +7,7 @@ export const PRIMARY_NAV: NavLink[] = [
   { href: "/", label: "Marketplace" },
   { href: "/scholarships", label: "Scholarships" },
   { href: "/loans", label: "Loans" },
+  { href: "/cards", label: "Cards" },
   { href: "/schools", label: "Schools" },
 ]
 
@@ -21,6 +22,10 @@ export const FOOTER_NAV: NavLink[] = [
   { href: "/contact", label: "Contact" },
   { href: "/search", label: "Search" },
   { href: "/schools", label: "Schools" },
+  { href: "/cards", label: "Cards" },
+  { href: "/digest", label: "Digest" },
+  { href: "/partners", label: "Partners" },
+  { href: "/kit", label: "Kit" },
   { href: "/privacy", label: "Privacy" },
   { href: "/terms", label: "Terms" },
   { href: "/cookies", label: "Cookies" },
@@ -29,6 +34,8 @@ export const FOOTER_NAV: NavLink[] = [
 export const GUIDE_NAV: NavLink[] = [
   { href: "/guides/best-student-bank-canada", label: "Best student bank accounts (Canada)" },
   { href: "/guides/best-student-bank-usa", label: "Best student bank accounts (United States)" },
+  { href: "/guides/student-credit-cards-canada", label: "Student credit cards (Canada)" },
+  { href: "/guides/student-credit-cards-usa", label: "Student credit cards (United States)" },
   { href: "/guides/osap-vs-private-loans", label: "OSAP vs private loans" },
   { href: "/guides/fafsa-vs-private-loans", label: "FAFSA vs private loans" },
   { href: "/guides/resp-tfsa-for-students", label: "RESP and TFSA basics" },

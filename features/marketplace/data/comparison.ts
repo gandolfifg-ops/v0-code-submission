@@ -7,8 +7,9 @@ export const HOW_WE_PICK = [
   "We list no-fee or student-fee everyday accounts already on Marketplace — not every bank in Canada or the US.",
   "Fees, ATM access, and advertised perks are as of September 2026. Confirm them on the bank’s site before you apply.",
   "Some product buttons are affiliate links. We may earn a commission if you open an account.",
-  "Table order is editorial, not paid placement. Placement is editorial.",
-  "No bank paid for its rank on this page.",
+  "featured means editorial. sponsored means paid placement — labeled “Paid placement” and separate from table order.",
+  "Organic table order is editorial. No bank paid for its rank in the comparison table.",
+  "Government hubs (FAFSA, NSLSC, provincial aid) are never affiliate or sponsored.",
 ] as const
 
 export type ComparisonKind = "banking" | "investing" | "credit"

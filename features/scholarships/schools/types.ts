@@ -21,4 +21,6 @@ export type SchoolAwardsData = {
   rejectDomains?: string[]
   rejectTitlePatterns?: string[]
   links: SchoolAwardLink[]
+  /** Reviewed-with-school badge only — never means “top ranked”. Default false; do not set on Queen’s. */
+  partner?: boolean
 }

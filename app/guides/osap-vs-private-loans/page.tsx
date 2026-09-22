@@ -2,6 +2,7 @@ import type { Metadata } from "next"
 import Link from "next/link"
 import { Breadcrumbs } from "@/components/layout/Breadcrumbs"
 import { JsonLd } from "@/components/JsonLd"
+import { GuideToolsRail } from "@/features/guides/components/GuideToolsRail"
 import { articleJsonLd, pageMeta } from "@/lib/seo"
 
 export const metadata: Metadata = pageMeta(
@@ -148,6 +149,7 @@ export default function OsapVsPrivateLoansPage() {
         licensed advisor. Always confirm eligibility, interest, and repayment on the
         official government or bank site before you apply.
       </p>
+      <GuideToolsRail country="CA" />
     </article>
   )
 }

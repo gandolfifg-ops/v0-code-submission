@@ -43,9 +43,15 @@ export function Footer() {
             ))}
           </nav>
         </div>
+        <p className="text-sm">
+          <Link href="/digest" className="font-medium text-link underline">
+            Weekly digest
+          </Link>
+          <span className="text-muted-foreground"> — optional email updates.</span>
+        </p>
         <p className="max-w-2xl pb-[max(0.75rem,env(safe-area-inset-bottom))] text-sm leading-relaxed text-foreground md:text-xs md:text-muted-foreground">
           WealthNutz provides general financial education only and is not a licensed
-          advisor, broker, or lender. Some links are affiliate links — see our{" "}
+          advisor, broker, or lender. Some links are affiliate or paid placements — see our{" "}
           <Link href="/terms" className="underline underline-offset-2">
             Terms
           </Link>{" "}

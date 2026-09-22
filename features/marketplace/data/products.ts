@@ -15,6 +15,10 @@ export const MARKETPLACE_PRODUCTS: MarketplaceProduct[] = [
     source: "curated",
     affiliate: true,
     featured: true,
+    // Demo paid slot for Marketplace — leave false until Francesco turns it on when paid.
+    sponsored: false,
+    sponsorLabel: "Featured — paid placement",
+    placement: "marketplace",
   },
   {
     id: "tangerine-student",
@@ -269,7 +273,7 @@ export const MARKETPLACE_PRODUCTS: MarketplaceProduct[] = [
     tagline: "Student cash-back card from Discover",
     whyStudents:
       "Built for students building credit. Compare rewards, fees, and credit requirements on Discover’s official student card page.",
-    href: "https://www.discover.com/credit-cards/student/",
+    href: "https://www.discover.com/credit-cards/student-credit-card/",
     cta: "See Discover student cards",
     source: "curated",
     affiliate: true,

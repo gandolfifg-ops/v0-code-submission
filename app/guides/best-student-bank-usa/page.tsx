@@ -1,6 +1,7 @@
 import type { Metadata } from "next"
 import Link from "next/link"
 import { ComparisonTable } from "@/features/marketplace/components/ComparisonTable"
+import { GuideToolsRail } from "@/features/guides/components/GuideToolsRail"
 import { COMPARISON_DISCLAIMER, US_COMPARISON } from "@/features/marketplace/data/comparison"
 import { pageMeta } from "@/lib/seo"
 
@@ -98,6 +99,7 @@ export default function BestStudentBankUsaPage() {
         an account. That does not change which products we list. {COMPARISON_DISCLAIMER}{" "}
         WealthNutz does not guarantee rates and is not a bank or advisor.
       </p>
+      <GuideToolsRail country="US" />
     </article>
   )
 }

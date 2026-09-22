@@ -13,14 +13,16 @@ export default function CookiesPage() {
   return (
     <InfoPage title="Cookie Policy" lede="Last updated: September 2026">
       <p>
-        WealthNutz may use cookies to keep the site working and to track affiliate referrals.
-        Saved items in this browser use localStorage, not cookies.
+        WealthNutz may use cookies to keep the site working and to track affiliate or sponsored
+        referrals. Saved items, digest leads, and Kit waitlist entries in this browser use
+        localStorage, not cookies.
       </p>
       <section>
         <h2 className="text-lg font-semibold text-foreground">Types of cookies</h2>
         <ul className="mt-2 list-disc space-y-1 pl-5">
           <li>Essential cookies for basic site function</li>
-          <li>Affiliate cookies when you click partner product links</li>
+          <li>Affiliate / sponsored cookies when you click partner product links</li>
+          <li>Analytics cookies (for example Vercel Analytics) when enabled</li>
         </ul>
       </section>
       <section>

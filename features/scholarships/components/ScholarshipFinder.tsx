@@ -6,6 +6,7 @@ import { SearchExplainer } from "@/components/SearchExplainer"
 import { useSmartSearch } from "@/components/SmartSearchProvider"
 import { SectionHeading } from "@/components/layout/SectionHeading"
 import { ResultCard } from "@/features/scholarships/components/ResultCard"
+import { DigestSignup } from "@/features/digest/components/DigestSignup"
 import { StudentProfileBox } from "@/features/student-profile/components/StudentProfileBox"
 import { RegionalAidStrip } from "@/features/student-profile/components/RegionalAidStrip"
 import { SchoolAutocomplete } from "@/features/student-profile/components/SchoolAutocomplete"
@@ -418,6 +419,12 @@ export function ScholarshipFinder({
               No listings matched this search. Try a broader major or fewer keywords.
             </p>
           )}
+
+          {results.length > 0 && !loading ? (
+            <div className="mt-4">
+              <DigestSignup collapsed heading="Email me scholarship reminders (optional)" />
+            </div>
+          ) : null}
 
           {!hasSearched && !loading && (
             <section className="rounded-2xl border border-dashed border-border bg-muted/30 p-4 md:p-5">

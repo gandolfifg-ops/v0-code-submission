@@ -1,6 +1,7 @@
 import type { Metadata } from "next"
 import Link from "next/link"
 import { ComparisonTable } from "@/features/marketplace/components/ComparisonTable"
+import { GuideToolsRail } from "@/features/guides/components/GuideToolsRail"
 import { CANADA_COMPARISON, COMPARISON_DISCLAIMER } from "@/features/marketplace/data/comparison"
 import { pageMeta } from "@/lib/seo"
 
@@ -53,6 +54,7 @@ export default function BestStudentBankCanadaPage() {
         an account. That does not change which products we list. {COMPARISON_DISCLAIMER}{" "}
         WealthNutz does not guarantee rates and is not a bank or advisor.
       </p>
+      <GuideToolsRail country="CA" />
     </article>
   )
 }

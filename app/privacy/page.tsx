@@ -20,15 +20,25 @@ export default function PrivacyPage() {
         <h2 className="text-lg font-semibold text-foreground">Information we collect</h2>
         <p className="mt-2">
           Chat messages you send are transmitted to our AI provider to generate a reply. Saved
-          scholarships and loans stay in your browser only (localStorage) — there is no account
-          sync. Marketplace clicks may use affiliate tracking cookies.
+          scholarships, loans, and products stay in your browser only (localStorage) — there is no
+          account sync. Marketplace and Cards clicks may use affiliate tracking cookies.
+        </p>
+      </section>
+      <section>
+        <h2 className="text-lg font-semibold text-foreground">Digest, Kit, and loan leads</h2>
+        <p className="mt-2">
+          If you join the weekly digest or Kit waitlist, we store your email (and optional school /
+          country) in this browser and may forward it to our email webhook or Resend when configured.
+          Private-loan interest forms may include school, level, year, residency, optional amount,
+          and optional email — with required consent. We do <strong className="font-semibold text-foreground">not</strong>{" "}
+          collect SIN, SSN, date of birth, full address, or credit score.
         </p>
       </section>
       <section>
         <h2 className="text-lg font-semibold text-foreground">Third-party sites</h2>
         <p className="mt-2">
-          When you leave WealthNutz for a bank, lender, or scholarship site, that site’s privacy
-          policy applies.
+          When you leave WealthNutz for a bank, lender, card issuer, or scholarship site, that site’s
+          privacy policy applies.
         </p>
       </section>
       <p>

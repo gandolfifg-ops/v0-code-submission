@@ -27,6 +27,7 @@ import {
   isProfileFilled,
   type StudentProfile,
 } from "@/features/student-profile/types"
+import { DigestSignup } from "@/features/digest/components/DigestSignup"
 
 const fieldClass =
   "min-h-11 w-full rounded-xl border border-border bg-background px-3 text-sm text-foreground"
@@ -56,6 +57,7 @@ export function StudentProfileBox({ onProfileChange }: StudentProfileBoxProps) {
   const [ready, setReady] = useState(false)
   const [editing, setEditing] = useState(false)
   const [draft, setDraft] = useState<StudentProfile>(EMPTY_PROFILE)
+  const [justSaved, setJustSaved] = useState(false)
 
   useEffect(() => {
     const sync = () => {
@@ -76,6 +78,7 @@ export function StudentProfileBox({ onProfileChange }: StudentProfileBoxProps) {
     setProfile(next)
     setDraft(next)
     setEditing(false)
+    setJustSaved(true)
     onProfileChange?.(next)
   }
 
@@ -279,6 +282,11 @@ export function StudentProfileBox({ onProfileChange }: StudentProfileBoxProps) {
           </button>
         </form>
       )}
+      {justSaved ? (
+        <div className="mt-3">
+          <DigestSignup heading="Get a weekly digest after saving your profile" />
+        </div>
+      ) : null}
     </section>
   )
 }

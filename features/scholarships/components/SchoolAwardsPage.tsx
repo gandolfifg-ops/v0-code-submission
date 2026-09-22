@@ -22,10 +22,16 @@ export function SchoolAwardsPage({ school }: { school: SchoolAwardsData }) {
       <h1 className="mt-2 text-3xl font-bold tracking-tight text-foreground sm:text-4xl">
         {school.name} scholarships
       </h1>
+      {school.partner ? (
+        <p className="mt-2 inline-flex rounded-full border border-border bg-muted/50 px-3 py-1 text-xs font-semibold text-foreground">
+          Official links reviewed with the school
+        </p>
+      ) : null}
       <p className="mt-3 text-sm leading-relaxed text-muted-foreground">
         Curated official links for {school.name} students in {school.region}. This page is not a
         live search and not a complete awards database. Confirm eligibility on each official site.
-        Tap Save on a link to track it on the Saved page (this browser only).
+        Tap Save on a link to track it on the Saved page (this browser only). This is not a paid
+        ranking.
       </p>
 
       <ul className="mt-8 space-y-3">

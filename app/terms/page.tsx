@@ -20,16 +20,26 @@ export default function TermsPage() {
       <section>
         <h2 className="text-lg font-semibold text-foreground">Rates and listings</h2>
         <p className="mt-2">
-          Scholarship listings may come from live web search or a curated list. Loan rates shown
-          are advertised on public pages, not guaranteed quotes. Always verify terms on the
-          official site before you apply.
+          Scholarship listings may come from live web search or a curated list. Loan rates and card
+          offers shown are advertised on public pages, not guaranteed quotes. Always verify terms on
+          the official site before you apply.
         </p>
       </section>
       <section>
-        <h2 className="text-lg font-semibold text-foreground">Affiliate relationships</h2>
+        <h2 className="text-lg font-semibold text-foreground">Affiliate and sponsored placements</h2>
         <p className="mt-2">
-          Some Marketplace links are affiliate links. We may receive compensation if you open a
-          product. That compensation does not change our educational copy.
+          Some Marketplace, Cards, and banking links are affiliate links. We may receive compensation
+          if you open a product. Separate <strong className="font-semibold text-foreground">sponsored</strong>{" "}
+          slots are paid placements labeled “Paid placement.” Organic comparison-table order stays
+          editorial. Government hubs are never affiliate or sponsored.
+        </p>
+      </section>
+      <section>
+        <h2 className="text-lg font-semibold text-foreground">Digest, loan leads, Kit</h2>
+        <p className="mt-2">
+          Digest and Kit waitlist signups are optional. Private-loan interest forms are not loan
+          applications. We do not collect SIN, SSN, date of birth, full address, or credit score. No
+          Stripe checkout is offered on this site today.
         </p>
       </section>
       <p>

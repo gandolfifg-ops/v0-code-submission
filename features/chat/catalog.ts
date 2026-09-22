@@ -1,3 +1,4 @@
+import { STUDENT_CARDS } from "@/features/marketplace/data/cards"
 import { MARKETPLACE_PRODUCTS } from "@/features/marketplace/data/products"
 import { OFFICIAL_LOAN_PAGES } from "@/features/loans/data/official"
 import {
@@ -34,6 +35,12 @@ function marketplaceNames(country: "CA" | "US"): string {
     .join("; ")
 }
 
+function cardNames(country: "CA" | "US"): string {
+  return STUDENT_CARDS.filter((item) => item.country === country)
+    .map((item) => item.name)
+    .join("; ")
+}
+
 function schoolCatalogLine(school: SchoolAwardsData): string {
   return `- ${school.name} (${school.country}) → ${schoolPagePath(school)}`
 }
@@ -66,17 +73,22 @@ Marketplace: /
 
 Marketplace products (Canada): ${marketplaceNames("CA")}
 Marketplace products (United States): ${marketplaceNames("US")}
+Student cards (Canada) via /cards: ${cardNames("CA")}
+Student cards (United States) via /cards: ${cardNames("US")}
 
-Official loan start URLs:
+Official loan start URLs (prefer these before private lenders or sponsored products):
 ${officialLoanLines()}
 
 Guides:
 - /guides/best-student-bank-canada — Canada no-fee / student-fee everyday accounts (same advertised comparison as Marketplace)
 - /guides/best-student-bank-usa — US no-fee / student-fee everyday accounts
+- /guides/student-credit-cards-canada — Canada student cards → /cards
+- /guides/student-credit-cards-usa — US student cards → /cards
 - /guides/osap-vs-private-loans — Ontario OSAP vs private loans (education, not advice)
 
 Canada banking names you may cite: EQ Bank Personal Account; Tangerine Chequing; RBC Advantage Banking for Students. Always add: confirm on the bank site.
-US banking names you may cite: SoFi Student Checking & Savings; Ally Bank Online Savings; Capital One checking for students. Always add: confirm on the bank site.`
+US banking names you may cite: SoFi Student Checking & Savings; Ally Bank Online Savings; Capital One checking for students. Always add: confirm on the bank site.
+Do not present sponsored / paid placement products as organic editorial rankings. Official aid first.`
 }
 
 function turnInstructions(lastUser: string, country: StudentCountry | null): string {

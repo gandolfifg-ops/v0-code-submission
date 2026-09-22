@@ -2,7 +2,7 @@
 
 import { useEffect, useId, useRef, useState, type KeyboardEvent } from "react"
 import { Loader2, Search, X } from "lucide-react"
-import { useRouter } from "next/navigation"
+import { usePathname, useRouter } from "next/navigation"
 import { useSmartSearch } from "@/components/SmartSearchProvider"
 import { matchSiteSearch, type SiteSearchHit } from "@/lib/siteSearch"
 
@@ -20,6 +20,7 @@ export function HeaderSearchBar({
   onRanSearch,
 }: HeaderSearchBarProps) {
   const router = useRouter()
+  const pathname = usePathname()
   const { countryCode } = useSmartSearch()
   const listId = useId()
   const wrapRef = useRef<HTMLDivElement>(null)
@@ -29,7 +30,10 @@ export function HeaderSearchBar({
   const [loading, setLoading] = useState(false)
   const [activeIndex, setActiveIndex] = useState(-1)
 
-  const placeholder = "Schools, OSAP, FAFSA, EQ Bank…"
+  const placeholder =
+    pathname === "/cards" || pathname.startsWith("/cards/")
+      ? "Search student cards…"
+      : "Schools, OSAP, FAFSA, EQ Bank…"
 
   useEffect(() => {
     const q = value.trim()
