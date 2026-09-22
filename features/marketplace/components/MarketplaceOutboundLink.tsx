@@ -9,6 +9,7 @@ type MarketplaceOutboundLinkProps = {
   href: string
   className?: string
   children: ReactNode
+  onNavigate?: () => void
 }
 
 export function MarketplaceOutboundLink({
@@ -16,6 +17,7 @@ export function MarketplaceOutboundLink({
   href,
   className,
   children,
+  onNavigate,
 }: MarketplaceOutboundLinkProps) {
   const product = MARKETPLACE_PRODUCTS.find((item) => item.id === productId)
   const affiliate = Boolean(product?.affiliate)
@@ -28,6 +30,7 @@ export function MarketplaceOutboundLink({
       rel={affiliate ? "noopener sponsored" : "noopener"}
       onClick={() => {
         track("marketplace_outbound", { productId, country, affiliate })
+        onNavigate?.()
       }}
       className={className}
     >

@@ -20,8 +20,8 @@ export default function PrivacyPage() {
         <h2 className="text-lg font-semibold text-foreground">Information we collect</h2>
         <p className="mt-2">
           Chat messages you send are transmitted to our AI provider to generate a reply. Saved
-          scholarships and loans may be stored in your browser (localStorage) when account login
-          is not configured. Marketplace clicks may use affiliate tracking cookies.
+          scholarships and loans stay in your browser only (localStorage) — there is no account
+          sync. Marketplace clicks may use affiliate tracking cookies.
         </p>
       </section>
       <section>

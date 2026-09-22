@@ -45,6 +45,14 @@ export const CANADA_PROVINCE_CHIPS: RegionalAidLink[] = [
     loanId: "ca-afe-quebec",
   },
   {
+    code: "NS",
+    label: "NS",
+    name: "Nova Scotia",
+    href: "https://novascotia.ca/studentassistance/",
+    cta: "Open NS Student Assistance",
+    loanId: "ca-ns-student-assistance",
+  },
+  {
     code: "Other",
     label: "Other",
     name: "Other provinces and territories",
@@ -75,6 +83,7 @@ const REGION_TO_CHIP: Record<string, CanadaProvinceChip> = {
   alberta: "AB",
   quebec: "QC",
   québec: "QC",
+  "nova scotia": "NS",
 }
 
 export function normalizeCanadaProvince(input: string): CanadaProvinceChip | "" {
@@ -84,6 +93,7 @@ export function normalizeCanadaProvince(input: string): CanadaProvinceChip | "" 
   if (text === "bc" || text === "british columbia") return "BC"
   if (text === "ab" || text === "alberta") return "AB"
   if (text === "qc" || text === "quebec" || text === "québec") return "QC"
+  if (text === "ns" || text === "nova scotia") return "NS"
   if (text === "other") return "Other"
   return REGION_TO_CHIP[text] ?? "Other"
 }
@@ -96,7 +106,58 @@ export function provinceFromSchool(school: string): CanadaProvinceChip | "" {
 
 export function regionalAidForProvince(province: string): RegionalAidLink {
   const code = normalizeCanadaProvince(province) || "Other"
-  return CANADA_PROVINCE_CHIPS.find((chip) => chip.code === code) ?? CANADA_PROVINCE_CHIPS[4]
+  return (
+    CANADA_PROVINCE_CHIPS.find((chip) => chip.code === code) ??
+    CANADA_PROVINCE_CHIPS[CANADA_PROVINCE_CHIPS.length - 1]
+  )
+}
+
+/** Official provincial/territorial (or FAFSA) scholarship/aid card for search results. */
+export function regionalScholarshipSeed(
+  country: StudentCountry,
+  provinceOrState: string,
+): {
+  id: string
+  title: string
+  provider: string
+  eligibility: string
+  url: string
+} | null {
+  if (country === "USA") {
+    return {
+      id: "seed-us-fafsa-regional",
+      title: "FAFSA",
+      provider: "U.S. Department of Education",
+      eligibility:
+        "Free Application for Federal Student Aid — start here for U.S. federal grants, loans, and work-study.",
+      url: "https://studentaid.gov/h/apply-for-aid/fafsa",
+    }
+  }
+  const aid = regionalAidForProvince(provinceOrState)
+  return {
+    id: `seed-ca-regional-${aid.code.toLowerCase()}`,
+    title: aid.name === "Other provinces and territories" ? "Canada Student Grants and Loans" : `${aid.name} student aid`,
+    provider: aid.name,
+    eligibility: `${aid.cta.replace(/^Open\s+/i, "")} — official government student aid for ${aid.name}. Confirm eligibility and deadlines on the official site.`,
+    url: aid.href,
+  }
+}
+
+export function pinRegionalScholarshipResults<T extends { id: string; url: string }>(
+  results: T[],
+  country: StudentCountry,
+  provinceOrState: string,
+): T[] {
+  const seed = regionalScholarshipSeed(country, provinceOrState)
+  if (!seed) return results
+  const matchUrl = seed.url.replace(/\/$/, "").toLowerCase()
+  const pinned = results.filter(
+    (item) => item.id === seed.id || item.url.replace(/\/$/, "").toLowerCase() === matchUrl,
+  )
+  const rest = results.filter(
+    (item) => item.id !== seed.id && item.url.replace(/\/$/, "").toLowerCase() !== matchUrl,
+  )
+  return [...pinned, ...rest]
 }
 
 export function pinRegionalLoanResults(

@@ -1,6 +1,7 @@
 "use client"
 
 import { useState } from "react"
+import { track } from "@vercel/analytics"
 import { SaveButton } from "@/features/saved/components/SaveButton"
 import { useSavedItems } from "@/features/saved/hooks/useSavedItems"
 import type { SavedItem } from "@/features/saved/types"
@@ -40,7 +41,10 @@ export function FollowThrough({
         href={href}
         target="_blank"
         rel="noopener noreferrer"
-        onClick={() => setOpened(true)}
+        onClick={() => {
+          setOpened(true)
+          track("open_official_page", { kind: item.kind, id: item.id })
+        }}
         className="inline-flex min-h-11 w-full items-center justify-center rounded-xl bg-gold px-4 text-sm font-bold text-gold-foreground transition-colors hover:bg-gold-hover"
       >
         {cta}

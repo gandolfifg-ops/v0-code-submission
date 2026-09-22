@@ -24,7 +24,7 @@ You are working on **WealthNutz** (Next.js App Router, TypeScript, Tailwind, Ver
 
 - Queen's University search returning Queens University of Charlotte or a Biology department page as the primary official hit
 - Canada.ca snippets starting with "Language selection Search Menu You are here"
-- Loan search ranking Credible/Earnest/Bankrate/Wikipedia over FAFSA/NSLSC/OSAP
+- Loan search ranking Credible/Earnest/Bankrate/Wikipedia over FAFSA/NSLSC/OSAP (legacy `/api/search` removed; keep `/api/loans/find` filters tight)
 - `robots.txt` 404, `favicon.ico` 404
-- Help FAQ "Why is chat unavailable?" while chat works
-- Saved page claiming "Account sync is configured" with no login UI
+- ~~Help FAQ "Why is chat unavailable?" while chat works~~ (fixed: FAQ removed; chat errors no longer expose env keys)
+- ~~Saved page claiming account sync with no login UI~~ (fixed: browser-only copy always)

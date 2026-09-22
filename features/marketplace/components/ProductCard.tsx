@@ -1,11 +1,14 @@
 "use client"
 
+import { useState } from "react"
 import { Building2, CreditCard, Landmark, Star, TrendingUp } from "lucide-react"
 import { CreamIcon } from "@/components/CreamIcon"
 import { ExpandableText } from "@/components/ExpandableText"
 import { MarketplaceOutboundLink } from "@/features/marketplace/components/MarketplaceOutboundLink"
 import { CANADA_COMPARISON, US_COMPARISON } from "@/features/marketplace/data/comparison"
 import type { MarketplaceProduct, ProductCategory } from "@/features/marketplace/types"
+import { SaveButton } from "@/features/saved/components/SaveButton"
+import { useSavedItems } from "@/features/saved/hooks/useSavedItems"
 
 const CATEGORY_ICONS: Record<ProductCategory, typeof Building2> = {
   banking: Building2,
@@ -31,6 +34,17 @@ type ProductCardProps = {
 export function ProductCard({ product }: ProductCardProps) {
   const featured = Boolean(product.featured)
   const government = product.source === "official"
+  const [opened, setOpened] = useState(false)
+  const { ids } = useSavedItems()
+  const savedItem = {
+    id: `product-${product.id}`,
+    kind: "product" as const,
+    title: product.name,
+    href: product.href,
+    subtitle: product.tagline,
+    savedAt: Date.now(),
+  }
+  const saved = ids.has(savedItem.id)
 
   return (
     <article
@@ -61,6 +75,12 @@ export function ProductCard({ product }: ProductCardProps) {
         {product.name}
       </h3>
       <p className="mt-1 text-sm font-medium text-link">{product.tagline}</p>
+      {featured ? (
+        <p className="mt-2 text-xs leading-snug text-muted-foreground">
+          Why featured: strong student fit from advertised no-fee / everyday banking terms —
+          placement is editorial, not a paid rank.
+        </p>
+      ) : null}
       <p className="mt-2 text-sm text-foreground">
         <span className="text-muted-foreground">Fee / student deal: </span>
         {feeLineFor(product)}
@@ -82,9 +102,18 @@ export function ProductCard({ product }: ProductCardProps) {
         productId={product.id}
         href={product.href}
         className="mt-3 inline-flex min-h-11 w-full items-center justify-center rounded-xl bg-gold px-4 text-sm font-bold text-gold-foreground transition-colors hover:bg-gold-hover"
+        onNavigate={() => setOpened(true)}
       >
         {product.cta}
       </MarketplaceOutboundLink>
+      {opened && !saved ? (
+        <p className="mt-2 rounded-xl border border-border bg-muted px-3 py-2 text-xs text-foreground">
+          Opened in a new tab — tap Save if you want to track this bank or product here.
+        </p>
+      ) : null}
+      <div className="mt-2">
+        <SaveButton item={savedItem} />
+      </div>
     </article>
   )
 }

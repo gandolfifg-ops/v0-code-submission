@@ -2,7 +2,9 @@
 
 import { useState } from "react"
 import Link from "next/link"
+import { JsonLd } from "@/components/JsonLd"
 import { InfoPage } from "@/components/layout/InfoPage"
+import { faqPageJsonLd } from "@/lib/seo"
 
 const FAQS = [
   {
@@ -61,8 +63,11 @@ const FAQS = [
 export default function HelpPage() {
   const [openItem, setOpenItem] = useState<string | null>(null)
 
+  const flatFaqs = FAQS.flatMap((cat) => cat.items)
+
   return (
     <InfoPage title="Help Center" lede="Answers about scholarships, loans, marketplace links, and chat.">
+      <JsonLd data={faqPageJsonLd(flatFaqs)} />
       {FAQS.map((cat) => (
         <section key={cat.category}>
           <h2 className="text-lg font-semibold text-foreground">{cat.category}</h2>
@@ -74,13 +79,20 @@ export default function HelpPage() {
                 <div key={key} className="rounded-xl border border-border bg-card">
                   <button
                     type="button"
+                    id={`${key}-button`}
+                    aria-expanded={open}
+                    aria-controls={`${key}-panel`}
                     onClick={() => setOpenItem(open ? null : key)}
                     className="flex min-h-11 w-full items-center justify-between gap-3 px-4 py-3 text-left text-sm font-semibold text-foreground transition-colors hover:bg-muted/50"
                   >
                     {item.q}
                     <span aria-hidden="true">{open ? "−" : "+"}</span>
                   </button>
-                  {open && <p className="px-4 pb-4 text-sm text-muted-foreground">{item.a}</p>}
+                  {open && (
+                    <p id={`${key}-panel`} role="region" aria-labelledby={`${key}-button`} className="px-4 pb-4 text-sm text-muted-foreground">
+                      {item.a}
+                    </p>
+                  )}
                 </div>
               )
             })}

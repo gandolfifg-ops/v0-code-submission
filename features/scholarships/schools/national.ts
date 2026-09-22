@@ -33,6 +33,22 @@ export const STUDENTAID_BC: SchoolAwardLink = {
   href: "https://studentaidbc.ca/",
 }
 
+export const STUDENTAID_ALBERTA: SchoolAwardLink = {
+  id: "studentaid-alberta",
+  title: "Alberta Student Aid",
+  summary:
+    "Alberta student loans, grants, scholarships, and awards for eligible residents — confirm terms on the official site.",
+  href: "https://studentaid.alberta.ca/",
+}
+
+export const NOVA_SCOTIA_STUDENT_ASSISTANCE: SchoolAwardLink = {
+  id: "nova-scotia-student-assistance",
+  title: "Nova Scotia Student Assistance",
+  summary:
+    "Nova Scotia student loans and grants for eligible residents — confirm terms on the official site.",
+  href: "https://novascotia.ca/studentassistance/",
+}
+
 export const LORAN: SchoolAwardLink = {
   id: "loran",
   title: "Loran Scholars Award",

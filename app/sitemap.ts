@@ -2,31 +2,36 @@ import type { MetadataRoute } from "next"
 import { SCHOOL_PAGES, schoolPagePath } from "@/features/scholarships/schools"
 import { SITE_ORIGIN } from "@/lib/seo"
 
-const STATIC_PATHS = [
-  "/",
-  "/scholarships",
-  "/loans",
-  "/chat",
-  "/saved",
-  "/schools",
-  "/about",
-  "/help",
-  "/contact",
-  "/privacy",
-  "/terms",
-  "/cookies",
-  "/search",
-  "/guides/best-student-bank-canada",
-  "/guides/best-student-bank-usa",
-  "/guides/osap-vs-private-loans",
-] as const
+/** Content-aware lastmod — bump when the page’s editorial content changes. */
+const STATIC_ENTRIES: { path: string; lastModified: string }[] = [
+  { path: "/", lastModified: "2026-09-16" },
+  { path: "/scholarships", lastModified: "2026-09-16" },
+  { path: "/loans", lastModified: "2026-09-16" },
+  { path: "/chat", lastModified: "2026-09-13" },
+  { path: "/saved", lastModified: "2026-09-16" },
+  { path: "/schools", lastModified: "2026-09-16" },
+  { path: "/about", lastModified: "2026-09-01" },
+  { path: "/help", lastModified: "2026-09-16" },
+  { path: "/contact", lastModified: "2026-09-16" },
+  { path: "/privacy", lastModified: "2026-09-16" },
+  { path: "/terms", lastModified: "2026-09-01" },
+  { path: "/cookies", lastModified: "2026-09-01" },
+  { path: "/search", lastModified: "2026-09-01" },
+  { path: "/guides/best-student-bank-canada", lastModified: "2026-09-01" },
+  { path: "/guides/best-student-bank-usa", lastModified: "2026-09-01" },
+  { path: "/guides/osap-vs-private-loans", lastModified: "2026-09-01" },
+  { path: "/guides/fafsa-vs-private-loans", lastModified: "2026-09-16" },
+  { path: "/guides/resp-tfsa-for-students", lastModified: "2026-09-16" },
+]
 
 export default function sitemap(): MetadataRoute.Sitemap {
-  const schoolPaths = SCHOOL_PAGES.map((school) => schoolPagePath(school))
-  const lastModified = new Date()
+  const schoolEntries = SCHOOL_PAGES.map((school) => ({
+    path: schoolPagePath(school),
+    lastModified: "2026-09-16",
+  }))
 
-  return [...STATIC_PATHS, ...schoolPaths].map((path) => ({
-    url: path === "/" ? `${SITE_ORIGIN}/` : `${SITE_ORIGIN}${path}`,
-    lastModified,
+  return [...STATIC_ENTRIES, ...schoolEntries].map((entry) => ({
+    url: entry.path === "/" ? `${SITE_ORIGIN}/` : `${SITE_ORIGIN}${entry.path}`,
+    lastModified: new Date(entry.lastModified),
   }))
 }

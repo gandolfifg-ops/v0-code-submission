@@ -2,7 +2,7 @@ import type { ScholarshipCountry } from "@/features/scholarships/types"
 
 export type StudentCountry = ScholarshipCountry
 
-export type CanadaProvinceChip = "ON" | "BC" | "AB" | "QC" | "Other"
+export type CanadaProvinceChip = "ON" | "BC" | "AB" | "QC" | "NS" | "Other"
 
 export type StudentProfile = {
   country: StudentCountry

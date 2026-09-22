@@ -14,6 +14,7 @@ import {
   isDroppedLoanHit,
   summarizeLiveSnippet,
 } from "@/lib/liveResultText"
+import { clientKey, rateLimit } from "@/lib/rateLimit"
 
 export const dynamic = "force-dynamic"
 export const maxDuration = 30
@@ -126,23 +127,56 @@ function canonicalUrl(url: string): string {
   }
 }
 
+function excludedUrlSet(raw: unknown): Set<string> {
+  if (!Array.isArray(raw)) return new Set()
+  return new Set(
+    raw
+      .filter((item): item is string => typeof item === "string" && item.trim().length > 0)
+      .map((item) => canonicalUrl(item)),
+  )
+}
+
+function expandedLoanQuery(country: ReturnType<typeof parseLoanCountry>, loanType: LoanType, query: string): string {
+  return [
+    country === "Canada" ? "Canada" : "United States",
+    query || `${loanType} loan`,
+    "official bank lender apply rates 2026 2027",
+  ]
+    .filter(Boolean)
+    .join(" ")
+    .replace(/\s+/g, " ")
+    .trim()
+}
+
 export async function POST(req: Request) {
+  const limited = rateLimit(clientKey(req, "loans-find"), { limit: 40, windowMs: 60_000 })
+  if (!limited.ok) {
+    return Response.json(
+      { error: "Too many searches. Please wait a moment and try again." },
+      { status: 429, headers: { "Retry-After": String(limited.retryAfterSec) } },
+    )
+  }
+
   const body = await req.json().catch(() => ({}))
   const country = parseLoanCountry(body?.country)
   const loanType = parseType(body?.loanType)
   const amount = typeof body?.amount === "string" ? body.amount.trim() : ""
   const query = typeof body?.query === "string" ? body.query.trim() : ""
-  const seeds = officialLoanSeeds(country, loanType)
+  const expand = Boolean(body?.expand)
+  const excluded = excludedUrlSet(body?.excludeUrls)
+  const seeds = expand ? [] : officialLoanSeeds(country, loanType)
 
   const apiKey = process.env.TAVILY_API_KEY?.trim()
-  const searchQuery = [
-    country === "Canada" ? "Canada" : "United States",
-    query || `${loanType} loan official apply`,
-    query ? "official government lender" : "official apply",
-    amount ? `${amount} dollars` : "",
-  ]
-    .filter(Boolean)
-    .join(" ")
+  const searchQuery = expand
+    ? expandedLoanQuery(country, loanType, query)
+    : [
+        country === "Canada" ? "Canada" : "United States",
+        query || `${loanType} loan official apply`,
+        query ? "official government lender" : "official apply",
+        amount ? `${amount} dollars` : "",
+      ]
+        .filter(Boolean)
+        .join(" ")
 
   let live: LoanResult[] = []
 
@@ -157,7 +191,7 @@ export async function POST(req: Request) {
           search_depth: "advanced",
           include_domains: tavilyLoanIncludeDomains(country, loanType),
           exclude_domains: [...TAVILY_LOAN_EXCLUDE_DOMAINS],
-          max_results: 8,
+          max_results: expand ? 10 : 8,
         }),
       })
 
@@ -172,6 +206,7 @@ export async function POST(req: Request) {
             if (typeof r.score === "number" && r.score < 0.3) return false
             if (isBlockedLoanHost(r.url)) return false
             if (isDroppedLoanHit(r.url, r.title ?? "")) return false
+            if (excluded.has(canonicalUrl(r.url))) return false
             if (seedUrls.has(canonicalUrl(r.url))) return false
             return true
           }),
@@ -179,6 +214,7 @@ export async function POST(req: Request) {
 
         const unique = dedupeLoanHitsByDomain(filtered).filter((hit) => {
           if (!hit.url) return false
+          if (expand) return true
           return !seedHosts.has(registrableDomain(hit.url))
         })
 
@@ -188,7 +224,7 @@ export async function POST(req: Request) {
           const isForm = isApplicationFormListing(r.title ?? "", content, r.url!)
           const issuer = prettyIssuerName(r.url!)
           return {
-            id: `live-${loanType}-${i}-${hostname}`,
+            id: `live-${loanType}-${expand ? "more-" : ""}${i}-${hostname}`,
             name: isForm
               ? "Official application form"
               : cleanDisplayText(r.title ?? issuer).slice(0, 90),
@@ -215,15 +251,21 @@ export async function POST(req: Request) {
     }
   }
 
-  const results = [...seeds, ...live]
+  const results = (expand ? live : [...seeds, ...live]).filter(
+    (item) => !excluded.has(canonicalUrl(item.href)),
+  )
   return Response.json({
-    source: live.length > 0 ? "live" : "curated",
-    notice:
-      live.length > 0
+    source: live.length > 0 ? "live" : expand ? "live" : "curated",
+    notice: expand
+      ? live.length > 0
+        ? "More official government and lender pages. Any APR shown was taken from that same official page and is not a personalized quote."
+        : "No more official lender pages for this search."
+      : live.length > 0
         ? "Official government and lender pages first. Any APR shown was taken from that same official page and is not a personalized quote."
         : apiKey
           ? "Live search didn’t find extra pages — here are official starting points."
           : "Showing official starting points.",
     results,
+    hasMore: expand ? results.length > 0 : Boolean(apiKey),
   })
 }

@@ -34,7 +34,7 @@ function isSavedItem(value: unknown): value is SavedItem {
   const item = value as SavedItem
   return (
     typeof item.id === "string" &&
-    (item.kind === "scholarship" || item.kind === "loan") &&
+    (item.kind === "scholarship" || item.kind === "loan" || item.kind === "product") &&
     typeof item.title === "string" &&
     typeof item.href === "string" &&
     typeof item.subtitle === "string"

@@ -1,4 +1,4 @@
-export type SavedKind = "scholarship" | "loan"
+export type SavedKind = "scholarship" | "loan" | "product"
 
 export type SavedItem = {
   id: string

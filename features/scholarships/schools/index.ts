@@ -1,6 +1,10 @@
+import { alberta } from "@/features/scholarships/schools/alberta"
 import { berkeley } from "@/features/scholarships/schools/berkeley"
+import { calgary } from "@/features/scholarships/schools/calgary"
 import { carleton } from "@/features/scholarships/schools/carleton"
 import { columbia } from "@/features/scholarships/schools/columbia"
+import { concordia } from "@/features/scholarships/schools/concordia"
+import { dalhousie } from "@/features/scholarships/schools/dalhousie"
 import { georgeBrown } from "@/features/scholarships/schools/george-brown"
 import { guelph } from "@/features/scholarships/schools/guelph"
 import { harvard } from "@/features/scholarships/schools/harvard"
@@ -8,9 +12,11 @@ import { mcgill } from "@/features/scholarships/schools/mcgill"
 import { mcmaster } from "@/features/scholarships/schools/mcmaster"
 import { nyu } from "@/features/scholarships/schools/nyu"
 import { ontarioTech } from "@/features/scholarships/schools/ontario-tech"
+import { ottawa } from "@/features/scholarships/schools/ottawa"
 import { penn } from "@/features/scholarships/schools/penn"
 import { queens } from "@/features/scholarships/schools/queens"
 import type { SchoolAwardsData } from "@/features/scholarships/schools/types"
+import { sfu } from "@/features/scholarships/schools/sfu"
 import { stanford } from "@/features/scholarships/schools/stanford"
 import { ucla } from "@/features/scholarships/schools/ucla"
 import { uiuc } from "@/features/scholarships/schools/uiuc"
@@ -29,7 +35,9 @@ export type { SchoolAwardsData, SchoolAwardLink } from "@/features/scholarships/
 export const SCHOOL_PAGES: SchoolAwardsData[] = [
   queens,
   uOfT,
+  ottawa,
   mcgill,
+  concordia,
   carleton,
   waterloo,
   mcmaster,
@@ -39,6 +47,10 @@ export const SCHOOL_PAGES: SchoolAwardsData[] = [
   western,
   georgeBrown,
   ubc,
+  sfu,
+  alberta,
+  calgary,
+  dalhousie,
   ucla,
   berkeley,
   umich,

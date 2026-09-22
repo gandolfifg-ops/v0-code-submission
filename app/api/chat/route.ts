@@ -1,20 +1,22 @@
 import Anthropic from "@anthropic-ai/sdk"
 import { buildChatSystemPrompt, normalizeChatCountry } from "@/features/chat/catalog"
+import { clientKey, rateLimit } from "@/lib/rateLimit"
 
 export const dynamic = "force-dynamic"
 export const maxDuration = 30
+
+const CHAT_UNAVAILABLE =
+  "Chat is temporarily unavailable. Please try again later, or use Scholarships and Loans to search official pages."
 
 function getAnthropicClient() {
   const apiKey = process.env.ANTHROPIC_API_KEY?.trim()
 
   if (!apiKey) {
-    throw new Error("ANTHROPIC_API_KEY is missing or empty. Please add it in Settings > Vars.")
+    throw new Error("Chat provider key is missing")
   }
 
   if (!apiKey.startsWith("sk-")) {
-    throw new Error(
-      `ANTHROPIC_API_KEY appears invalid. It should start with 'sk-' but starts with '${apiKey.substring(0, 3)}...'`,
-    )
+    throw new Error("Chat provider key is invalid")
   }
 
   return new Anthropic({ apiKey })
@@ -36,15 +38,17 @@ function lastUserText(messages: { role?: string; content?: string }[]): string {
 }
 
 export async function POST(req: Request) {
+  const limited = rateLimit(clientKey(req, "chat"), { limit: 20, windowMs: 60_000 })
+  if (!limited.ok) {
+    return Response.json(
+      { error: "Too many chat messages. Please wait a moment and try again." },
+      { status: 429, headers: { "Retry-After": String(limited.retryAfterSec) } },
+    )
+  }
+
   const apiKey = process.env.ANTHROPIC_API_KEY?.trim()
   if (!apiKey || !apiKey.startsWith("sk-")) {
-    return Response.json(
-      {
-        error:
-          "Chat is unavailable because ANTHROPIC_API_KEY is missing or invalid. Add the key in your environment to enable the assistant.",
-      },
-      { status: 503 },
-    )
+    return Response.json({ error: CHAT_UNAVAILABLE }, { status: 503 })
   }
 
   const body = await req.json().catch(() => ({}))
@@ -94,9 +98,8 @@ export async function POST(req: Request) {
         controller.close()
       } catch (error) {
         console.error("[v0] Anthropic API error:", error)
-        const errorMsg = error instanceof Error ? error.message : "Unknown error"
         const data = JSON.stringify({
-          delta: { text: `Error: ${errorMsg}. Please check your ANTHROPIC_API_KEY.` },
+          delta: { text: CHAT_UNAVAILABLE },
         })
         controller.enqueue(encoder.encode(`data: ${data}\n\n`))
         controller.enqueue(encoder.encode(`data: [DONE]\n\n`))

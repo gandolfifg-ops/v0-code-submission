@@ -1,12 +1,7 @@
 /** @type {import('next').NextConfig} */
 // v52 — HARD DEV SERVER RESTART — Recreated config, new module graphs only
 const nextConfig = {
-  typescript: {
-    ignoreBuildErrors: true,
-  },
-  eslint: {
-    ignoreDuringBuilds: true,
-  },
+  // Typecheck and lint must pass on Vercel builds (verified locally with tsc + pnpm lint).
   images: {
     unoptimized: true,
   },

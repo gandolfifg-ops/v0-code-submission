@@ -42,21 +42,24 @@ export function CountryWelcomeModal() {
     setOpen(false)
   }
 
-  function dismissWithCanada() {
-    if (!hasChosenCountry()) saveStudentCountry("Canada")
-    setOpen(false)
-  }
-
   return (
     <Dialog
       open={open}
       onOpenChange={(next) => {
-        if (!next) dismissWithCanada()
+        // Esc / backdrop must not silently pick Canada for a US student.
+        if (!next && !hasChosenCountry()) {
+          setOpen(true)
+          return
+        }
+        setOpen(next)
       }}
     >
       <DialogContent
         showCloseButton={false}
         className="w-[calc(100%-1.5rem)] max-w-md rounded-2xl border-border p-5 sm:p-6"
+        onPointerDownOutside={(event) => event.preventDefault()}
+        onInteractOutside={(event) => event.preventDefault()}
+        onEscapeKeyDown={(event) => event.preventDefault()}
         onOpenAutoFocus={(event) => {
           event.preventDefault()
           canadaRef.current?.focus()
@@ -79,8 +82,8 @@ export function CountryWelcomeModal() {
             Are you in Canada or the United States?
           </DialogTitle>
           <DialogDescription id="country-welcome-desc" className="text-sm text-muted-foreground">
-            We’ll use this to show scholarships, loans, and banking for your country. You can
-            change it anytime.
+            Choose one so we show scholarships, loans, and banking for your country. You can
+            change it anytime with the country toggle.
           </DialogDescription>
         </DialogHeader>
         <div className="grid gap-3 pt-1">

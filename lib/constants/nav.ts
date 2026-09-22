@@ -30,6 +30,8 @@ export const GUIDE_NAV: NavLink[] = [
   { href: "/guides/best-student-bank-canada", label: "Best student bank accounts (Canada)" },
   { href: "/guides/best-student-bank-usa", label: "Best student bank accounts (United States)" },
   { href: "/guides/osap-vs-private-loans", label: "OSAP vs private loans" },
+  { href: "/guides/fafsa-vs-private-loans", label: "FAFSA vs private loans" },
+  { href: "/guides/resp-tfsa-for-students", label: "RESP and TFSA basics" },
 ]
 
 import { SCHOOL_PAGES, schoolPagePath } from "@/features/scholarships/schools"

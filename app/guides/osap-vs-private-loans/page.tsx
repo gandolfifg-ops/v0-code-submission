@@ -1,6 +1,8 @@
 import type { Metadata } from "next"
 import Link from "next/link"
-import { pageMeta } from "@/lib/seo"
+import { Breadcrumbs } from "@/components/layout/Breadcrumbs"
+import { JsonLd } from "@/components/JsonLd"
+import { articleJsonLd, pageMeta } from "@/lib/seo"
 
 export const metadata: Metadata = pageMeta(
   "OSAP vs private student loans in Canada — WealthNutz",
@@ -11,7 +13,22 @@ export const metadata: Metadata = pageMeta(
 export default function OsapVsPrivateLoansPage() {
   return (
     <article className="mx-auto max-w-3xl px-4 py-8 sm:px-6 sm:py-10">
-      <p className="text-xs font-semibold uppercase tracking-widest text-link">Guides</p>
+      <JsonLd
+        data={articleJsonLd({
+          title: "OSAP vs private student loans in Canada",
+          description:
+            "How government student aid in Canada compares with private bank lines of credit. Education only — not a loan offer.",
+          path: "/guides/osap-vs-private-loans",
+          datePublished: "2026-09-01",
+        })}
+      />
+      <Breadcrumbs
+        items={[
+          { name: "Home", path: "/" },
+          { name: "OSAP vs private loans", path: "/guides/osap-vs-private-loans" },
+        ]}
+      />
+      <p className="mt-3 text-xs font-semibold uppercase tracking-widest text-link">Guides</p>
       <h1 className="mt-2 text-3xl font-bold tracking-tight text-foreground sm:text-4xl">
         OSAP vs private student loans in Canada
       </h1>

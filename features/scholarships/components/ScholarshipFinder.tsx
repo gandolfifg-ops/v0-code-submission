@@ -2,12 +2,14 @@
 
 import { useEffect, useState, type FormEvent } from "react"
 import { GraduationCap, ListChecks, Loader2, Search } from "lucide-react"
+import { SearchExplainer } from "@/components/SearchExplainer"
 import { useSmartSearch } from "@/components/SmartSearchProvider"
 import { SectionHeading } from "@/components/layout/SectionHeading"
 import { ResultCard } from "@/features/scholarships/components/ResultCard"
 import { StudentProfileBox } from "@/features/student-profile/components/StudentProfileBox"
 import { RegionalAidStrip } from "@/features/student-profile/components/RegionalAidStrip"
 import { SchoolAutocomplete } from "@/features/student-profile/components/SchoolAutocomplete"
+import { pinRegionalScholarshipResults } from "@/features/student-profile/regionalAid"
 import { getStudentProfile, patchStudentProfile } from "@/features/student-profile/store"
 import { type StudentProfile } from "@/features/student-profile/types"
 import { resolveSchool } from "@/features/scholarships/schools"
@@ -127,11 +129,16 @@ export function ScholarshipFinder({
           level: requestLevel,
           query: next.query,
           university: schoolName,
+          provinceOrState: stored?.provinceOrState ?? provinceOrState,
         }),
       })
       if (!res.ok) throw new Error("Search failed")
       const data: SearchResponse = await res.json()
-      const nextResults = (data.results ?? []).filter((item) => !isExpiredDeadline(item.deadline))
+      const nextResults = pinRegionalScholarshipResults(
+        (data.results ?? []).filter((item) => !isExpiredDeadline(item.deadline)),
+        requestCountry,
+        stored?.provinceOrState ?? provinceOrState,
+      )
       setResults(nextResults)
       setVisibleCount(PAGE_SIZE)
       setSource(data.source)
@@ -165,13 +172,18 @@ export function ScholarshipFinder({
           level,
           query,
           university: schoolName,
+          provinceOrState: stored?.provinceOrState ?? provinceOrState,
           expand: true,
           excludeUrls: results.map((item) => item.url),
         }),
       })
       if (!res.ok) throw new Error("Search failed")
       const data: SearchResponse = await res.json()
-      const extra = (data.results ?? []).filter((item) => !isExpiredDeadline(item.deadline))
+      const extra = pinRegionalScholarshipResults(
+        (data.results ?? []).filter((item) => !isExpiredDeadline(item.deadline)),
+        requestCountry,
+        stored?.provinceOrState ?? provinceOrState,
+      )
       const seen = new Set(results.map((item) => item.url))
       const unique = extra.filter((item) => !seen.has(item.url))
       if (unique.length === 0) {
@@ -336,6 +348,10 @@ export function ScholarshipFinder({
             >
               {notice}
             </p>
+          )}
+
+          {(notice || results.length > 0) && !loading && (
+            <SearchExplainer kind="scholarships" className="mt-3" />
           )}
 
           {loading && results.length === 0 && (

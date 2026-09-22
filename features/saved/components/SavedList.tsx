@@ -37,20 +37,70 @@ function SavedCard({
   )
 }
 
+function downloadBlob(filename: string, contents: string, type: string) {
+  const blob = new Blob([contents], { type })
+  const url = URL.createObjectURL(blob)
+  const anchor = document.createElement("a")
+  anchor.href = url
+  anchor.download = filename
+  anchor.click()
+  URL.revokeObjectURL(url)
+}
+
+function toCsv(items: SavedItem[]): string {
+  const escape = (value: string) => `"${value.replace(/"/g, '""')}"`
+  const header = ["kind", "title", "subtitle", "href", "savedAt"].join(",")
+  const rows = items.map((item) =>
+    [item.kind, item.title, item.subtitle, item.href, new Date(item.savedAt).toISOString()]
+      .map((cell) => escape(String(cell)))
+      .join(","),
+  )
+  return [header, ...rows].join("\n")
+}
+
 export function SavedList() {
-  const { items, ready, signedIn, remove } = useSavedItems()
+  const { items, ready, remove } = useSavedItems()
   const scholarships = items.filter((item) => item.kind === "scholarship")
   const loans = items.filter((item) => item.kind === "loan")
+  const products = items.filter((item) => item.kind === "product")
 
   return (
     <div className="mx-auto max-w-6xl px-4 py-8 sm:px-6 sm:py-12">
       <p className="text-xs font-semibold uppercase tracking-widest text-link">Saved</p>
       <h1 className="mt-2 text-3xl font-bold tracking-tight text-foreground">Saved items</h1>
       <p className="mt-3 max-w-2xl text-sm leading-relaxed text-muted-foreground">
-        {signedIn
-          ? "These items sync to your account. A copy also stays in this browser."
-          : "Saved in this browser only. Clearing site data deletes them. There is no account sync yet."}
+        Saved in this browser only. Clearing site data deletes them. There is no account sync yet.
       </p>
+      {ready && items.length > 0 && (
+        <div className="mt-4 flex flex-col gap-2 sm:flex-row">
+          <button
+            type="button"
+            onClick={() =>
+              downloadBlob(
+                `wealthnutz-saved-${new Date().toISOString().slice(0, 10)}.json`,
+                JSON.stringify(items, null, 2),
+                "application/json",
+              )
+            }
+            className="inline-flex min-h-11 items-center justify-center rounded-xl border border-border bg-card px-4 text-sm font-semibold text-foreground transition-colors hover:bg-muted"
+          >
+            Export JSON
+          </button>
+          <button
+            type="button"
+            onClick={() =>
+              downloadBlob(
+                `wealthnutz-saved-${new Date().toISOString().slice(0, 10)}.csv`,
+                toCsv(items),
+                "text/csv;charset=utf-8",
+              )
+            }
+            className="inline-flex min-h-11 items-center justify-center rounded-xl border border-border bg-card px-4 text-sm font-semibold text-foreground transition-colors hover:bg-muted"
+          >
+            Export CSV
+          </button>
+        </div>
+      )}
 
       {!ready && <p className="mt-8 text-sm text-muted-foreground">Loading saved items…</p>}
 
@@ -90,6 +140,17 @@ export function SavedList() {
           <h2 className="text-lg font-semibold text-foreground">Loans</h2>
           <div className="mt-4 grid gap-4 sm:grid-cols-2">
             {loans.map((item) => (
+              <SavedCard key={item.id} item={item} onRemove={remove} />
+            ))}
+          </div>
+        </section>
+      )}
+
+      {ready && products.length > 0 && (
+        <section className="mt-8">
+          <h2 className="text-lg font-semibold text-foreground">Marketplace</h2>
+          <div className="mt-4 grid gap-4 sm:grid-cols-2">
+            {products.map((item) => (
               <SavedCard key={item.id} item={item} onRemove={remove} />
             ))}
           </div>

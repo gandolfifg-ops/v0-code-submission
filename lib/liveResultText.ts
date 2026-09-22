@@ -785,10 +785,31 @@ const COST_CONTEXT =
 
 const AWARD_CONTEXT = /\b(?:scholarship|bursar(?:y|ies)?|award|grant|stipend)\b/i
 
+/** Legal / budget / gazette prose often has dollar figures that are not student awards. */
+const NON_AWARD_AMOUNT_CONTEXT =
+  /\b(?:regulatory impact|regulations?\s+amending|canada gazette|federal register|appropriation|budget\s+(?:impact|estimate)|fiscal\s+(?:impact|year)|cost-?benefit|legislative|statutory instrument|sor-?dors)\b/i
+
+function isNonAwardAmountSource(url: string, text: string): boolean {
+  const blob = `${url}\n${text}`
+  try {
+    const host = new URL(url).hostname.replace(/^www\./i, "").toLowerCase()
+    if (host === "gazette.gc.ca" || host.endsWith(".gazette.gc.ca")) return true
+    if (host === "federalregister.gov" || host.endsWith(".federalregister.gov")) return true
+  } catch {
+    /* ignore bad URLs */
+  }
+  if (/gazette\.gc\.ca|federalregister\.gov/i.test(url)) return true
+  if (NON_AWARD_AMOUNT_CONTEXT.test(blob)) return true
+  return false
+}
+
 /** Skip $1/$5 page artifacts; keep hundreds/thousands or tuition phrases. Never treat sticker price as an award. */
 export function extractScholarshipAmount(text: string, url = ""): string {
   const blob = `${url}\n${text}`
   if (/\/afford(?:ability)?(?:\/|$)/i.test(url) || /cost[-_ ]of[-_ ]attendance|tuition[-_ ]and[-_ ]fees/i.test(url)) {
+    return ""
+  }
+  if (isNonAwardAmountSource(url, text)) {
     return ""
   }
 
@@ -815,9 +836,11 @@ export function extractScholarshipAmount(text: string, url = ""): string {
     const best = Math.max(low, high ?? low)
     if (best < MIN_SCHOLARSHIP_AMOUNT) continue
     const window = text.slice(Math.max(0, match.index - 90), Math.min(text.length, match.index + match[0].length + 90))
+    if (NON_AWARD_AMOUNT_CONTEXT.test(window)) continue
     if (COST_CONTEXT.test(window) && !AWARD_CONTEXT.test(window)) continue
     if (COST_CONTEXT.test(blob) && !AWARD_CONTEXT.test(blob)) continue
-    if (!AWARD_CONTEXT.test(window) && !AWARD_CONTEXT.test(blob)) continue
+    // Prefer money near award words; do not let a distant "grant" on the page unlock budget figures.
+    if (!AWARD_CONTEXT.test(window)) continue
     let display = prettyMoneyPhrase(match[0])
     if (low < MIN_SCHOLARSHIP_AMOUNT && high !== null && high >= MIN_SCHOLARSHIP_AMOUNT) {
       display = `$${match[2]}${match[3] ?? ""}`
@@ -849,13 +872,19 @@ const CLOSED_NOTICE =
 
 const CURRENT_CYCLE = /\b2026\b|\b2027\b|2026\s*[-–\/]\s*2027|2026\s*[-–\/]\s*27/
 
-const ARCHIVED_PATH = /\/archive(?:d)?\/|\/(201[0-9]|202[0-4])(?:\/|$)/i
+const ARCHIVED_PATH =
+  /\/archive(?:d)?\/|\/(?:20(?:1[0-9]|2[0-4]))(?:[-_/]|$)|\/(?:20(?:1[0-9]|2[0-4]))[-_]?(?:loran|scholars?|recipients?|winners?)(?:\/|$)/i
+
+/** Titles like "2024 Loran Scholars" without a current cycle year. */
+const PAST_COHORT_TITLE =
+  /\b(20(?:1[0-9]|2[0-4]))\b(?:\s|[-–—])*(?:loran\s+)?(?:scholars?|recipients?|winners?|cohort|class)\b/i
 
 /** Drop closed/archived pages unless they mention a 2026/2027 cycle. */
 export function isClosedOrArchivedListing(text: string, url = ""): boolean {
   const blob = `${text} ${url}`
   const mentionsCurrentCycle = CURRENT_CYCLE.test(blob)
   if (ARCHIVED_PATH.test(url) && !mentionsCurrentCycle) return true
+  if (PAST_COHORT_TITLE.test(text) && !mentionsCurrentCycle) return true
   if (CLOSED_NOTICE.test(text) && !mentionsCurrentCycle) return true
   return false
 }

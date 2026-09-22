@@ -155,8 +155,9 @@ export function StudentChat() {
         const data = await res.json().catch(() => ({}))
         setConfigured(false)
         setConfigError(
-          data?.error ??
-            "Chat is unavailable because ANTHROPIC_API_KEY is not configured.",
+          typeof data?.error === "string" && data.error.trim()
+            ? data.error
+            : "Chat is temporarily unavailable. Please try again later, or use Scholarships and Loans to search official pages.",
         )
         setMsgs(nextMsgs)
         return
@@ -272,7 +273,7 @@ export function StudentChat() {
       {configured === false && (
         <div className="mt-6 rounded-xl border border-border bg-muted px-4 py-3 text-sm text-foreground">
           {configError ??
-            "Chat is unavailable because ANTHROPIC_API_KEY is missing or invalid. Add the key in your environment, then refresh this page."}
+            "Chat is temporarily unavailable. Please try again later, or use Scholarships and Loans to search official pages."}
         </div>
       )}
 

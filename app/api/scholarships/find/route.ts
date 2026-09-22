@@ -1,6 +1,8 @@
 import { CURATED_SCHOLARSHIPS } from "@/features/scholarships/data/curated"
 import { resolveSchool } from "@/features/scholarships/schools"
 import type { ScholarshipFilters, ScholarshipResult } from "@/features/scholarships/types"
+import { regionalScholarshipSeed } from "@/features/student-profile/regionalAid"
+import { clientKey, rateLimit } from "@/lib/rateLimit"
 import {
   applicationFormDisplayTitle,
   cleanDisplayText,
@@ -254,10 +256,29 @@ function seededOfficialCards(
   return cards.slice(0, 4)
 }
 
-function seededCountryCards(country: ScholarshipFilters["country"]): ScholarshipResult[] {
+function seededCountryCards(
+  country: ScholarshipFilters["country"],
+  provinceOrState = "",
+): ScholarshipResult[] {
   const checked = formatCheckedToday()
+  const regional = regionalScholarshipSeed(country, provinceOrState)
+  const regionalCard: ScholarshipResult | null = regional
+    ? {
+        id: regional.id,
+        title: regional.title,
+        provider: regional.provider,
+        amount: "",
+        deadline: "",
+        lastChecked: checked,
+        eligibility: regional.eligibility,
+        url: regional.url,
+        source: "curated",
+        listingKind: classifyScholarshipListing(regional.url),
+      }
+    : null
+
   if (country === "USA") {
-    return [
+    const cards: ScholarshipResult[] = [
       {
         id: "seed-us-aid",
         title: "Federal Student Aid scholarships",
@@ -284,8 +305,10 @@ function seededCountryCards(country: ScholarshipFilters["country"]): Scholarship
         listingKind: classifyScholarshipListing("https://studentaid.gov/h/apply-for-aid/fafsa"),
       },
     ]
+    if (!regionalCard) return cards
+    return mergeSeededAndLive([regionalCard], cards)
   }
-  return [
+  const cards: ScholarshipResult[] = [
     {
       id: "seed-ca-aid",
       title: "Canada Student Grants and Loans",
@@ -314,6 +337,8 @@ function seededCountryCards(country: ScholarshipFilters["country"]): Scholarship
       listingKind: classifyScholarshipListing("https://loranscholar.ca/"),
     },
   ]
+  if (!regionalCard) return cards
+  return mergeSeededAndLive([regionalCard], cards)
 }
 
 function mergeSeededAndLive(seeded: ScholarshipResult[], live: ScholarshipResult[]): ScholarshipResult[] {
@@ -332,8 +357,17 @@ function excludedUrlSet(raw: unknown): Set<string> {
 }
 
 export async function POST(req: Request) {
+  const limited = rateLimit(clientKey(req, "scholarships-find"), { limit: 40, windowMs: 60_000 })
+  if (!limited.ok) {
+    return Response.json(
+      { error: "Too many searches. Please wait a moment and try again." },
+      { status: 429, headers: { "Retry-After": String(limited.retryAfterSec) } },
+    )
+  }
+
   const body = await req.json().catch(() => ({}))
   const university = typeof body?.university === "string" ? body.university.trim() : ""
+  const provinceOrState = typeof body?.provinceOrState === "string" ? body.provinceOrState.trim() : ""
   const expand = Boolean(body?.expand)
   const excluded = excludedUrlSet(body?.excludeUrls)
   const registered = resolveSchool(university)
@@ -421,7 +455,7 @@ export async function POST(req: Request) {
         ? []
         : resolved
           ? seededOfficialCards(resolved)
-          : seededCountryCards(filters.country)
+          : seededCountryCards(filters.country, provinceOrState)
       const results = dropAggregatorScholarshipHitsIfOfficialExists(
         expand ? live : mergeSeededAndLive(seeded, live),
       ).filter((item) => !excluded.has(canonicalUrl(item.url)))
@@ -449,7 +483,7 @@ export async function POST(req: Request) {
         mergeSeededAndLive(seededOfficialCards(registeredFallback), filterCurated(filters)),
       )
     : dropAggregatorScholarshipHitsIfOfficialExists(
-        mergeSeededAndLive(seededCountryCards(filters.country), filterCurated(filters)),
+        mergeSeededAndLive(seededCountryCards(filters.country, provinceOrState), filterCurated(filters)),
       )
   return Response.json({
     source: "curated",

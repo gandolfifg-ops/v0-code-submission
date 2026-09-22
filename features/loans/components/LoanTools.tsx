@@ -5,6 +5,7 @@ import Link from "next/link"
 import { Banknote, Car, GraduationCap, ListChecks, Loader2, Search } from "lucide-react"
 import { CountryToggle } from "@/components/CountryToggle"
 import { CreamIcon } from "@/components/CreamIcon"
+import { SearchExplainer } from "@/components/SearchExplainer"
 import { useSmartSearch } from "@/components/SmartSearchProvider"
 import { SectionHeading } from "@/components/layout/SectionHeading"
 import { LenderCard } from "@/features/loans/components/LenderCard"
@@ -28,7 +29,10 @@ type SearchResponse = {
   source: "live" | "curated"
   notice: string
   results: LoanResult[]
+  hasMore?: boolean
 }
+
+const PAGE_SIZE = 6
 
 const LOAN_GROUPS: { id: LoanListingKind; title: string }[] = [
   { id: "government", title: "Government" },
@@ -62,6 +66,10 @@ export function LoanTools({ initialQuery = "" }: { initialQuery?: string }) {
   const [results, setResults] = useState<LoanResult[]>([])
   const [error, setError] = useState<string | null>(null)
   const [provinceOrState, setProvinceOrState] = useState("")
+  const [visibleCount, setVisibleCount] = useState(PAGE_SIZE)
+  const [loadingMore, setLoadingMore] = useState(false)
+  const [canSearchMore, setCanSearchMore] = useState(false)
+  const [lastQuery, setLastQuery] = useState("")
 
   function applyProfile(profile: StudentProfile | null) {
     if (!profile) return
@@ -80,6 +88,40 @@ export function LoanTools({ initialQuery = "" }: { initialQuery?: string }) {
   async function runSearch(nextQuery = "") {
     setLoading(true)
     setError(null)
+    setCanSearchMore(false)
+    const stored = getStudentProfile()
+    const requestCountry = stored?.country ?? country
+    const requestProvince = stored?.provinceOrState ?? provinceOrState
+    const queryText = nextQuery
+    setLastQuery(queryText)
+    try {
+      const res = await fetch("/api/loans/find", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ country: requestCountry, loanType, amount, query: queryText }),
+      })
+      if (!res.ok) throw new Error("Search failed")
+      const data: SearchResponse = await res.json()
+      setResults(pinRegionalLoanResults(data.results ?? [], requestCountry, requestProvince, loanType))
+      setVisibleCount(PAGE_SIZE)
+      setSource(data.source)
+      setNotice(data.notice)
+      setCanSearchMore(data.hasMore !== false && data.source === "live")
+    } catch {
+      setError("Search didn’t work — try again")
+      setResults([])
+      setSource(null)
+      setNotice(null)
+      setCanSearchMore(false)
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  async function searchMoreOfficialLenders() {
+    if (loadingMore || loading) return
+    setLoadingMore(true)
+    setError(null)
     const stored = getStudentProfile()
     const requestCountry = stored?.country ?? country
     const requestProvince = stored?.provinceOrState ?? provinceOrState
@@ -87,20 +129,31 @@ export function LoanTools({ initialQuery = "" }: { initialQuery?: string }) {
       const res = await fetch("/api/loans/find", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ country: requestCountry, loanType, amount, query: nextQuery }),
+        body: JSON.stringify({
+          country: requestCountry,
+          loanType,
+          amount,
+          query: lastQuery,
+          expand: true,
+          excludeUrls: results.map((item) => item.href),
+        }),
       })
       if (!res.ok) throw new Error("Search failed")
       const data: SearchResponse = await res.json()
-      setResults(pinRegionalLoanResults(data.results ?? [], requestCountry, requestProvince, loanType))
-      setSource(data.source)
-      setNotice(data.notice)
+      const extra = pinRegionalLoanResults(data.results ?? [], requestCountry, requestProvince, loanType)
+      const seen = new Set(results.map((item) => item.href))
+      const unique = extra.filter((item) => !seen.has(item.href))
+      if (unique.length === 0) {
+        setCanSearchMore(false)
+        return
+      }
+      setResults((prev) => [...prev, ...unique])
+      setVisibleCount((count) => count + unique.length)
+      setCanSearchMore(data.hasMore !== false)
     } catch {
       setError("Search didn’t work — try again")
-      setResults([])
-      setSource(null)
-      setNotice(null)
     } finally {
-      setLoading(false)
+      setLoadingMore(false)
     }
   }
 
@@ -189,6 +242,10 @@ export function LoanTools({ initialQuery = "" }: { initialQuery?: string }) {
         </p>
       )}
 
+      {(notice || results.length > 0) && !loading && (
+        <SearchExplainer kind="loans" className="mt-3 md:mt-4" />
+      )}
+
       {loading && results.length === 0 && (
         <section className="mt-3 md:mt-6" aria-hidden="true">
           <SectionHeading icon={ListChecks}>Results</SectionHeading>
@@ -200,10 +257,54 @@ export function LoanTools({ initialQuery = "" }: { initialQuery?: string }) {
         </section>
       )}
 
+      {!loading && source !== null && results.length === 0 && (
+        <section className="mt-3 rounded-2xl border border-dashed border-border bg-muted/30 p-4 md:mt-6 md:p-5">
+          <SectionHeading icon={ListChecks}>No lenders in this batch</SectionHeading>
+          <p className="mt-2 text-sm text-muted-foreground">
+            Try another loan type, or start from these official pages:
+          </p>
+          <div className="mt-3 flex flex-col gap-2 sm:flex-row sm:flex-wrap">
+            {country === "Canada" ? (
+              <>
+                <Link
+                  href="/guides/osap-vs-private-loans"
+                  className="inline-flex min-h-11 items-center justify-center rounded-xl border border-border bg-card px-4 text-sm font-semibold text-foreground transition-colors hover:bg-muted"
+                >
+                  OSAP vs private loans
+                </Link>
+                <a
+                  href="https://www.canada.ca/en/services/benefits/education/student-aid.html"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="inline-flex min-h-11 items-center justify-center rounded-xl border border-border bg-card px-4 text-sm font-semibold text-foreground transition-colors hover:bg-muted"
+                >
+                  Canada Student Aid
+                </a>
+              </>
+            ) : (
+              <a
+                href="https://studentaid.gov/h/apply-for-aid/fafsa"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="inline-flex min-h-11 items-center justify-center rounded-xl border border-border bg-card px-4 text-sm font-semibold text-foreground transition-colors hover:bg-muted"
+              >
+                File FAFSA
+              </a>
+            )}
+            <Link
+              href="/"
+              className="inline-flex min-h-11 items-center justify-center rounded-xl bg-gold px-4 text-sm font-bold text-gold-foreground transition-colors hover:bg-gold-hover"
+            >
+              Marketplace student aid
+            </Link>
+          </div>
+        </section>
+      )}
+
       {results.length > 0 && (
         <div className={`relative mt-3 md:mt-6 ${loading ? "opacity-60" : ""}`}>
           {loading && <div className="absolute inset-0 z-10 rounded-2xl bg-background/60" aria-hidden="true" />}
-          {groupedLoanResults(results).map((group, index) => (
+          {groupedLoanResults(results.slice(0, visibleCount)).map((group, index) => (
             <section key={group.id} className={index === 0 ? "" : "mt-6"}>
               <SectionHeading icon={ListChecks}>{group.title}</SectionHeading>
               <div className="mt-3 grid grid-cols-1 gap-3 md:grid-cols-2">
@@ -213,6 +314,30 @@ export function LoanTools({ initialQuery = "" }: { initialQuery?: string }) {
               </div>
             </section>
           ))}
+          {(visibleCount < results.length || canSearchMore) && (
+            <div className="mt-4 flex flex-col gap-2 sm:flex-row">
+              {visibleCount < results.length ? (
+                <button
+                  type="button"
+                  onClick={() => setVisibleCount((count) => count + PAGE_SIZE)}
+                  className="inline-flex min-h-11 flex-1 items-center justify-center rounded-xl border border-border bg-card px-4 text-sm font-semibold text-foreground transition-colors hover:bg-muted"
+                >
+                  Show more results
+                </button>
+              ) : null}
+              {canSearchMore ? (
+                <button
+                  type="button"
+                  disabled={loadingMore || loading}
+                  onClick={() => void searchMoreOfficialLenders()}
+                  className="inline-flex min-h-11 flex-1 items-center justify-center gap-2 rounded-xl border border-border bg-card px-4 text-sm font-semibold text-foreground transition-colors hover:bg-muted disabled:opacity-60"
+                >
+                  {loadingMore && <Loader2 className="h-4 w-4 shrink-0 animate-spin" aria-hidden="true" />}
+                  {loadingMore ? "Searching more official pages…" : "Search more official lenders"}
+                </button>
+              ) : null}
+            </div>
+          )}
         </div>
       )}
         </div>

@@ -42,8 +42,15 @@ const AGGREGATOR_DOMAINS = [
   "chegg.com",
 ] as const
 
-/** Social + aggregator hosts for Tavily `exclude_domains` and URL post-filtering. */
-export const TAVILY_SCHOLARSHIP_EXCLUDE_DOMAINS = [...SOCIAL_DOMAINS, ...AGGREGATOR_DOMAINS]
+/** Legal gazettes and registers — dollar figures here are not student awards. */
+const WEAK_SCHOLARSHIP_HOSTS = ["gazette.gc.ca", "federalregister.gov"] as const
+
+/** Social + aggregator + weak hosts for Tavily `exclude_domains` and URL post-filtering. */
+export const TAVILY_SCHOLARSHIP_EXCLUDE_DOMAINS = [
+  ...SOCIAL_DOMAINS,
+  ...AGGREGATOR_DOMAINS,
+  ...WEAK_SCHOLARSHIP_HOSTS,
+]
 
 const OFFICIAL_FOUNDATION_HOSTS = [
   "loranscholar.ca",
@@ -456,6 +463,27 @@ export function isCirnacOrPolicyExplainer(url: string, title: string, content: s
   return false
 }
 
+const WEAK_LISTING_PATH =
+  /\/(?:gazette|federal-register|regulations?|regulatory|sor-dors|application-availability|operational-policy|policy-manual|scholarshipscanada|our-story|about-us|meet-the-scholars|current-scholars)(?:\/|$)/i
+
+const WEAK_LISTING_TITLE =
+  /\b(?:regulatory impact|regulations?\s+amending|canada gazette|federal register|application availability|operational policy|meet the scholars|current scholars|about us)\b/i
+
+/**
+ * Drop gazette / policy-manual / directory pages that pass the official-host check
+ * but are poor award listings (especially in “search more” broad mode).
+ */
+export function isWeakScholarshipListing(url: string, title = "", content = ""): boolean {
+  const host = hostnameOf(url) ?? ""
+  if (WEAK_SCHOLARSHIP_HOSTS.some((blocked) => hostMatches(host, blocked))) return true
+  if (WEAK_LISTING_PATH.test(url)) return true
+  if (WEAK_LISTING_TITLE.test(title)) return true
+  const blob = `${title}\n${content}`
+  if (/\bregulatory impact analysis\b/i.test(blob)) return true
+  if (/scholarshipscanada/i.test(url) || /scholarshipscanada/i.test(blob)) return true
+  return false
+}
+
 export function isRivalSchoolHit(
   url: string,
   title: string,
@@ -492,6 +520,7 @@ export function shouldKeepSchoolKeywordHit(
     return false
   }
   if (isScholarshipListicle(title, url)) return false
+  if (isWeakScholarshipListing(url, title, content)) return false
   if (isCirnacOrPolicyExplainer(url, title, content)) return false
   if (searchedSchool && isRivalSchoolHit(url, title, content, searchedSchool)) return false
   if (isFoundationHost(hostnameOf(url) ?? "") && !mentionsSearchedSchool(url, title, searchedSchool)) {
@@ -556,6 +585,7 @@ export function isOfficialScholarshipDestination(url: string, searchedSchool = "
 export function shouldKeepScholarshipHit(url: string, title = "", searchedSchool = ""): boolean {
   if (isBlockedScholarshipUrl(url)) return false
   if (isScholarshipListicle(title, url)) return false
+  if (isWeakScholarshipListing(url, title)) return false
   return isOfficialScholarshipDestination(url, searchedSchool)
 }
 
@@ -579,11 +609,15 @@ export function awardListingPathRank(url: string): number {
       /(^|\/)scholarships(\/|$)/.test(path) ||
       /(^|\/)financial[-_]?aid(\/|$)/.test(path) ||
       /(^|\/)bursar/.test(path) ||
+      /(^|\/)grants?(?:-loans)?(\/|$)/.test(path) ||
+      /(^|\/)student[-_]?aid(\/|$)/.test(path) ||
       /(^|\/)registrar(\/|$)/.test(path) ||
       /(^|\/)safa(\/|$)/.test(path)
-    const isNews = /(^|\/)newsroom(\/|$)|(^|\/)press-releases?(\/|$)/.test(path)
+    const isWeak =
+      WEAK_LISTING_PATH.test(url) ||
+      /(^|\/)newsroom(\/|$)|(^|\/)press-releases?(\/|$)|(^|\/)our-story(\/|$)|(^|\/)about(\/|$)/.test(path)
     if (isAid) return 0
-    if (isNews) return 2
+    if (isWeak) return 3
     return 1
   } catch {
     return 1

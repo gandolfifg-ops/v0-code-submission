@@ -139,6 +139,14 @@ export function MarketplaceHome() {
               >
                 Read the 2026 Canada student bank guide
               </Link>
+              {" · "}
+              <Link href="/guides/osap-vs-private-loans" className="font-medium text-link underline">
+                OSAP vs private loans
+              </Link>
+              {" · "}
+              <Link href="/guides/resp-tfsa-for-students" className="font-medium text-link underline">
+                RESP &amp; TFSA basics
+              </Link>
             </p>
           )}
           {country === "US" && (
@@ -148,6 +156,10 @@ export function MarketplaceHome() {
                 className="font-medium text-link underline"
               >
                 Read the 2026 US student bank guide
+              </Link>
+              {" · "}
+              <Link href="/guides/fafsa-vs-private-loans" className="font-medium text-link underline">
+                FAFSA vs private loans
               </Link>
             </p>
           )}

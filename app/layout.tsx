@@ -3,7 +3,8 @@ import { Inter } from "next/font/google"
 import { Analytics } from "@vercel/analytics/next"
 import { ThemeProvider } from "@/components/theme-provider"
 import { SiteShell } from "@/components/layout/SiteShell"
-import { pageMeta } from "@/lib/seo"
+import { JsonLd } from "@/components/JsonLd"
+import { organizationJsonLd, pageMeta } from "@/lib/seo"
 import "./globals.css"
 
 const inter = Inter({ subsets: ["latin"] })
@@ -22,6 +23,7 @@ export default function RootLayout({
   return (
     <html lang="en" suppressHydrationWarning>
       <body className={`${inter.className} antialiased`}>
+        <JsonLd data={organizationJsonLd()} />
         <ThemeProvider attribute="class" defaultTheme="light" enableSystem={false}>
           <SiteShell>{children}</SiteShell>
         </ThemeProvider>
